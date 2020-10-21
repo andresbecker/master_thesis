@@ -1,0 +1,4 @@
+**/datasets
+*.log
+*.npy
+*.csv
