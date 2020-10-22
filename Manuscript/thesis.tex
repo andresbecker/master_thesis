@@ -11,7 +11,7 @@
 % and version 1.3 or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 % ==============================================================================
-\documentclass[]{tumthesis}
+\documentclass[biblatexBackend=bibtex]{tumthesis}
 
 % ------------------------------------------------------------------------------
 %FixMe-Status: final (no FixMe comments) or draft (comments visible)
@@ -45,21 +45,22 @@
 \includeonly{%
 %titlepage,%
 %declaration,%
-abstract,%
-introduction,%
+%Sections/abstract,%
+%Sections/introduction,%
 % include own sections here (rule of thumb: one file per chapter)
-conclusion,%
-appendix%
+Sections/Motivation_and_Background,
+%Sections/conclusion,%
+%Sections/appendix%
 }%
 % ------------------------------------------------------------------------------
 
 % ------------------------------------------------------------------------------
 % PDF-Metadaten
 \hypersetup{
- pdfauthor={Oliver Cooley, Wolfgang Ferdinand Riedl, Michael Ritter},
- pdftitle={The tumthesis Class},
- pdfsubject={A Tutorial for Theses},
- pdfkeywords={Master's Thesis, Bachelor's Thesis},
+ pdfauthor={Andres Alberto Becker Sanabria},
+ pdftitle={Predicting transcription rate from multiplexed protein maps using deep learning},
+ pdfsubject={Predicting transcription rate from multiplexed protein maps using deep learning},
+ pdfkeywords={Master's Thesis},
  colorlinks=true, %coloured links (for the PDF version)
 % colorlinks=false, % no coloured links (for the print version)
 }
@@ -67,21 +68,23 @@ appendix%
 
 % ------------------------------------------------------------------------------
 % Data for the title page and declaration
-\author{Wolfgang F. Riedl, Michael Ritter\\Translation by Oliver Cooley}
-\title{The \texttt{tumthesis} Class}
-\subtitle{A Tutorial for Theses}
-\faculty{Fakultät für Mathematik}
-\institute{Lehrstuhl für Angewandte Geometrie und Diskrete Mathematik}
-%\subject{master}
+\author{Andres Becker}
+\title{Predicting transcription rate from multiplexed protein maps using deep learning}
+%\subtitle{A Tutorial for Theses}
+%\faculty{Fakultät für Mathematik}
+\faculty{Department of Mathematics}
+%\institute{Lehrstuhl für Mathematische Modelle biologischer Systeme}
+\institute{Chair of Mathematical Modeling of Biological Systems}
+\subject{master}
 %\subject{bachelor}
 %\subject{diploma}
 %\subject{project}
 %\subject{seminar}
 %\subject{idp}
-\subject{Short Overview}
-\professor{Prof. Dr. Peter Gritzmann} %Themensteller
-\advisor{Dr. René Brandenberg} %Betreuer
-\date{\today} %Submission Date
+%\subject{Short Overview}
+\professor{Prof. Dr. Fabian J. Theis} %Themensteller
+\advisor{Dr. Hannah Spitzer} %Betreuer
+\date{April 14, 2021} %Submission Date
 \place{München} %Place where document is signed
 % ------------------------------------------------------------------------------
 
@@ -95,20 +98,24 @@ appendix%
 %\selectlanguage{ngerman}
 \selectlanguage{english}
 \maketitlepage%
+%\maketitlepageDissertation % a more elegant one, but for PHd dissertation
 \makedeclaration%
 
-\include{abstract}
+\include{Sections/abstract}
 \tableofcontents%
 
 \mainmatter%
 \pagestyle{headings}
 
-\include{introduction}
-\include{conclusion}
+\include{Sections/introduction}
+
+\include{Sections/Motivation_and_Background}
+
+\include{Sections/conclusion}
 
 % appendices (if appropriate)
 \appendix
-\include{appendix}
+\include{Sections/appendix}
 % all appendices behind backmatter will go without numbers
 \backmatter
 
@@ -116,10 +123,6 @@ appendix%
 \listoffigures
 
 \vspace*{1.5cm}
-
-All figures in this document were created by the author using TikZ, the excellent \TeX-package by Till Tantau, see \cite{Tantau2007}.
-
-
 
 %List of Tables
 \listoftables

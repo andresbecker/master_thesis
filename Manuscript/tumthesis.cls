@@ -2,7 +2,7 @@
 % tumthesis.cls
 % A class for creating theses
 % Michael Ritter, 2012
-% Licence: 
+% Licence:
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
 % of this license or (at your option) any later version.
@@ -104,7 +104,7 @@
     maxcitenames=3, %
     url=false, %
     doi=false, %
-    firstinits=true,
+    giveninits=true,
     sorting=nty]%
 {biblatex}
 % ------------------------------------------------------------------------------
@@ -243,12 +243,12 @@
 \providecommand*{\setsubject}[1]{\gdef\@subject{#1}}
 \l@addto@macro\tp@dokeys{\do{subject}}%
 \DefineFamilyKey{title}{subject}{%
-  \ifstr{#1}{project}{\setsubject{\tumthesis@projectpapername}}{%
-    \ifstr{#1}{seminar}{\setsubject{\tumthesis@seminarpapername}}{%
-      \ifstr{#1}{diploma}{\setsubject{\tumthesis@diplomathesisname}}{%
-        \ifstr{#1}{idp}{\setsubject{\tumthesis@idpreportname}}{%
-          \ifstr{#1}{master}{\setsubject{\tumthesis@masterthesisname}}{%
-            \ifstr{#1}{bachelor}{\setsubject{\tumthesis@bachelorthesisname}}{%
+  \Ifstr{#1}{project}{\setsubject{\tumthesis@projectpapername}}{%
+    \Ifstr{#1}{seminar}{\setsubject{\tumthesis@seminarpapername}}{%
+      \Ifstr{#1}{diploma}{\setsubject{\tumthesis@diplomathesisname}}{%
+        \Ifstr{#1}{idp}{\setsubject{\tumthesis@idpreportname}}{%
+          \Ifstr{#1}{master}{\setsubject{\tumthesis@masterthesisname}}{%
+            \Ifstr{#1}{bachelor}{\setsubject{\tumthesis@bachelorthesisname}}{%
               \setsubject{#1}%
             }%
           }%
@@ -368,7 +368,7 @@
   \providecaptionname{english}{\tumthesis@proofnameplural}{Proofs}%
   \providecaptionname{english}{\tumthesis@algocfname}{Algorithm}%
   \providecaptionname{english}{\tumthesis@algocfnameplural}{Algorithms}%
-% 
+%
   %Deutsch (german)
   \providecaptionname{german}\tumthesis@projectpapername{Projektbericht}%
   \providecaptionname{german}\tumthesis@seminarpapername{Seminarausarbeitung}%
@@ -482,7 +482,7 @@
       \node[anchor = north west, align=left]%
       at ($ (titlenode.south west) + (0mm, -10mm) $) {%
         \parbox{150mm}{%
-          \ifstr{\@subject}{}%
+          \Ifstr{\@subject}{}%
           {\Large \textbf{\@author}}%
           {\Large\textbf{\@subject\xspace\fromname\xspace\@author}}%
         }%
@@ -506,7 +506,7 @@
 \begin{titlepage}
 %    \sffamily%
     \begin{tikzpicture}[overlay, remember picture, y=1mm, yscale=-1]
-		% Measurements		
+		% Measurements
 		\def\marginLeft{25mm}
 		\def\marginRight{35mm}
 		\def\marginTop{25mm}
@@ -518,7 +518,7 @@
 		% Faculty
     	\node[anchor=north west,align=flush center,text width=\width] (university) at ($(current page.north west)+(\marginLeft,\marginTop)$) {\Large Technische Universität München};
     	\node[align=flush center,text width=\width] (faculty) at ($(university)+(0,10mm)$) {\@faculty};
-    	
+
     	% Title and author
     	\node[align=flush center,text width=\width+\titleOverflow] (title) at ($(faculty)+(0,40mm)$) {\LARGE\textbf{\@title}\par};
 		\node[align=flush center,text width=\width] (author) at ($(title)+(0,20mm)$) {\Large\@author\par};
@@ -527,7 +527,7 @@
 		\node[align=flush left,text width=\width,anchor=north] (typeIntro) at ($(author)+(0,40mm)$) {Vollständiger Abdruck der von der \@faculty{} der Technischen Universität München zur Erlangung des akademischen Grades eines\vphantom{Jg}\par};
 		\node[anchor=north] (type) at ($(typeIntro.south)+(0,1.5*\baselineskip)$) {Doktors der Naturwissenschaften (Dr.\,rer.\,nat.)\vphantom{Jg}\par};
 		\node[align=flush left,text width=\width,anchor=north] (typeOutro) at ($(type.south)+(0,1.5*\baselineskip)$) {eingereichten Dissertation.\vphantom{Jg}\par};
-		
+
 		% Examiners
 		\node[anchor=north west] (chairmanLabel) at ($(typeOutro.south west)+(25mm,20mm)$) {Vorsitzender:};
 		\begin{scope}[yscale=1.5]
@@ -542,7 +542,7 @@
 			}
 			\node[anchor=base west] (lastExaminer) at ($(chairman.base west)+(0,{(\i-1)*\baselineskip})$) {\vphantom{Jg}};
 		\end{scope}
-		
+
 		% Date
 		\coordinate (helper) at ($(lastExaminer)+(0,20mm)$);
 		\node[align=flush left,text width=\width,anchor=north] (date) at (helper -| typeOutro) {Die Dissertation wurde am \@date{} bei der Technischen
@@ -561,7 +561,7 @@
       {\strut\@place\placedateseparator\xspace\@date};%
       \node[anchor=south west, text width=150mm] (declaration text)%
       at ($ (declaration place.north west) + (+0mm, +25mm) $)%
-      {\declarationtext};%      
+      {\declarationtext};%
       \draw (declaration place.south east) + (10mm,0mm) --
       node[below]{\normalsize \@author} (intersection of
       declaration place.south--declaration place.south east and declaration
