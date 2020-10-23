@@ -4,6 +4,9 @@
 *.csv
 
 # Latex support files
+**/*.acr
+**/*.acn
+**/*.alg
 **/*.aux
 **/*.aux.bak
 **/*.bbl
@@ -12,14 +15,18 @@
 **/*.dvi
 **/*.fdb_latexmk
 **/*.fls
+**/*.glg
+**/*.gls
 **/*.idx
 **/*.idx.bak
 **/*.ilg
 **/*.ind
+**/*.ist
 **/*.lof
 **/*.log
 **/*.lol
 **/*.lot
+**/*.lox
 **/*.nav
 **/*.out
 **/*.pdf
@@ -27,4 +34,5 @@
 **/*.snm
 **/*.synctex.gz
 **/*.toc
+**/*.xdy
 /**/_minted-{jobname}

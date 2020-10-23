@@ -89,6 +89,36 @@ Sections/Motivation_and_Background,
 % ------------------------------------------------------------------------------
 
 % ==============================================================================
+% Acronyms
+% ==============================================================================
+
+% Packages should be called in the preamble document (preamble.tex). However,
+% glossaries package requires to be called after hyperref, babel, polyglossia,
+% inputenc and fontenc. Therefore, calling glossaries package in preamble doc
+% produce errors during compilation (and no generation of Acronyms section).
+
+%\usepackage[style=long,nonumberlist, toc,acronym,nomain]{glossaries}
+% style=long: center the acronyms in acronym section
+% nonumberlist: remove the list all places in docu where the acron was called
+% toc: Add Acronyms section to table of content
+% acronym, nomain: necessary
+\usepackage[acronym, toc, nomain]{glossaries}
+\makeglossaries
+
+%\newacronym[<options>]{<label>}{<short>}{<long>}
+\newacronym{4i}{4i}{iterative indirect immunofluorescence imaging}
+\newacronym{tr}{TR}{transcription rate}
+
+% ------------------------------------------------------------------------------
+
+% ==============================================================================
+% Costume commands
+% ==============================================================================
+\newcommand{\hl}[1]{\textbf{#1}} % Defined to highlight new words
+
+% ------------------------------------------------------------------------------
+
+% ==============================================================================
 % Main part of the document
 % ==============================================================================
 \makeindex[title=Index,options=-s myindex]
@@ -147,6 +177,10 @@ Sections/Motivation_and_Background,
 % Add index to table of contents
 \addcontentsline{toc}{chapter}{Index}
 \printindex
+
+%Print the glossary
+%\printglossaries
+\printglossary[type=\acronymtype]
 
 % Bibliography
 \printbibliography[heading=bibintoc]
