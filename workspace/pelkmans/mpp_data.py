@@ -13,11 +13,11 @@ from numba import jit
 class MPPDataset:
     def __init__(self, dataset_name, dataset_dir=os.path.join(DATA_DIR, 'datasets')):
         self.dataset_folder = os.path.join(dataset_dir, dataset_name)
-        
+
         self.channels = pd.read_csv(os.path.join(self.dataset_folder, 'channels.csv'), index_col=0)
         self.channels = self.channels.reset_index().set_index('name')
         self.metadata = pd.read_csv(os.path.join(self.dataset_folder, 'metadata.csv'))
-        
+
         # data
         self.data = {
             'train': np.load(os.path.join(self.dataset_folder, 'train_dataset.npz')),
@@ -28,7 +28,7 @@ class MPPDataset:
             'val': np.load(os.path.join(self.dataset_folder, 'val_imgs.npz')),
             'test': np.load(os.path.join(self.dataset_folder, 'test_imgs.npz'))
         }
-        
+
     def get_channel_ids(self, to_channels, from_channels=None):
         if from_channels is None:
             from_channels = self.channels
@@ -37,7 +37,7 @@ class MPPDataset:
             from_channels = from_channels.set_index('name')
         from_channels = from_channels.reindex(to_channels)
         return list(from_channels['index'])
-    
+
     def get_tf_dataset(self, split='train', output_channels=None, is_conditional=False, repeat_y=False):
         """returns tf.data.Dataset of the desired split"""
         x = self.data[split]['x']
@@ -51,20 +51,20 @@ class MPPDataset:
             y = tuple([y for _ in range(repeat_y)])
         dataset = tf.data.Dataset.from_tensor_slices((x,y))
         return dataset
-    
+
     def get_y(self, split='train', output_channels=None):
         y = self.data[split]['y']
         if output_channels is not None:
             channel_ids = self.get_channel_ids(output_channels)
             y = y[:,channel_ids]
         return y
-    
+
     def get_mapobject_ids(self, split='train', data='data'):
         if data == 'data':
             return self.data[split]['mapobject_id']
         else:
             return self.imgs[split]['mapobject_id']
-    
+
     def get_imgs(self, split='val', img_ids=None, is_conditional=False):
         if img_ids is None:
             img_ids = np.arange(len(self.imgs[split]['img']))
@@ -77,7 +77,7 @@ class MPPDataset:
         if is_conditional:
             cond = self.imgs[split]['cond'][img_ids]
         return (imgs, cond), img_ids
-    
+
     def get_metadata(self, split, columns=['mapobject_id', 'well_name', 'cell_type', 'perturbation', 'cell_cycle']):
         mapobject_ids = self.get_mapobject_ids(split)
         wells = pd.read_csv(os.path.join(DATA_DIR, 'wells_metadata.csv'), index_col=0)
@@ -87,8 +87,8 @@ class MPPDataset:
         metadata = metadata.merge(wells, left_on='well_name', right_on='well_name', how='left', suffixes=('','well_'))
         metadata = metadata.merge(cc, left_on='mapobject_id_cell', right_on='mapobject_id', how='left', suffixes=('','cc_'))
         return metadata[columns]
-    
-    # creation function   
+
+    # creation function
     @staticmethod
     def create(params, dataset_name, dataset_dir=os.path.join(DATA_DIR, 'datasets'), n_jobs=1):
         if params is None:
@@ -98,7 +98,7 @@ class MPPDataset:
         log.info('Creating train/val/test datasets with params:')
         log.info(json.dumps(params, indent=4))
         p = params
-        
+
         # create mpp data (with) multiprocessing
         #res = []
         #if n_jobs == 1:
@@ -110,7 +110,7 @@ class MPPDataset:
         #train = MPPData.concat([r[0] for r in res])
         #val = MPPData.concat([r[1] for r in res])
         #test = MPPData.concat([r[2] for r in res])
-        
+
         mpp_datas = {'train': [], 'val': [], 'test': []}
         for data_dir in p['data_dirs']:
             mpp_data = MPPData.from_data_dir(data_dir, dir_type=p['dir_type'], seed=p['seed'])
@@ -120,7 +120,7 @@ class MPPDataset:
                 mpp_data.subtract_background(p['background_value'])
             train, val, test = mpp_data.train_val_test_split(p['train_frac'], p['val_frac'])
             if p['subsample']:
-                train.subsample(frac=p['frac'], frac_per_obj=p['frac_per_obj'], num=p['num'], num_per_obj=p['num_per_obj'], 
+                train.subsample(frac=p['frac'], frac_per_obj=p['frac_per_obj'], num=p['num'], num_per_obj=p['num_per_obj'],
                                 add_neighborhood=p['neighborhood'], neighborhood_size=p['neighborhood_size'])
             elif p['neighborhood']:
                 train.add_neighborhood(p['neighborhood_size'])
@@ -165,14 +165,14 @@ class MPPDataset:
             val_imgs['cond'] = np.array(val.get_object_imgs(data='condition', img_size=p['test_img_size']))
         # subsample and add neighbors to val and test
         if p['subsample']:
-            val.subsample(frac=p['frac'], frac_per_obj=p['frac_per_obj'], num=p['num'], num_per_obj=p['num_per_obj'], 
+            val.subsample(frac=p['frac'], frac_per_obj=p['frac_per_obj'], num=p['num'], num_per_obj=p['num_per_obj'],
                                 add_neighborhood=p['neighborhood'], neighborhood_size=p['neighborhood_size'])
-            test.subsample(frac=p['frac'], frac_per_obj=p['frac_per_obj'], num=p['num'], num_per_obj=p['num_per_obj'], 
+            test.subsample(frac=p['frac'], frac_per_obj=p['frac_per_obj'], num=p['num'], num_per_obj=p['num_per_obj'],
                                 add_neighborhood=p['neighborhood'], neighborhood_size=p['neighborhood_size'])
         elif p['neighborhood']:
             test.add_neighborhood(p['neighborhood_size'])
             val.add_neighborhood(p['neighborhood_size'])
-            
+
         log.info('-------------------')
         log.info('created datasets:')
         log.info('train: {}'.format(str(train)))
@@ -187,16 +187,16 @@ class MPPDataset:
         # save params
         json.dump(params, open(os.path.join(outdir, 'params.json'), 'w'), indent=4)
         # save datasets
-        np.savez(os.path.join(outdir, 'train_dataset.npz'), x=train.mpp, y=train.center_mpp, 
+        np.savez(os.path.join(outdir, 'train_dataset.npz'), x=train.mpp, y=train.center_mpp,
                  c=train.conditions, mapobject_id=train.mapobject_ids)
-        np.savez(os.path.join(outdir, 'val_dataset.npz'), x=val.mpp, y=val.center_mpp, 
+        np.savez(os.path.join(outdir, 'val_dataset.npz'), x=val.mpp, y=val.center_mpp,
                  c=val.conditions, mapobject_id=val.mapobject_ids)
-        np.savez(os.path.join(outdir, 'test_dataset.npz'), x=test.mpp, y=test.center_mpp, 
+        np.savez(os.path.join(outdir, 'test_dataset.npz'), x=test.mpp, y=test.center_mpp,
                  c=test.conditions, mapobject_id=test.mapobject_ids)
         # save images
         np.savez(os.path.join(outdir, 'test_imgs.npz'), mapobject_id=test.metadata.mapobject_id, **test_imgs)
         np.savez(os.path.join(outdir, 'val_imgs.npz'), mapobject_id=val.metadata.mapobject_id, **val_imgs)
-        
+
         # save metadata
         pd.concat([train.metadata, val.metadata, test.metadata]).to_csv(os.path.join(outdir, 'metadata.csv'))
         train.channels.to_csv(os.path.join(outdir, 'channels.csv'))
@@ -225,19 +225,19 @@ class MPPData:
         if conditions is None:
             conditions = np.zeros([len(self.mapobject_ids),1],  dtype=np.int64)
         self.conditions = conditions
-        
+
     @property
     def has_neighbor_data(self):
         return (self.mpp.shape[1]!=1) and (self.mpp.shape[2]!=1)
-    
+
     @property
     def center_mpp(self):
         c = self.mpp.shape[1]//2
         return self.mpp[:,c,c,:]
-    
+
     def __str__(self):
         return 'MPPData ({} mpps with shape {} from {} objects)'.format(self.mpp.shape[0], self.mpp.shape[1:], len(self.metadata))
-    
+
     @classmethod
     def from_data_dir(cls, data_dir, dir_type='hannah', seed=42):
         # read all data from data_dir
@@ -259,7 +259,7 @@ class MPPData:
         self = cls(metadata=metadata, channels=channels, labels=labels, x=x, y=y, mpp=mpp, mapobject_ids=mapobject_ids, seed=seed)
         self.data_dir = data_dir
         return self
-    
+
     @classmethod
     def concat(cls, objs):
         """concatenate the mpp_data objects by concatenating all arrays and return a new one"""
@@ -284,7 +284,7 @@ class MPPData:
                   conditions=conditions)
         self.log.info('Concatenated several MPPDatas')
         return self
-    
+
     def train_val_test_split(self, train_frac=0.8, val_frac=0.1):
         """split along mapobject_ids for train/val/test split"""
         ids = np.unique(self.mapobject_ids)
@@ -301,14 +301,14 @@ class MPPData:
             #ind = []
             #for cur_id in split_ids:
             #    ind.append(np.where(self.mapobject_ids==cur_id)[0])
-            #ind = np.concatenate(ind, axis=0)
+            #ind = np.concatenate(ind, axis=0)f
             ind = np.in1d(self.mapobject_ids, split_ids)
-            splits.append(MPPData(metadata=self.metadata, channels=self.channels, labels=self.labels[ind], 
-                                  x=self.x[ind], y=self.y[ind], mpp=self.mpp[ind], 
+            splits.append(MPPData(metadata=self.metadata, channels=self.channels, labels=self.labels[ind],
+                                  x=self.x[ind], y=self.y[ind], mpp=self.mpp[ind],
                                   mapobject_ids=self.mapobject_ids[ind], mcu_ids=self.mcu_ids[ind],
                                   conditions=self.conditions[ind]))
         return splits
-    
+
     #---- Functions for modify the MPPData in place ----
     def add_mcu(self, mcu_dir):
         """
@@ -319,7 +319,7 @@ class MPPData:
         x = np.load(os.path.join(mcu_dir, 'x.npy'))
         y = np.load(os.path.join(mcu_dir, 'y.npy'))
         cluster_ids = np.load(os.path.join(mcu_dir, 'cluster_ids.npy'))
-        
+
         # iterate over all mapobject ids and find MCU cluster id
         self.log.info("Adding MCU cluster ids from {}".format(mcu_dir))
         for mapobject_id in np.unique(self.mapobject_ids):
@@ -328,7 +328,7 @@ class MPPData:
             assert (self.x[mask] == x[mcu_mask]).all(), "x is not in correct order for matching mcu to mpp"
             assert (self.y[mask] == y[mcu_mask]).all(), "y is not in correct order for matching mcu to mpp"
             self.mcu_ids[mask] = np.array(som_to_mcu_ids.loc[cluster_ids[mcu_mask]].mcu_id)
-            
+
     def _get_per_mpp_value(self, per_cell_value):
         """takes list of values corresponding to self.metadata.mapobject_id
         and propagates them to self.mapobject_id"""
@@ -336,7 +336,7 @@ class MPPData:
         df = pd.DataFrame({'mapobject_id': self.mapobject_ids})
         per_mpp_value = df.merge(per_cell_df, left_on='mapobject_id', right_on='mapobject_id', how='left')['val']
         return per_mpp_value
-            
+
     def add_conditions(self, cond_desc, cell_cycle_file=None):
         """
         Add conditions informations by aggregating over channels (per cell) or reading data from cell cycle file.
@@ -363,7 +363,7 @@ class MPPData:
                     cond = convert_perturbations(np.array(cond), one_hot=True)
                 else:
                     cond = convert_perturbations(np.array(cond))[:, np.newaxis]
-                    
+
             elif desc in list(self.channels.name):
                 # desc is channel - get values for this channel
                 cid = list(self.channels.name).index(desc)
@@ -377,10 +377,10 @@ class MPPData:
             conditions.append(cond)
         self.conditions = np.concatenate(conditions, axis=-1)
 
-            
+
     def subset(self, cell_cycle_file=None):
         """\
-        Subset objects to mapobject_ids listed in fname. Use 
+        Subset objects to mapobject_ids listed in fname. Use
         """
         mask = np.ones(len(self.mpp), dtype=np.bool)
         if cell_cycle_file is not None:
@@ -389,10 +389,10 @@ class MPPData:
             cond = self._get_per_mpp_value(cond)
             mask &= ~cond.isnull()
             self.log.info(f'Subsetting mapobject ids to cell_cycle_file (removing {sum(cond.isnull())} objects)')
-            
+
         else:
             self.log.warn('Called subset, but cell_cycle_file is none')
-            
+
         # apply mask to data in self
         self.labels = self.labels[mask]
         self.x = self.x[mask]
@@ -402,8 +402,8 @@ class MPPData:
         self.mapobject_ids = self.mapobject_ids[mask]
         self.metadata = self.metadata[self.metadata.mapobject_id.isin(np.unique(self.mapobject_ids))]
         self.conditions = self.conditions[mask]
-        
-            
+
+
     def subset_channels(self, channels):
         """
         Restrict self.mpp to defined channels. Channels are given as string values.
@@ -413,10 +413,10 @@ class MPPData:
         self.channels = self.channels.loc[cids]
         self.mpp = self.mpp[:,:,:,cids]
         self.log.info('restricted channels to {} channels'.format(len(self.channels)))
-        
+
     def subsample(self, frac=None, frac_per_obj=None, num=None, num_per_obj=None, add_neighborhood=False, neighborhood_size=3):
         """
-        Subsample MPPData based on selecting mpps. 
+        Subsample MPPData based on selecting mpps.
         All other information is updated accordingly (to save RAM/HDD-memory)
         """
         assert sum([frac!=None, frac_per_obj!=None, num!=None, num_per_obj!=None]) == 1, "set only one of the params to a value"
@@ -426,7 +426,7 @@ class MPPData:
         if num is not None:
             self.log.info('subsampling data to {} (from {})'.format(num, len(self.mpp)))
             # randomly select num mpps
-            # NOTE: need to seed default_rng, np.random.seed does not work 
+            # NOTE: need to seed default_rng, np.random.seed does not work
             rng = np.random.default_rng(seed=self.seed)
             selected = rng.choice(len(self.mpp), num, replace=False)
             # select other information accordingly
@@ -484,14 +484,14 @@ class MPPData:
         self.mcu_ids=mcu_ids
         self.conditions=conditions
         self.metadata = self.metadata[self.metadata.mapobject_id.isin(np.unique(self.mapobject_ids))]
-    
+
     def add_neighborhood(self, size=3):
         assert not self.has_neighbor_data, "cannot add neighborhood, already has neighbor data"
         self.log.info('adding neighborhood of size {}'.format(size))
         mpp = self.get_neighborhood(self.mapobject_ids, self.x, self.y, size=size)
         assert (mpp[:,size//2,size//2,:] == self.center_mpp).all()
         self.mpp = mpp
-        
+
     def subtract_background(self,background_value):
         # code copied/adapted from Scott Berry's MCU package
         # Note mpp is converted to float
@@ -510,7 +510,7 @@ class MPPData:
             if len(bkgrd_dict) != self.channels.shape[0]:
                 missing_channels = list(set(self.channels.channel_id).difference(bkgrd_dict.keys()))
                 self.log.warning('missing background value for channels {}'.format(list(self.channels.loc[missing_channels].name)))
-                
+
             # subtract per-channel background (row-wise) from mpp
             # if background not knows, subtract 0
             bkgrd_vec = np.array(
@@ -522,7 +522,7 @@ class MPPData:
             self.mpp = self.mpp.astype(np.float64) - bkgrd_vec
         # cut off at 0 (no negative values)
         self.mpp[self.mpp<0] = 0
-        
+
     def rescale_intensities_per_channel(self,percentile=98.0,rescale_values=None):
         # Note mpp is modified in place and function returns None
         if rescale_values is None:
@@ -546,7 +546,7 @@ class MPPData:
                 vals.append(img[idx])
             data[mask] = np.array(vals)
         return data
-    
+
     def get_img_from_data(self, x, y, data, img_size=None, pad=0):
         """
         Create image from x and y coordinates and fill with data.
@@ -570,7 +570,7 @@ class MPPData:
         else:
             # padding info is only relevant when not cropping img to shape
             return img, (x.min()-pad, y.min()-pad)
-    
+
     def get_mcu_img(self, mapobject_id, **kwargs):
         """
         Calculate MCU image of given mapobject
@@ -581,13 +581,13 @@ class MPPData:
         y = self.y[mask]
         data = self.mcu_ids[mask][:,np.newaxis]
         return self.get_img_from_data(x, y, data, **kwargs)
-    
+
     def get_mpp_img(self, mapobject_id, channel_ids=None, **kwargs):
         """
         Calculate MPP image of given mapobject
         channel_ids: ids of MPP channels that the image should hav. If None, all channels are returned.
         kwargs: arguments for get_img_from_data
-        """     
+        """
         if channel_ids is None:
             channel_ids = range(len(self.channels))
         mask = self.mapobject_ids == mapobject_id
@@ -595,7 +595,7 @@ class MPPData:
         y = self.y[mask]
         data = self.center_mpp[mask][:,channel_ids]
         return self.get_img_from_data(x, y, data, **kwargs)
-    
+
     def get_condition_img(self, mapobject_id, **kwargs):
         """
         Calculate condition image of given mapobject
@@ -606,7 +606,7 @@ class MPPData:
         y = self.y[mask]
         data = self.conditions[mask]
         return self.get_img_from_data(x, y, data, **kwargs)
-        
+
     def get_object_imgs(self, data='MPP', channel_ids=None, img_size=None, pad=0):
         imgs = []
         for mapobject_id in self.metadata.mapobject_id:
