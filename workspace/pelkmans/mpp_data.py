@@ -299,7 +299,8 @@ class MPPData:
             information that fulfill the given parameters
         """
 
-        assert (len(filter_criteria) == len(filter_values)), 'ERROR! length of filter_criteria and filter_values does not match!'
+        if len(filter_criteria) != len(filter_values):
+            raise Exception('length of filter_criteria and filter_values defined in input parameters does not match!')
 
         metadata_mask = np.ones(self.metadata.shape[0]).astype(bool)
         print('Total number of cells: {}\n'.format(int(np.sum(metadata_mask))))
@@ -416,6 +417,24 @@ class MPPData:
                 raise NotImplementedError
             conditions.append(cond)
         self.conditions = np.concatenate(conditions, axis=-1)
+
+    def add_cell_cycle_to_metadata(self, cc_file):
+        """
+        Add Cell cycle information to metadata.
+        Input: Absolute path to cell cycle file
+        Output: self.metadata with cell cycle information
+        """
+
+        if not os.path.exists(cc_file):
+            raise Exception('Cell cycle file {} not found!'.format(cc_file))
+
+        cc_data = pd.read_csv(cc_file)
+        self.metadata = self.metadata.merge(cc_data,
+                                    left_on='mapobject_id_cell',
+                                    right_on='mapobject_id',
+                                    how='left',
+                                    suffixes=('','_cc'))
+        self.metadata = self.metadata.drop(['mapobject_id_cc'], axis=1)
 
 
     def subset(self, cell_cycle_file=None):
