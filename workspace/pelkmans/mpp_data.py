@@ -285,6 +285,46 @@ class MPPData:
         self.log.info('Concatenated several MPPDatas')
         return self
 
+    def filter_cells(self, filter_criteria=['is_border_cell', 'is_mitotic'], filter_values=[0, 0]):
+        """
+        Filter cells given the desired criteria (from metadata).
+        Input:
+            -filter_criteria: list containing the metadata column
+             names
+            -filter_values: list of desired values corresponding to
+             filter_criteria entrances
+        Output:
+            modify self atributes, so metadata lables, x, y,
+            mapobject_ids, mpp, conditions and mcu_ids only have cell
+            information that fulfill the given parameters
+        """
+
+        assert (len(filter_criteria) == len(filter_values)), 'ERROR! length of filter_criteria and filter_values does not match!'
+
+        metadata_mask = np.ones(self.metadata.shape[0]).astype(bool)
+        print('Total number of cells: {}\n'.format(int(np.sum(metadata_mask))))
+        for f, f_val in zip(filter_criteria, filter_values):
+            mask_temp = (self.metadata[f] == f_val).values
+            print('{} cells cutted by filter: {} == {}'.format(self.metadata.shape[0]-np.sum(mask_temp), f, f_val))
+            metadata_mask &= mask_temp
+        print('\nFinal number of cells cutted: {}'.format(int(self.metadata.shape[0] - np.sum(metadata_mask))))
+
+        # Filter metadata
+        self.metadata = self.metadata.iloc[metadata_mask]
+
+        # Get mapobject_ids from metadata that fulfill the given conditions
+        mapobject_ids = self.metadata.mapobject_id.values
+        # Get mask and filter lables, x, y, mapobject_ids, mpp, conditions and mcu_ids
+        mask = np.in1d(self.mapobject_ids, mapobject_ids)
+
+        self.labels = self.labels[mask]
+        self.x = self.x[mask]
+        self.y = self.y[mask]
+        self.mapobject_ids = self.mapobject_ids[mask]
+        self.mpp = self.mpp[mask]
+        self.mcu_ids = self.mcu_ids[mask]
+        self.conditions = self.conditions[mask]
+
     def train_val_test_split(self, train_frac=0.8, val_frac=0.1):
         """split along mapobject_ids for train/val/test split"""
         ids = np.unique(self.mapobject_ids)
