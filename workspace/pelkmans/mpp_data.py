@@ -306,7 +306,7 @@ class MPPData:
         print('Total number of cells: {}\n'.format(int(np.sum(metadata_mask))))
         for f, f_val in zip(filter_criteria, filter_values):
             mask_temp = (self.metadata[f] == f_val).values
-            print('{} cells cutted by filter: {} == {}'.format(self.metadata.shape[0]-np.sum(mask_temp), f, f_val))
+            print('{} cells cutted by filter: {} != {}'.format(self.metadata.shape[0]-np.sum(mask_temp), f, f_val))
             metadata_mask &= mask_temp
         print('\nFinal number of cells cutted: {}'.format(int(self.metadata.shape[0] - np.sum(metadata_mask))))
 
@@ -436,6 +436,31 @@ class MPPData:
                                     suffixes=('','_cc'))
         self.metadata = self.metadata.drop(['mapobject_id_cc'], axis=1)
 
+    def add_well_info_to_metadata(self, well_file):
+        """
+        Add well information (cell line, perturbation and duration)
+        to metadata.
+        Input: Absolute path to well information file
+        Output: self.metadata with well information
+        """
+
+        if not os.path.exists(well_file):
+            raise Exception('Well metadata file {} not found!'.format(well_file))
+
+        well_data = pd.read_csv(well_file)
+        well_data = well_data[['plate_name', 'well_name', 'cell_type', 'perturbation', 'duration']]
+
+        # Check for rows in well_data df with same plate_name and well_name values
+        if (np.sum(well_data.groupby(['plate_name', 'well_name']).size().values > 1) > 0):
+            raise Exception('More than one row in {} with same combination of plate_name and well_name values!'.format(well_file))
+
+        self.metadata = self.metadata.merge(well_data,
+             left_on=['plate_name_cell', 'well_name_cell'],
+             right_on=['plate_name', 'well_name'],
+             how='left',
+             suffixes=('','_wmd'))
+
+        self.metadata = self.metadata.drop(['plate_name_wmd','well_name_wmd'], axis=1)
 
     def subset(self, cell_cycle_file=None):
         """\
