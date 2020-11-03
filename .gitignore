@@ -2,6 +2,7 @@
 *.log
 *.npy
 *.csv
+*.html
 
 # Latex support files
 **/*.acr
