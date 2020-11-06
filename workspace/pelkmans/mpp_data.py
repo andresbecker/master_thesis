@@ -285,14 +285,14 @@ class MPPData:
         self.log.info('Concatenated several MPPDatas')
         return self
 
-    def filter_cells(self, filter_criteria=['is_border_cell', 'is_mitotic'], filter_values=[0, 0]):
+    def filter_cells(self, filter_criteria=['is_border_cell'], filter_values=[0]):
         """
         Filter cells given the desired criteria (from metadata).
         Input:
             -filter_criteria: list containing the metadata column
              names
-            -filter_values: list of desired values corresponding to
-             filter_criteria entrances
+            -filter_values: list with values to be avoided (cutted)
+             corresponding to filter_criteria entrances
         Output:
             modify self atributes, so metadata lables, x, y,
             mapobject_ids, mpp, conditions and mcu_ids only have cell
@@ -303,12 +303,15 @@ class MPPData:
             raise Exception('length of filter_criteria and filter_values defined in input parameters does not match!')
 
         metadata_mask = np.ones(self.metadata.shape[0]).astype(bool)
-        print('Total number of cells: {}\n'.format(int(np.sum(metadata_mask))))
+        print('Total number of cells: {}'.format(int(np.sum(metadata_mask))))
         for f, f_val in zip(filter_criteria, filter_values):
-            mask_temp = (self.metadata[f] == f_val).values
-            print('{} cells cutted by filter: {} != {}'.format(self.metadata.shape[0]-np.sum(mask_temp), f, f_val))
+            if (f_val == 'nan') or (f_val == 'NaN') or (f_val == 'NAN'):
+                mask_temp = ~self.metadata[f].isna().values
+            else:
+                mask_temp = ~(self.metadata[f] == f_val).values
+            print('{} cells cutted by filter: {} == {}'.format(self.metadata.shape[0]-np.sum(mask_temp), f, f_val))
             metadata_mask &= mask_temp
-        print('\nFinal number of cells cutted: {}'.format(int(self.metadata.shape[0] - np.sum(metadata_mask))))
+        print('Number of cutted cells: {}'.format(int(self.metadata.shape[0] - np.sum(metadata_mask))))
 
         # Filter metadata
         self.metadata = self.metadata.iloc[metadata_mask]
