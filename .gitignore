@@ -4,6 +4,7 @@
 *.npy
 *.csv
 *.html
+**/.ipynb_checkpoints
 
 # Latex support files
 **/*.acr
