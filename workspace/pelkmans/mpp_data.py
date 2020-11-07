@@ -683,6 +683,20 @@ class MPPData:
         data = self.center_mpp[mask][:,channel_ids]
         return self.get_img_from_data(x, y, data, **kwargs)
 
+    def get_mpp_mask(self, mapobject_id, channel_ids=None, **kwargs):
+            """
+            Calculate MPP mask of given mapobject
+            channel_ids: ids of MPP channels that the image should hav. If None, all channels are returned.
+            kwargs: arguments for get_img_from_data
+            """
+            if channel_ids is None:
+                channel_ids = range(len(self.channels))
+            mask = self.mapobject_ids == mapobject_id
+            x = self.x[mask]
+            y = self.y[mask]
+            data = np.ones((self.center_mpp[mask][:,channel_ids]).shape, dtype=np.short)
+            return self.get_img_from_data(x, y, data, **kwargs)
+
     def get_condition_img(self, mapobject_id, **kwargs):
         """
         Calculate condition image of given mapobject
@@ -709,6 +723,42 @@ class MPPData:
                 res = res[0]
             imgs.append(res)
         return imgs
+
+    def get_object_imgs_and_mask(self, data='MPP', channel_ids=None, img_size=None, pad=0):
+        """
+        Very similar to get_object_imgs method, only difference is that
+        get_object_imgs_and_mask returns images and mask indicating the
+        measured values.
+        TODO: Implement support for data different than 'MPP'
+        Input:
+            -data: str indicating data type
+            -channel_ids: 1D array indicating id channels to be contemplated
+                in the returned image and mask
+            -img_size: Natural Number, size for output images
+            (i.e. shape: (img_size,img_size))
+            -pad: amount of padding added to returned image (only used when
+                img_size is None)
+        Output:
+            -imgs: array of shape:
+                (n_observations,img_size,img_size,len(channel_ids)) with
+                measured values
+            -mask: boolean array of same shape as imgs. Array entrance = True
+                if value came from data.
+        """
+        imgs = []
+        mask = []
+        for mapobject_id in self.metadata.mapobject_id:
+            if data == 'MPP':
+                res = self.get_mpp_img(mapobject_id, channel_ids, img_size=img_size, pad=pad)
+                res_m = self.get_mpp_mask(mapobject_id, channel_ids, img_size=img_size, pad=pad).astype(np.bool)
+            else:
+                raise NotImplementedError
+            if img_size is None:
+                res = res[0]
+                res_m = res_m[0]
+            imgs.append(res)
+            mask.append(res_m)
+        return np.array(imgs), np.array(mask)
 
 # test functions for MPPData
 def test_get_neighborhood():
