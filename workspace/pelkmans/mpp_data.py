@@ -7,11 +7,13 @@ import pandas as pd
 import json
 import tensorflow as tf
 import multiprocessing
+from glob import glob
 from functools import partial
 from numba import jit
 
 class MPPDataset:
     def __init__(self, dataset_name, dataset_dir=os.path.join(DATA_DIR, 'datasets')):
+        self.log = logging.getLogger(self.__class__.__name__)
         self.dataset_folder = os.path.join(dataset_dir, dataset_name)
 
         self.channels = pd.read_csv(os.path.join(self.dataset_folder, 'channels.csv'), index_col=0)
@@ -38,18 +40,48 @@ class MPPDataset:
         from_channels = from_channels.reindex(to_channels)
         return list(from_channels['index'])
 
-    def get_tf_dataset(self, split='train', output_channels=None, is_conditional=False, repeat_y=False):
-        """returns tf.data.Dataset of the desired split"""
+    def get_tf_dataset(self, split='train', output_channels=None, is_conditional=False,
+                       repeat_y=False, from_tf_records=False):
+        """returns tf.data.Dataset of the desired split.
+        If from_tf_records, tries to load dataset from tf records dataset.
+        If this dataset does not exist, create a tf records dataset.
+        """
+        if from_tf_records:
+            return self.get_tf_records_dataset(split=split, output_channels=output_channels,
+                                          is_conditional=is_conditional, repeat_y=repeat_y)
+        output_types = [tf.float32, tf.float32]
+        output_shapes = []
         x = self.data[split]['x']
+        num = x.shape[0]
+        output_shapes.append(tf.TensorShape(x.shape[1:]))
         if is_conditional:
-            x = (x, self.data[split]['c'])
+            output_types[0] = tuple([tf.float32, tf.float32])
+            x = (x, self.data[split]['c'].astype(np.float32))
+            output_shapes[0] = tuple([output_shapes[0], tf.TensorShape(x[1].shape[1:])])
         y = self.data[split]['y']
         if output_channels is not None:
             channel_ids = self.get_channel_ids(output_channels)
             y = y[:,channel_ids]
+        output_shapes.append(tf.TensorShape(y.shape[1:]))
         if repeat_y is not False:
+            output_types[1] = tuple([tf.float32 for _ in range(repeat_y)])
             y = tuple([y for _ in range(repeat_y)])
-        dataset = tf.data.Dataset.from_tensor_slices((x,y))
+            output_shapes[1] = tuple([output_shapes[1] for _ in range(repeat_y)])
+        # create a generator dataset:
+        def gen():
+            for i in range(num):
+                if is_conditional:
+                    el_x = (x[0][i], x[1][i])
+                else:
+                    el_x = x[i]
+                if repeat_y is not False:
+                    el_y = tuple([y[j][i] for j in range(len(y))])
+                else:
+                    el_y = y[i]
+                yield (el_x, el_y)
+        print(output_types, output_shapes)
+        dataset = tf.data.Dataset.from_generator(gen, tuple(output_types), tuple(output_shapes))
+        #dataset = tf.data.Dataset.from_tensor_slices((x,y))
         return dataset
 
     def get_y(self, split='train', output_channels=None):
@@ -78,7 +110,7 @@ class MPPDataset:
             cond = self.imgs[split]['cond'][img_ids]
         return (imgs, cond), img_ids
 
-    def get_metadata(self, split, columns=['mapobject_id', 'well_name', 'cell_type', 'perturbation', 'cell_cycle']):
+    def get_metadata(self, split, columns=['mapobject_id', 'well_name', 'cell_type', 'perturbation_duration', 'cell_cycle']):
         mapobject_ids = self.get_mapobject_ids(split)
         wells = pd.read_csv(os.path.join(DATA_DIR, 'wells_metadata.csv'), index_col=0)
         cc = pd.read_csv(os.path.join(DATA_DIR, 'cell_cycle_classification.csv'))
@@ -87,6 +119,104 @@ class MPPDataset:
         metadata = metadata.merge(wells, left_on='well_name', right_on='well_name', how='left', suffixes=('','well_'))
         metadata = metadata.merge(cc, left_on='mapobject_id_cell', right_on='mapobject_id', how='left', suffixes=('','cc_'))
         return metadata[columns]
+
+    # tf records stuff
+    def get_tf_records_dataset(self, split='train', output_channels=None, is_conditional=False,
+                       repeat_y=False):
+        def _get_tf_dataset_fname(split, output_channels, is_conditional, repeat_y):
+            oc = 'all'
+            if output_channels is not None:
+                oc = '-'.join(output_channels)
+            cond = 'nocond'
+            if is_conditional:
+                cond = 'cond'
+            ry = 'ry1'
+            if repeat_y is not False:
+                ry = f'ry{repeat_y}'
+            fname = f'{split}_{oc}_{cond}_{ry}'
+            return fname
+        fname = _get_tf_dataset_fname(split, output_channels, is_conditional, repeat_y)
+        if len(glob(os.path.join(self.dataset_folder, fname + '*'))) == 0:
+            tf_data = self.get_tf_dataset(split=split, output_channels=output_channels,
+                                          is_conditional=is_conditional, repeat_y=repeat_y)
+
+            self.write_tf_records_dataset(tf_data, fname)
+
+        assert len(glob(os.path.join(self.dataset_folder, fname + '*'))) > 0
+        return self.read_tf_records_dataset(fname)
+
+    def write_tf_records_dataset(self, tf_data, fname):
+        # write a tf records file for each "column" in the dataset
+        def get_nested_structure(el, i=None, name=''):
+            # el might be a tuple or a single element
+            if i is not None:
+                name = name + '_'+str(i)
+            if not isinstance(el, tuple):
+                return [name]
+            else:
+                struc = []
+                for j, eli in enumerate(el):
+                    struc.extend(get_nested_structure(eli, i=j, name=name))
+                return struc
+
+        def get_serialized_dataset(tf_data, struc_name):
+            pos = struc_name.split('_')[0]
+            idxs = struc_name.split('_')[1:]
+            if len(idxs) == 0:
+                if pos == 'x':
+                    cur_data = tf_data.map(lambda x,y: x)
+                elif pos == 'y':
+                    cur_data = tf_data.map(lambda x,y: y)
+            elif len(idxs) == 1:
+                if pos == 'x':
+                    cur_data = tf_data.map(lambda x,y: x[int(idxs[0])])
+                elif pos == 'y':
+                    cur_data = tf_data.map(lambda x,y: y[int(idxs[0])])
+            else:
+                raise NotImplementedError(struc_name)
+            # now have a single column dataset that we can serialize
+            cur_data = cur_data.map(tf.io.serialize_tensor)
+            return cur_data
+
+        el = next(iter(tf_data.take(1)))
+        for i,pos in enumerate(['x', 'y']):
+            struc = get_nested_structure(el[i], name=pos)
+            for struc_name in struc:
+                self.log.info(f'creating TFRecordDataset for {struc_name}')
+                ser_data = get_serialized_dataset(tf_data, struc_name)
+                cur_fname = fname + '_' + struc_name + '.tfrecords'
+                writer = tf.data.experimental.TFRecordWriter(os.path.join(self.dataset_folder, cur_fname))
+                writer.write(ser_data)
+
+    def read_tf_records_dataset(self, fname):
+        # glob all files, read all and combine in sensible way - pot using zip?
+        fnames = sorted(glob(os.path.join(self.dataset_folder, fname + '*')))
+        self.log.info(f'reading TFRecordDataset from files {fnames}')
+        datasets = {'x':[], 'y':[]}
+        for ds_name in fnames:
+            struc_name = os.path.splitext(os.path.basename(ds_name))[0][len(fname):]
+            pos = struc_name.split('_')[1]
+            idx = None
+            if len(struc_name.split('_')) > 2:
+                idx = struc_name.split('_')[2]
+            self.log.debug(f'pos {pos}, idx {idx}')
+            dataset = tf.data.TFRecordDataset(ds_name)
+            dataset = dataset.map(lambda x: tf.io.parse_tensor(x, tf.float32))
+            # ensure shape information is known
+            shape = next(iter(dataset.take(1))).shape.as_list()
+            dataset = dataset.map(lambda x: tf.ensure_shape(x, shape))
+            if idx is None:
+                datasets[pos] = dataset
+            else:
+                datasets[pos].append(dataset)
+
+        for pos in datasets.keys():
+            if isinstance(datasets[pos], list):
+                datasets[pos] = tf.data.Dataset.zip(tuple(datasets[pos]))
+        dataset = tf.data.Dataset.zip((datasets['x'], datasets['y']))
+
+        return dataset
+
 
     # creation function
     @staticmethod
@@ -233,6 +363,8 @@ class MPPData:
     @property
     def center_mpp(self):
         c = self.mpp.shape[1]//2
+        #print(self.mpp.shape)
+        #print(c)
         return self.mpp[:,c,c,:]
 
     def __str__(self):
@@ -284,6 +416,32 @@ class MPPData:
                   conditions=conditions)
         self.log.info('Concatenated several MPPDatas')
         return self
+
+    def merge_instances(self, objs):
+        """
+        Merge self variables with instances of same class (objs vars).
+        This method is very similar to classmethod concat. The difference is
+        that this modify the self instance instead of returning a new one.
+        The aim of this method is to add support to images and masks.
+        Input: List containing instances of class MPPData.
+        Output: None.
+        """
+        for mpp_data in objs:
+            if not all(mpp_data.channels.name == self.channels.name):
+                raise Exception('Channels across MPPData instances are not the same!')
+            if (vars(mpp_data).keys() != vars(self).keys()):
+                raise Exception('Variables across MPPData instances are not the same!')
+
+        # concatenate metadata (pandas)
+        self.metadata = pd.concat([self.metadata]+[mpp_data.metadata for mpp_data in objs], axis=0, ignore_index=True)
+
+        # Concatenate instances variables
+        instance_vars = {'labels', 'x', 'y', 'mpp', 'mapobject_ids', 'mcu_ids','conditions', 'images', 'masks'}
+        for var in set(vars(self).keys()).intersection(instance_vars):
+            temp_var = np.concatenate([getattr(self, var)]+[getattr(mpp_data,var) for mpp_data in objs], axis=0)
+            setattr(self, var, temp_var)
+
+        self.log.info('Concatenated several MPPDatas')
 
     def filter_cells(self, filter_criteria=['is_border_cell'], filter_values=[0]):
         """
@@ -345,7 +503,7 @@ class MPPData:
             #ind = []
             #for cur_id in split_ids:
             #    ind.append(np.where(self.mapobject_ids==cur_id)[0])
-            #ind = np.concatenate(ind, axis=0)f
+            #ind = np.concatenate(ind, axis=0)
             ind = np.in1d(self.mapobject_ids, split_ids)
             splits.append(MPPData(metadata=self.metadata, channels=self.channels, labels=self.labels[ind],
                                   x=self.x[ind], y=self.y[ind], mpp=self.mpp[ind],
@@ -401,7 +559,7 @@ class MPPData:
             elif 'perturbation' in desc:
                 # read well info file and match with mapobjectids
                 wells = pd.read_csv(os.path.join(DATA_DIR, 'wells_metadata.csv'))
-                cond = np.array(self.metadata.merge(wells, left_on='well_name', right_on='name', how='left')['perturbation'])
+                cond = np.array(self.metadata.merge(wells, left_on='well_name', right_on='name', how='left')['perturbation_duration'])
                 cond = self._get_per_mpp_value(cond)
                 if desc =='perturbation_one_hot':
                     cond = convert_perturbations(np.array(cond), one_hot=True)
@@ -465,6 +623,97 @@ class MPPData:
 
         self.metadata = self.metadata.drop(['plate_name_wmd','well_name_wmd'], axis=1)
 
+    def add_image_and_mask(self, data='MPP', remove_original_data=False, channel_ids=None, img_size=None, pad=0):
+        """
+        Very similar to get_object_imgs method, only difference is that
+        get_object_imgs_and_mask returns images and mask indicating the
+        measured values.
+        TODO: Implement support for data different than 'MPP'
+        Input:
+            -data: str indicating data type
+            -channel_ids: 1D array indicating id channels to be contemplated
+                in the returned image and mask
+            -img_size: Natural Number, size for output images
+            (i.e. shape: (img_size,img_size))
+            -pad: amount of padding added to returned image (only used when
+                img_size is None)
+            -remove_original_data
+        Output:
+            -imgs: array of shape:
+                (n_observations,img_size,img_size,len(channel_ids)) with
+                measured values
+            -mask: boolean array of same shape as imgs. Array entrance = True
+                if value came from data.
+            -if remove_original_data is True
+        """
+        imgs = []
+        mask = []
+        for mapobject_id in self.metadata.mapobject_id:
+            if data == 'MPP':
+                res = self.get_mpp_img(mapobject_id, channel_ids, img_size=img_size, pad=pad)
+                res_m = self.get_mpp_mask(mapobject_id, img_size=img_size, pad=pad).astype(np.bool).reshape(res.shape[:-1])
+            else:
+                raise NotImplementedError
+            if img_size is None:
+                res = res[0]
+                res_m = res_m[0]
+            imgs.append(res)
+            mask.append(res_m)
+
+        if remove_original_data:
+            del(self.labels, self.x, self.y, self.mpp, self.mapobject_ids, self.mcu_ids, self.conditions)
+
+        self.images = np.array(imgs)
+        self.masks = np.array(mask)
+
+    def add_scalar_projection(self, method='avg'):
+        """
+        This method projects each cell (and each one of its channels) into a scalar. For instance, assuming images, if one have data.images.shape = (100,240,240, 38) (100 images of size 240x240 and 38 channels), then this method projects data.images into an array of shape (100, 38).
+        Input:
+            -method: String indicating the used function to project each image into a single number. Available functions are the average ('avg') and the median ('median').
+        Output: No output. For instance, if 'avg' selected, then m columns are added to self.metadata containing the average number of each cell and channel (m represents the number of channels).
+        """
+        n_cells = self.metadata.shape[0]
+        n_channels = self.mpp.shape[-1]
+        cell_ids = np.array(self.metadata.mapobject_id.values).reshape((-1,1))
+
+        col_name = ['mapobject_id']
+        col_name += [self.channels.set_index('channel_id').loc[c].values[0]+'_'+method for c in range(n_channels)]
+        scalar_vals_df = pd.DataFrame(columns=col_name)
+
+        for map_id in cell_ids:
+            mask = (slef.mapobject_ids == map_id)
+
+            if (method == 'avg'):
+                if 'mpp' in vars(self):
+                    channel_sclara = self.mpp[mask].mean(axis=0).reshape((1,-1))
+                elif {'images', 'masks'}.issubset(vars(self).keys()):
+                    # TODO: implement method to project using images and masks
+                    pass
+            elif (method == 'median'):
+                if 'mpp' in vars(self):
+                    channel_sclara = np.median(self.mpp[mask], axis=0)
+                elif {'images', 'masks'}.issubset(vars(self).keys()):
+                    # TODO: implement method to project using images and masks
+                    pass
+            else:
+                print('Available methods:\n avg, median')
+                raise NotImplementedError(method)
+
+            temp_df = pd.DataFrame(np.insert(channel_sclara, 0, map_id).reshape((1, -1)), columns=col_name)
+            scalar_vals_df = scalar_vals_df.append(temp_df, ignore_index=True)
+
+        scalar_vals_df.mapobject_id = scalar_vals_df.mapobject_id.astype('uint32')
+        scalar_vals_df = scalar_vals_df.set_index(['mapobject_id'])
+
+        # Merge scalar data with metadata
+        self.metadata = self.metadata.merge(
+                                scalar_vals_df,
+                                left_on='mapobject_id',
+                                right_on='mapobject_id',
+                                how='left',
+                                suffixes=('', 'ss'))
+
     def subset(self, cell_cycle_file=None):
         """\
         Subset objects to mapobject_ids listed in fname. Use
@@ -476,7 +725,13 @@ class MPPData:
             cond = self._get_per_mpp_value(cond)
             mask &= ~cond.isnull()
             self.log.info(f'Subsetting mapobject ids to cell_cycle_file (removing {sum(cond.isnull())} objects)')
-
+        elif rand_frac is not None:
+            num_mapobject_ids = int(len(self.metadata)*rand_frac)
+            selected_mapobject_ids = np.zeros(len(self.metadata), dtype=bool)
+            np.random.seed(42)
+            selected_mapobject_ids[np.random.choice(len(self.metadata), size=num_mapobject_ids, replace=False)] = True
+            mask = self._get_per_mpp_value(selected_mapobject_ids)
+            self.log.info(f'Subsetting mapobject ids from {len(self.metadata)} to {num_mapobject_ids} cells')
         else:
             self.log.warn('Called subset, but cell_cycle_file is none')
 
@@ -611,13 +866,34 @@ class MPPData:
         self.mpp[self.mpp<0] = 0
 
     def rescale_intensities_per_channel(self,percentile=98.0,rescale_values=None):
-        # Note mpp is modified in place and function returns None
+        # Note mpp is modified in place and function only returns the
+        # normalization values
+
         if rescale_values is None:
-            rescale_values = np.percentile(self.center_mpp, percentile, axis=0)
+            if 'mpp' in vars(self).keys():
+                rescale_values = np.percentile(self.center_mpp, percentile, axis=0)
+            elif {'images', 'masks'}.issubset(vars(self).keys()):
+                n_channels =  self.images.shape[-1]
+                rescale_values = []
+                for c in range(n_channels):
+                    rescale_values.append(np.percentile(self.images[:,:,:,c][self.masks], percentile, axis=0))
+                rescale_values = np.array(rescale_values)
+            else:
+                raise Exception('Not enough information to calculate the rescale values')
         self.log.info('rescaling mpp intensities per channel with values {}'.format(rescale_values))
-        self.mpp /= rescale_values
-        self.log.info('converting mpp values to float32')
-        self.mpp = self.mpp.astype(np.float32)
+
+        if 'mpp' in vars(self).keys():
+            self.mpp /= rescale_values
+            self.log.info('converting mpp values to float32')
+            self.mpp = self.mpp.astype(np.float32)
+
+        if 'images' in vars(self).keys():
+            imgs_shape = self.images.shape
+            self.images = self.images.reshape(-1,imgs_shape[-1]) / rescale_values
+            self.images = self.images.reshape(imgs_shape)
+            self.log.info('converting mpp values to float32')
+            self.images = self.images.astype(np.float32)
+
         return rescale_values
 
     # ---- getting functions -----
@@ -683,18 +959,17 @@ class MPPData:
         data = self.center_mpp[mask][:,channel_ids]
         return self.get_img_from_data(x, y, data, **kwargs)
 
-    def get_mpp_mask(self, mapobject_id, channel_ids=None, **kwargs):
+    def get_mpp_mask(self, mapobject_id, **kwargs):
             """
             Calculate MPP mask of given mapobject
-            channel_ids: ids of MPP channels that the image should hav. If None, all channels are returned.
+            channel_ids are NOT required since the mask is the same for all the
+            channels.
             kwargs: arguments for get_img_from_data
             """
-            if channel_ids is None:
-                channel_ids = range(len(self.channels))
             mask = self.mapobject_ids == mapobject_id
             x = self.x[mask]
             y = self.y[mask]
-            data = np.ones((self.center_mpp[mask][:,channel_ids]).shape, dtype=np.short)
+            data = np.ones((self.center_mpp[mask][:,0:1]).shape, dtype=np.short)
             return self.get_img_from_data(x, y, data, **kwargs)
 
     def get_condition_img(self, mapobject_id, **kwargs):
@@ -723,42 +998,6 @@ class MPPData:
                 res = res[0]
             imgs.append(res)
         return imgs
-
-    def get_object_imgs_and_mask(self, data='MPP', channel_ids=None, img_size=None, pad=0):
-        """
-        Very similar to get_object_imgs method, only difference is that
-        get_object_imgs_and_mask returns images and mask indicating the
-        measured values.
-        TODO: Implement support for data different than 'MPP'
-        Input:
-            -data: str indicating data type
-            -channel_ids: 1D array indicating id channels to be contemplated
-                in the returned image and mask
-            -img_size: Natural Number, size for output images
-            (i.e. shape: (img_size,img_size))
-            -pad: amount of padding added to returned image (only used when
-                img_size is None)
-        Output:
-            -imgs: array of shape:
-                (n_observations,img_size,img_size,len(channel_ids)) with
-                measured values
-            -mask: boolean array of same shape as imgs. Array entrance = True
-                if value came from data.
-        """
-        imgs = []
-        mask = []
-        for mapobject_id in self.metadata.mapobject_id:
-            if data == 'MPP':
-                res = self.get_mpp_img(mapobject_id, channel_ids, img_size=img_size, pad=pad)
-                res_m = self.get_mpp_mask(mapobject_id, channel_ids, img_size=img_size, pad=pad).astype(np.bool)
-            else:
-                raise NotImplementedError
-            if img_size is None:
-                res = res[0]
-                res_m = res_m[0]
-            imgs.append(res)
-            mask.append(res_m)
-        return np.array(imgs), np.array(mask)
 
 # test functions for MPPData
 def test_get_neighborhood():
