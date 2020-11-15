@@ -5,6 +5,7 @@
 *.csv
 *.html
 **/.ipynb_checkpoints
+**/Too_heavy_for_git
 
 # Latex support files
 **/*.acr
