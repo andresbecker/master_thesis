@@ -28,6 +28,6 @@ fi
 
 echo -e "Executing notebook...\n"
 #jupyter-nbconvert --to html --execute $NOTEBOOK --output $NBs_PATH"NB_output/"$NB_NAME
-jupyter-nbconvert --to notebook --execute $NOTEBOOK --allow-errors --output $NBs_PATH"NB_output/"$NB_NAME"_processed"
+#jupyter-nbconvert --to notebook --execute $NOTEBOOK --allow-errors --output $NBs_PATH"NB_output/"$NB_NAME"_processed"
 
 #rm $SCRIPT_PATH"/Parameters/"$TEMP_PARM_FILE
