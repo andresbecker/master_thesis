@@ -682,20 +682,12 @@ class MPPData:
         scalar_vals_df = pd.DataFrame(columns=col_name)
 
         for map_id in cell_ids:
-            mask = (slef.mapobject_ids == map_id)
+            mask = (self.mapobject_ids == map_id)
 
             if (method == 'avg'):
-                if 'mpp' in vars(self):
-                    channel_sclara = self.mpp[mask].mean(axis=0).reshape((1,-1))
-                elif {'images', 'masks'}.issubset(vars(self).keys()):
-                    # TODO: implement method to project using images and masks
-                    pass
+                channel_sclara = self.mpp[mask].mean(axis=0).reshape((1,-1))
             elif (method == 'median'):
-                if 'mpp' in vars(self):
-                    channel_sclara = np.median(self.mpp[mask], axis=0)
-                elif {'images', 'masks'}.issubset(vars(self).keys()):
-                    # TODO: implement method to project using images and masks
-                    pass
+                channel_sclara = np.median(self.mpp[mask], axis=0)
             else:
                 print('Available methods:\n avg, median')
                 raise NotImplementedError(method)
