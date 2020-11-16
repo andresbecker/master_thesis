@@ -1,0 +1,94 @@
+{
+    "_comment": "where to read data from--------------------------------------",
+    "raw_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/raw",
+    "dir_type": "hannah",
+
+    "_comment": "Which perturbations and wells to load------------------------",
+    "perturbations_and_wells": {
+    "184A1_hannah_unperturbed": ["I11"],
+    "184A1_hannah_TSA": ["J20"]
+    },
+
+    "_comment": "where to put processed data----------------------------------",
+    "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_EU_regression_TEST_2",
+
+    "_comment": "make results reproducible------------------------------------",
+    "seed": 42,
+
+    "_comment": "input/output channels definition-----------------------------",
+    "input_channels": [
+        "00_DAPI",
+        "07_H2B",
+        "01_CDK9_pT186",
+        "03_CDK9",
+        "05_GTF2B",
+        "07_SETD1A",
+        "08_H3K4me3",
+        "09_SRRM2",
+        "10_H3K27ac",
+        "11_KPNA2_MAX",
+        "12_RB1_pS807_S811",
+        "13_PABPN1",
+        "14_PCNA",
+        "15_SON",
+        "16_H3",
+        "17_HDAC3",
+        "19_KPNA1_MAX",
+        "20_SP100",
+        "21_NCL",
+        "01_PABPC1",
+        "02_CDK7",
+        "03_RPS6",
+        "05_Sm",
+        "07_POLR2A",
+        "09_CCNT1",
+        "10_POL2RA_pS2",
+        "11_PML",
+        "12_YAP1",
+        "13_POL2RA_pS5",
+        "15_U2SNRNPB",
+        "18_NONO",
+        "20_ALYREF",
+        "21_COIL"
+    ],
+    "output_channels": ["00_EU"],
+    "_comment": "output channels as a single number---------------------------",
+    "_comment": "Options: max, avg, None results in output images-------------",
+    "aggregate_output": "avg",
+
+    "_comment": "train/val/test split-----------------------------------------",
+    "train_frac": 0.8,
+    "val_frac": 0.1,
+    "img_size": 224,
+
+    "_comment": "Subtract background------------------------------------------",
+    "subtract_background": true,
+    "background_value": "secondary_only_relative_normalisation.csv",
+
+    "_comment": "normalisation------------------------------------------------",
+    "normalise": true,
+    "percentile": 98.0,
+
+    "_comment": "Add Cell cycle to metadata-----------------------------------",
+    "add_cell_cycle_to_metadata": true,
+    "cell_cycle_file": "cell_cycle_classification.csv",
+
+    "_comment": "Add well info to metadata (cell_type, perturbation, duration)",
+    "add_well_info_to_metadata": true,
+    "well_info_file": "wells_metadata.csv",
+
+    "_comment": "Remove unwanted cells (metadata colums and values)-----------",
+    "filter_criteria": ["is_border_cell", "is_polynuclei_184A1", "cell_cycle"],
+    "filter_values": [1, 1, "NaN"],
+
+    "_comment": "Convert mpp data into image----------------------------------",
+    "convert_into_image": true,
+    "remove_original_data": true,
+
+    "_comment": "Project unichannel images into a scalar (avg or median)------",
+    "project_into_scalar": true,
+    "method": "avg",
+
+    "_comment": "Save file name as reference ---------------------------------",
+    "parameter_file_name": "params_sample.json"
+}
