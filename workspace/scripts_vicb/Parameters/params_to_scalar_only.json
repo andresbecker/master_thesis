@@ -1,6 +1,6 @@
 {
     "_comment": "where to read data from--------------------------------------",
-    "raw_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/raw",
+    "raw_data_dir": "/storage/groups/ml01/datasets/raw/20201020_Pelkmans_NascentRNA_hannah.spitzer",
     "dir_type": "hannah",
 
     "_comment": "Which perturbations and wells to load------------------------",
@@ -9,7 +9,7 @@
     },
 
     "_comment": "where to put processed data----------------------------------",
-    "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_EU_scalar_projection",
+    "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_EU_scalar_projection_vicb",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
