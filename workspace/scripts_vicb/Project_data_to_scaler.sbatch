@@ -5,7 +5,7 @@
 #SBATCH -J Project2scalars
 #SBATCH -p icb_cpu
 #SBATCH -c 1
-#SBATCH --mem-per-cpu 64G
+#SBATCH --mem-per-cpu 32G
 #SBATCH -t 3:00:00
 #SBATCH --nice=10000
 
