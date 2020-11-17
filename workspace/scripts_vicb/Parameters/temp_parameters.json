@@ -7,12 +7,13 @@
     "perturbations_and_wells": {
       "184A1_hannah_CX5461": ["I18", "J22", "J09"],
       "184A1_hannah_AZD4573": ["I13", "J21", "J14", "I17", "J18"],
-      "184A1_hannah_meayamycin": ["I12", "I20", "J17"],
+      "184A1_hannah_meayamycin": ["I12", "I20"],
       "184A1_hannah_DMSO": ["J16", "I14"],
       "184A1_hannah_triptolide": ["I10", "J15"],
       "184A1_hannah_TSA": ["J20", "I16", "J13"],
       "184A1_hannah_unperturbed": ["J10", "I13", "I09", "I11", "J18", "J12"]
     },
+    "_comment": "184A1_hannah_meayamycin-J17 is empty",
 
     "_comment": "where to put processed data----------------------------------",
     "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_EU_scalar_projection_vicb",
