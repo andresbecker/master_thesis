@@ -9,7 +9,7 @@
     },
 
     "_comment": "where to put processed data----------------------------------",
-    "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_EU_scalar_projection",
+    "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_test",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
