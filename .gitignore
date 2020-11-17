@@ -5,6 +5,7 @@
 *.csv
 *.html
 **/.ipynb_checkpoints
+**/__pycache__
 **/Too_heavy_for_git
 
 # Avoid SLURM output
