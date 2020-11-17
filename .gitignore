@@ -7,6 +7,9 @@
 **/.ipynb_checkpoints
 **/Too_heavy_for_git
 
+# Avoid SLURM output
+**/SLURM_output
+
 # Latex support files
 **/*.acr
 **/*.acn
