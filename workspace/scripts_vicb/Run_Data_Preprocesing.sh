@@ -5,6 +5,8 @@
 #     containing its parameters.
 ################################################################################
 
+echo -e "\nExecution started at:"
+date
 
 PARM_FILE=''
 INPUT_NOTEBOOK=''
@@ -83,5 +85,8 @@ rsync -avz $PARM_FILE $TEMP_PARM_FILE
 # Execute notebook
 #jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output $OUTPUT_PATH
 jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output-dir $OUTPUT_PATH
+
+echo -e "Execution ended at:"
+date
 
 echo -e "\nScript Finished"
