@@ -11,6 +11,11 @@
 # Avoid SLURM output
 **/SLURM_output
 
+# Avoid output notebooks
+**/NB_output
+# Avoid temporary parameters
+temp_parameters.json
+
 # Latex support files
 **/*.acr
 **/*.acn
