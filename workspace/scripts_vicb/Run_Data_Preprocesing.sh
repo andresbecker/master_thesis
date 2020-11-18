@@ -82,9 +82,14 @@ echo -e "\nCreating temporary file containing the parameters for notebook"
 TEMP_PARM_FILE=$PAR_PATH"/temp_parameters.json"
 rsync -avz $PARM_FILE $TEMP_PARM_FILE
 
+# Create output name
+TIME_TAG=$(date +"%d%m%y_%H%M")
+OUTPUT_NAME=$(basename $INPUT_NOTEBOOK | awk 'BEGIN{FS="."}{print $1}')
+OUTPUT_NAME=$OUTPUT_PATH"/"$OUTPUT_NAME"_"$TIME_TAG
+
 # Execute notebook
-#jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output $OUTPUT_PATH
-jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output-dir $OUTPUT_PATH
+jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output $OUTPUT_NAME
+#jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output-dir $OUTPUT_PATH
 
 echo -e "Execution ended at:"
 date

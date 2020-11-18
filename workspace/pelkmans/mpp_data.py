@@ -7,6 +7,7 @@ import pandas as pd
 import json
 import tensorflow as tf
 import multiprocessing
+import math
 from glob import glob
 from functools import partial
 from numba import jit
@@ -997,3 +998,71 @@ def test_get_neighborhood():
     neigh = mpp_data.get_neighborhood(mpp_data.mapobject_ids[:1000], mpp_data.x[:1000], mpp_data.y[:1000])
     assert (mpp_data.center_mpp[:1000] == neigh[:,1,1]).all()
     return True
+
+def save_images_in_separate_files(imgs_per_file=500, mpp_instances=None, instance_names=None, channels_ids=None, outdir=None):
+    """
+    Save MPPData.images and MPPData.masks numpy arrays into separated files of
+    fixed size. The objective of this function is to make processed data More
+    manageable.
+    Input:
+        imgs_per_file: how many images at most will have each file
+        mpp_instances: list containing instances of the class MPPData
+        instance_names: list containing the name of the mpp_instances
+        channels_ids: ids of the channels to be saved
+        outdir: directory to save the processed data
+    Output:
+        output_files: dictionary containing the file names for each instance
+        instance_name_i.npy: files containing the images (and masks)
+        id_cell_index.csv: file containing the file name and array index of
+        each cell (indexed using mapobject_id_cell)
+    """
+    id_cell_index = pd.DataFrame(columns=['mapobject_id_cell', 'File', 'array_index'])
+
+    if (len(mpp_instances) != len(instance_names)):
+        raise Exception('mpp_instances, instance_name lists have not the same lenght!')
+
+    if channels_ids == None:
+        channels_ids = range(mpp_instances[0].images.shape[-1])
+
+    # save the name of the files
+    output_files = {}
+    for mppdata, instance_name in zip(mpp_instances, instance_names):
+
+        print('Saving '+instance_name+' images and masks...')
+
+        img_files = []
+        mask_files = []
+        n_imgs = mppdata.images.shape[0]
+        n_files = math.ceil(n_imgs / imgs_per_file)
+        l_idx = 0
+        u_idx = 0
+        for i in range(n_files):
+            file_name = instance_name+'_images_'+str(i)+'.npy'
+            img_files.append(file_name)
+            file_name_mask = instance_name+'_mask_'+str(i)+'.npy'
+            mask_files.append(file_name_mask)
+            l_idx = (i)*imgs_per_file
+            u_idx = (i+1)*imgs_per_file
+            if u_idx > n_imgs:
+                u_idx = n_imgs
+
+            # Save data
+            np.save(os.path.join(outdir, file_name),
+                    mppdata.images[l_idx:u_idx,:,:,channels_ids])
+            np.save(os.path.join(outdir, file_name_mask),
+                    mppdata.masks[l_idx:u_idx,:])
+
+            # Add information to a df about which cell is in which file and index
+            tmp_idx = pd.DataFrame(mppdata.metadata.iloc[l_idx:u_idx]['mapobject_id_cell'])
+            tmp_idx.insert(0,'File', file_name)
+            tmp_idx['array_index'] = range(tmp_idx.shape[0])
+            id_cell_index = pd.concat((id_cell_index, tmp_idx), axis=0)
+
+        output_files[instance_name+'_images'] = img_files
+        output_files[instance_name+'_masks'] = mask_files
+
+    # Save mapobject_id_cell index file
+    id_cell_index = id_cell_index.set_index('mapobject_id_cell')
+    id_cell_index.to_csv(os.path.join(outdir, 'id_cell_index.csv'))
+
+    return output_files
