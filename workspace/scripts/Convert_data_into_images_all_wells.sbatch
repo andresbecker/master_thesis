@@ -9,4 +9,4 @@
 #SBATCH -t 12:00:00
 #SBATCH --nice=10000
 
-./Run_Data_Preprocesing.sh -p /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/Parameters/params_imgs_and_scalar.json -i /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/notebooks/Data_Preprocessing_from_script.ipynb
+./Run_Data_Preprocesing.sh -l /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace -i /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/notebooks/Data_Preprocessing_from_script.ipynb -p /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/Parameters/params_imgs_and_scalar.json

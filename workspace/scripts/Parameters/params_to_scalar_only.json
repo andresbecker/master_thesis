@@ -89,7 +89,7 @@
     "well_info_file": "wells_metadata.csv",
 
     "_comment": "Remove unwanted cells (metadata colums and values)-----------",
-    "filter_criteria": ["is_border_cell", "is_polynuclei_184A1", "is_polynuclei_184A1", "cell_cycle"],
+    "filter_criteria": ["is_border_cell", "is_polynuclei_184A1", "is_polynuclei_HeLa", "cell_cycle"],
     "filter_values": [1, 1, 1, "NaN"],
 
     "_comment": "Convert mpp data into image----------------------------------",
