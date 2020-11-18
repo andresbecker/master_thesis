@@ -6,7 +6,7 @@
 #SBATCH -p icb_cpu
 #SBATCH -c 2
 #SBATCH --mem-per-cpu 64G
-#SBATCH -t 5:00:00
+#SBATCH -t 12:00:00
 #SBATCH --nice=10000
 
 ./Run_Data_Preprocesing.sh -p /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/Parameters/params_imgs_and_scalar.json -i /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/notebooks/Data_Preprocessing_from_script.ipynb
