@@ -80,7 +80,7 @@ fi
 # Create temporary file that contains the input parameters
 echo -e "\nCreating temporary file containing the parameters for notebook"
 TEMP_PARM_FILE=$PAR_PATH"/temp_parameters.json"
-cat $PARM_FILE $TEMP_PARM_FILE
+cat $PARM_FILE > $TEMP_PARM_FILE
 
 # Create output name
 TIME_TAG=$(date +"%d%m%y_%H%M")
