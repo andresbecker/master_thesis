@@ -80,7 +80,7 @@ fi
 # Create temporary file that contains the input parameters
 echo -e "\nCreating temporary file containing the parameters for notebook"
 TEMP_PARM_FILE=$PAR_PATH"/temp_parameters.json"
-rsync -avz $PARM_FILE $TEMP_PARM_FILE
+cat $PARM_FILE $TEMP_PARM_FILE
 
 # Create output name
 TIME_TAG=$(date +"%d%m%y_%H%M")
@@ -91,7 +91,10 @@ OUTPUT_NAME=$OUTPUT_PATH"/"$OUTPUT_NAME"_"$TIME_TAG
 jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output $OUTPUT_NAME
 #jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output-dir $OUTPUT_PATH
 
-echo -e "Execution ended at:"
+echo -e "\nOutput notbook:"
+echo $OUTPUT_NAME
+
+echo -e "\nExecution ended at:"
 date
 
 echo -e "\nScript Finished"

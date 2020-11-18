@@ -16,8 +16,7 @@
     "_comment": "184A1_hannah_meayamycin-J17 is empty",
 
     "_comment": "where to put processed data----------------------------------",
-    "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_images_and_masks_all_wells",
-    "imgs_per_file": 500,
+    "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_avg_projection_all_wells",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
@@ -94,7 +93,7 @@
     "filter_values": [1, 1, 1, "NaN"],
 
     "_comment": "Convert mpp data into image----------------------------------",
-    "convert_into_image": true,
+    "convert_into_image": false,
     "remove_original_data": true,
 
     "_comment": "Project unichannel images into a scalar (avg or median)------",
@@ -102,5 +101,5 @@
     "method": "avg",
 
     "_comment": "Save file name as reference ---------------------------------",
-    "parameter_file_name": "params_imgs_and_scalar.json"
+    "parameter_file_name": "params_to_scalar_only.json"
 }
