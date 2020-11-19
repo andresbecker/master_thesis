@@ -15,6 +15,9 @@
     },
     "_comment": "184A1_hannah_meayamycin-J17 is empty",
 
+    "_comment": "Path where external libraries are:",
+    "external_libs_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace",
+
     "_comment": "where to put processed data----------------------------------",
     "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_images_and_masks_all_wells",
     "imgs_per_file": 500,
@@ -99,8 +102,5 @@
 
     "_comment": "Project unichannel images into a scalar (avg or median)------",
     "project_into_scalar": true,
-    "method": "avg",
-
-    "_comment": "Save file name as reference ---------------------------------",
-    "parameter_file_name": "params_imgs_and_scalar.json"
+    "method": "avg"
 }
