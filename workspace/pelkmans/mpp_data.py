@@ -437,7 +437,7 @@ class MPPData:
         self.metadata = pd.concat([self.metadata]+[mpp_data.metadata for mpp_data in objs], axis=0, ignore_index=True)
 
         # Concatenate instances variables
-        instance_vars = {'labels', 'x', 'y', 'mpp', 'mapobject_ids', 'mcu_ids','conditions', 'images', 'masks'}
+        instance_vars = {'labels', 'x', 'y', 'mpp', 'mapobject_ids', 'mcu_ids','conditions', 'images', 'images_masks'}
         for var in set(vars(self).keys()).intersection(instance_vars):
             temp_var = np.concatenate([getattr(self, var)]+[getattr(mpp_data,var) for mpp_data in objs], axis=0)
             setattr(self, var, temp_var)
@@ -631,28 +631,22 @@ class MPPData:
         measured values.
         TODO: Implement support for data different than 'MPP'
         Input:
-            -data: str indicating data type
-            -channel_ids: 1D array indicating id channels to be contemplated
-                in the returned image and mask
-            -img_size: Natural Number, size for output images
-            (i.e. shape: (img_size,img_size))
-            -pad: amount of padding added to returned image (only used when
-                img_size is None)
-            -remove_original_data
-        Output:
-            -imgs: array of shape:
-                (n_observations,img_size,img_size,len(channel_ids)) with
-                measured values
+            data: str indicating data type
+            channel_ids: 1D array indicating id channels to be contemplated in the returned image and mask
+            img_size: Natural Number, size for output images (i.e. shape: (img_size,img_size))
+            pad: amount of padding added to returned image (only used when img_size is None)
+            remove_original_data: boolean indicating if data used to create the images and masks should be deletad after the convertion.
+        Output (added to self):
+            -imgs: array of shape (n_observations,img_size,img_size,len(channel_ids))
             -mask: boolean array of same shape as imgs. Array entrance = True
-                if value came from data.
-            -if remove_original_data is True
+                if value came from MPPData.
         """
         imgs = []
         mask = []
         for mapobject_id in self.metadata.mapobject_id:
             if data == 'MPP':
                 res = self.get_mpp_img(mapobject_id, channel_ids, img_size=img_size, pad=pad)
-                res_m = self.get_mpp_mask(mapobject_id, img_size=img_size, pad=pad).astype(np.bool).reshape(res.shape[:-1])
+                res_m = self.get_mpp_img(mapobject_id, get_mask=True, img_size=img_size, pad=pad).astype(np.bool).reshape(res.shape[:-1])
             else:
                 raise NotImplementedError
             if img_size is None:
@@ -665,7 +659,7 @@ class MPPData:
             del(self.labels, self.x, self.y, self.mpp, self.mapobject_ids, self.mcu_ids, self.conditions)
 
         self.images = np.array(imgs)
-        self.masks = np.array(mask)
+        self.images_masks = np.array(mask)
 
     def add_scalar_projection(self, method='avg'):
         """
@@ -865,11 +859,11 @@ class MPPData:
         if rescale_values is None:
             if 'mpp' in vars(self).keys():
                 rescale_values = np.percentile(self.center_mpp, percentile, axis=0)
-            elif {'images', 'masks'}.issubset(vars(self).keys()):
+            elif {'images', 'images_masks'}.issubset(vars(self).keys()):
                 n_channels =  self.images.shape[-1]
                 rescale_values = []
                 for c in range(n_channels):
-                    rescale_values.append(np.percentile(self.images[:,:,:,c][self.masks], percentile, axis=0))
+                    rescale_values.append(np.percentile(self.images[:,:,:,c][self.images_masks], percentile, axis=0))
                 rescale_values = np.array(rescale_values)
             else:
                 raise Exception('Not enough information to calculate the rescale values')
@@ -938,32 +932,28 @@ class MPPData:
         data = self.mcu_ids[mask][:,np.newaxis]
         return self.get_img_from_data(x, y, data, **kwargs)
 
-    def get_mpp_img(self, mapobject_id, channel_ids=None, **kwargs):
+    def get_mpp_img(self, mapobject_id, channel_ids=None, get_mask=False, **kwargs):
         """
-        Calculate MPP image of given mapobject
-        channel_ids: ids of MPP channels that the image should hav. If None, all channels are returned.
-        kwargs: arguments for get_img_from_data
+        Calculate MPP image (or mask if get_mask=True) of given mapobject.
+        Input:
+            mapobject_ids: mapobject_id (integer) corresponding to the cell that will be transformed into image
+            channel_ids: list containing the ids of MPP channels that the image should have. If None, all channels are returned.
+            get_mask: boolean. Indicates if mask or image corresponding to mapobject_id should be returned.
+        Output:
+            If get_mask is False, then get_mpp_img returns the corresponding image to mapobject_id.
+            If get_mask is True, then get_mpp_img returns a mask of same size of the corresponding image to mapobject_id, indicating wich pixels in the image were measured in the original data.
         """
         if channel_ids is None:
             channel_ids = range(len(self.channels))
         mask = self.mapobject_ids == mapobject_id
         x = self.x[mask]
         y = self.y[mask]
-        data = self.center_mpp[mask][:,channel_ids]
-        return self.get_img_from_data(x, y, data, **kwargs)
-
-    def get_mpp_mask(self, mapobject_id, **kwargs):
-            """
-            Calculate MPP mask of given mapobject
-            channel_ids are NOT required since the mask is the same for all the
-            channels.
-            kwargs: arguments for get_img_from_data
-            """
-            mask = self.mapobject_ids == mapobject_id
-            x = self.x[mask]
-            y = self.y[mask]
+        if get_mask:
             data = np.ones((self.center_mpp[mask][:,0:1]).shape, dtype=np.short)
-            return self.get_img_from_data(x, y, data, **kwargs)
+        else:
+            data = self.center_mpp[mask][:,channel_ids]
+
+        return self.get_img_from_data(x, y, data, **kwargs)
 
     def get_condition_img(self, mapobject_id, **kwargs):
         """
@@ -999,30 +989,47 @@ def test_get_neighborhood():
     assert (mpp_data.center_mpp[:1000] == neigh[:,1,1]).all()
     return True
 
-def save_images_in_separate_files(imgs_per_file=500, mpp_instances=None, instance_names=None, channels_ids=None, outdir=None):
+def save_mpp_images_in_separated_files(imgs_per_file=1, mpp_instances=None, instance_names=None, channels_ids=None, outdir=None):
     """
-    Save MPPData.images and MPPData.masks numpy arrays into separated files of
-    fixed size. The objective of this function is to make processed data More
-    manageable.
+    Save MPPData.images and MPPData.images_masks numpy arrays into separated files of fixed size. The objective of this function is to make processed data More manageable.
     Input:
-        imgs_per_file: how many images at most will have each file
+        imgs_per_file: how many images at most will have each file. If imgs_per_file=1, then each image is saved in separated files using its mapobject_id_cell as name.
         mpp_instances: list containing instances of the class MPPData
         instance_names: list containing the name of the mpp_instances
         channels_ids: ids of the channels to be saved
         outdir: directory to save the processed data
     Output:
-        output_files: dictionary containing the file names for each instance
-        instance_name_i.npy: files containing the images (and masks)
-        id_cell_index.csv: file containing the file name and array index of
-        each cell (indexed using mapobject_id_cell)
+        If imgs_per_file >1, then output_files: dictionary containing the file path+names for each instance. If imgs_per_file=1, then output_paths: dictionary containing the file path for each instance.
+        files containing the image(s) (and mask(s))
+        If imgs_per_file >1, then id_cell_index.csv: file containing the file name and array index of each cell (indexed using mapobject_id_cell)
     """
-    id_cell_index = pd.DataFrame(columns=['mapobject_id_cell', 'File', 'array_index'])
+
+    # Create directories to save images
+    instance_masks_names = [name+'_masks' for name in instance_names]
+    output_paths = {}
+    for dir_names in [instance_names, instance_masks_names]:
+        for inst_name in dir_names:
+            path_temp = os.path.join(outdir, inst_name)
+            output_paths[inst_name] = path_temp
+            if os.path.exists(path_temp):
+                # Remove previous files
+                for f in os.listdir(path_temp):
+                    os.remove(os.path.join(path_temp,f))
+            else:
+                os.makedirs(path_temp, exist_ok=False)
 
     if (len(mpp_instances) != len(instance_names)):
         raise Exception('mpp_instances, instance_name lists have not the same lenght!')
 
     if channels_ids == None:
         channels_ids = range(mpp_instances[0].images.shape[-1])
+
+    # Create df containing info about in which file is each cell image
+    if imgs_per_file > 1:
+        index_file = os.path.join(outdir, 'id_cell_index.csv')
+        if os.path.exists(index_file):
+            os.remove(index_file)
+        id_cell_index = pd.DataFrame(columns=['mapobject_id_cell', 'File', 'array_index'])
 
     # save the name of the files
     output_files = {}
@@ -1036,33 +1043,48 @@ def save_images_in_separate_files(imgs_per_file=500, mpp_instances=None, instanc
         n_files = math.ceil(n_imgs / imgs_per_file)
         l_idx = 0
         u_idx = 0
+
         for i in range(n_files):
-            file_name = instance_name+'_images_'+str(i)+'.npy'
-            img_files.append(file_name)
-            file_name_mask = instance_name+'_mask_'+str(i)+'.npy'
-            mask_files.append(file_name_mask)
             l_idx = (i)*imgs_per_file
             u_idx = (i+1)*imgs_per_file
             if u_idx > n_imgs:
                 u_idx = n_imgs
+            cell_ids = mppdata.metadata.iloc[l_idx:u_idx]['mapobject_id_cell']
+
+            if imgs_per_file == 1:
+                cell_id = cell_ids.values[0]
+                # save each image using its mapobject_id_cell
+                file_name = str(cell_id)+'.npy'
+                file_name = os.path.join(output_paths[instance_name], file_name)
+                file_name_mask = str(cell_id)+'.npy'
+                file_name_mask = os.path.join(output_paths[instance_name+'_masks'], file_name_mask)
+            else:
+                file_name = instance_name+'_images_'+str(i)+'.npy'
+                file_name = os.path.join(output_paths[instance_name], file_name)
+                file_name_mask = instance_name+'_mask_'+str(i)+'.npy'
+                file_name_mask = os.path.join(output_paths[instance_name+'_masks'], file_name_mask)
+
+                # Add information to a df about which cell is in which file and index
+                tmp_idx = pd.DataFrame(cell_ids)
+                tmp_idx.insert(0,'File', file_name)
+                tmp_idx['array_index'] = range(tmp_idx.shape[0])
+                id_cell_index = pd.concat((id_cell_index, tmp_idx), axis=0)
+
+            img_files.append(file_name)
+            mask_files.append(file_name_mask)
 
             # Save data
-            np.save(os.path.join(outdir, file_name),
-                    mppdata.images[l_idx:u_idx,:,:,channels_ids])
-            np.save(os.path.join(outdir, file_name_mask),
-                    mppdata.masks[l_idx:u_idx,:])
-
-            # Add information to a df about which cell is in which file and index
-            tmp_idx = pd.DataFrame(mppdata.metadata.iloc[l_idx:u_idx]['mapobject_id_cell'])
-            tmp_idx.insert(0,'File', file_name)
-            tmp_idx['array_index'] = range(tmp_idx.shape[0])
-            id_cell_index = pd.concat((id_cell_index, tmp_idx), axis=0)
+            np.save(file_name, mppdata.images[l_idx:u_idx,:,:,channels_ids])
+            np.save(file_name_mask, mppdata.images_masks[l_idx:u_idx,:])
 
         output_files[instance_name+'_images'] = img_files
         output_files[instance_name+'_masks'] = mask_files
 
-    # Save mapobject_id_cell index file
-    id_cell_index = id_cell_index.set_index('mapobject_id_cell')
-    id_cell_index.to_csv(os.path.join(outdir, 'id_cell_index.csv'))
+    if imgs_per_file == 1:
+        return output_paths
+    else:
+        # Save mapobject_id_cell index file
+        id_cell_index = id_cell_index.set_index('mapobject_id_cell')
+        id_cell_index.to_csv(index_file)
 
-    return output_files
+        return output_files
