@@ -13,7 +13,7 @@
 
     "_comment": "where to put processed data----------------------------------",
     "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test",
-    "imgs_per_file": 500,
+    "imgs_per_file": 1,
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
