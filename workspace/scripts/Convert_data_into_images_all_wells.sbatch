@@ -9,4 +9,5 @@
 #SBATCH -t 11:00:00
 #SBATCH --nice=10000
 
+
 ./Run_Jupyter_Notebook_from_Terminal.sh -i /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/notebooks/Data_Preprocessing_from_script.ipynb -p /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/Parameters/params_imgs_and_scalar.json
