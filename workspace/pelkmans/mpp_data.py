@@ -1004,7 +1004,10 @@ def save_mpp_images_in_separated_files(imgs_per_file=1, mpp_instances=None, inst
         If imgs_per_file >1, then id_cell_index.csv: file containing the file name and array index of each cell (indexed using mapobject_id_cell)
     """
 
+    log = logging.getLogger()
+
     # Create directories to save images
+    log.info('Creating directories to save data from instances...')
     instance_masks_names = [name+'_masks' for name in instance_names]
     output_paths = {}
     for dir_names in [instance_names, instance_masks_names]:
@@ -1017,9 +1020,12 @@ def save_mpp_images_in_separated_files(imgs_per_file=1, mpp_instances=None, inst
                     os.remove(os.path.join(path_temp,f))
             else:
                 os.makedirs(path_temp, exist_ok=False)
+    log.info('Directories created:\n{}'.format(output_paths))
 
     if (len(mpp_instances) != len(instance_names)):
-        raise Exception('mpp_instances, instance_name lists have not the same lenght!')
+        msg = 'mpp_instances, instance_name lists have not the same lenght!'
+        log.info(msg)
+        raise Exception(msg)
 
     if channels_ids == None:
         channels_ids = range(mpp_instances[0].images.shape[-1])
@@ -1035,7 +1041,9 @@ def save_mpp_images_in_separated_files(imgs_per_file=1, mpp_instances=None, inst
     output_files = {}
     for mppdata, instance_name in zip(mpp_instances, instance_names):
 
-        print('Saving '+instance_name+' images and masks...')
+        msg = 'Saving '+instance_name+' images and masks...'
+        log.info(msg)
+        print(msg)
 
         img_files = []
         mask_files = []

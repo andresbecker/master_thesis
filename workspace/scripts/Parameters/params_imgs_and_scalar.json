@@ -102,5 +102,9 @@
 
     "_comment": "Project unichannel images into a scalar (avg or median)------",
     "project_into_scalar": true,
-    "method": "avg"
+    "method": "avg",
+
+    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
+    "log_file": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/notebooks/NB_output/Convert_data_into_images_all_wells.log",
+    "log_level": "INFO"
 }
