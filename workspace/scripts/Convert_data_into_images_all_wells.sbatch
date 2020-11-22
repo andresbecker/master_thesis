@@ -5,8 +5,8 @@
 #SBATCH -J Conv2images
 #SBATCH -p icb_cpu
 #SBATCH -c 1
-#SBATCH --mem-per-cpu 160G
-#SBATCH -t 11:00:00
+#SBATCH --mem-per-cpu 128G
+#SBATCH -t 15:00:00
 #SBATCH --nice=10000
 
 

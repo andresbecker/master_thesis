@@ -658,7 +658,7 @@ class MPPData:
         if remove_original_data:
             del(self.labels, self.x, self.y, self.mpp, self.mapobject_ids, self.mcu_ids, self.conditions)
 
-        self.images = np.array(imgs)
+        self.images = np.array(imgs).astype(np.uint16)
         self.images_masks = np.array(mask)
 
     def add_scalar_projection(self, method='avg'):
@@ -989,6 +989,54 @@ def test_get_neighborhood():
     assert (mpp_data.center_mpp[:1000] == neigh[:,1,1]).all()
     return True
 
+def get_image_normalization_vals(instance_dict=None, percentile=98):
+    """
+    This function calculate the percentiles for each channel of a group of MPPData images. The main advantage of this function is that it calculates the percentile from data in separated arrays.
+    Input:
+        instance_dict: dictionary containing MPPData instances WITH attributes images and images_masks.
+        percentile: integer in [0,100].
+    Output:
+        rescale_values: numpy array of lenght number_of_channels, containing the normalization values of each channel
+    """
+
+    log = logging.getLogger()
+    msg = 'Starting computation of normalization values (from mpp images and masks).'
+    log.info(msg)
+
+    # Since there is no wey to concatenate np arrays in place (without creating a copy), we first create an array that will be filled with the values necessary to calculate the percentile per channel. Note that the size of this array is the same for every channel.
+    #https://stackoverflow.com/questions/7869095/concatenate-numpy-arrays-without-copying
+    n_pixels = 0
+    for well in instance_dict:
+        n_pixels += well.images_masks.sum()
+    msg = 'Number of pixels for each channel and for all the images:{}'.format(n_pixels)
+    log.info(msg)
+
+    # For each channel we gather the values from all the images to calculete the percentile
+    n_channels =  instance_dict[0].images.shape[-1]
+    rescale_values = []
+    for c in range(n_channels):
+        msg = 'Calculating percentil {} for channel {}/{}...'.format(percentile, c, n_channels)
+        log.info(msg)
+        #print(msg)
+        idx_l = 0
+        idx_h = 0
+        channel_pixels = np.zeros(n_pixels, dtype=np.uint16)
+        for well in instance_dict:
+            idx_l = idx_h
+            idx_h += well.images_masks.sum()
+            channel_pixels[idx_l:idx_h] = well.images[:,:,:,c][well.images_masks]
+
+        rescale_values.append(np.percentile(channel_pixels, percentile, axis=0))
+    rescale_values = np.array(rescale_values)
+
+    msg = 'Computation of normalization values finished!'
+    log.info(msg)
+    print(msg)
+    msg = 'Normalization values:\n{}'.format(rescale_values)
+    log.info(msg)
+
+    return rescale_values
+
 def save_mpp_images_in_separated_files(imgs_per_file=1, mpp_instances=None, instance_names=None, channels_ids=None, outdir=None):
     """
     Save MPPData.images and MPPData.images_masks numpy arrays into separated files of fixed size. The objective of this function is to make processed data More manageable.
@@ -1096,3 +1144,122 @@ def save_mpp_images_in_separated_files(imgs_per_file=1, mpp_instances=None, inst
         id_cell_index.to_csv(index_file)
 
         return output_files
+
+def normalize_and_save_MPPData_images(mppdata_dict=None, norm_vals=None, channels_ids=None, outdir=None):
+    """
+    Normalize and save MPPData.images and MPPData.images_masks numpy arrays into separated files (one file per image and one file per mask) of fixed size. The normalization is also made in this function to avoid duplicating np arrays in ram memory during this process. Another advatnage is that this allow us to save in ram memory MPPData.images as np.uint16 (integer in [0, 65535], which is the range of values for MPPData) during data processing, reducing signifacntly the necessary ram memory.
+    Input:
+        mppdata_dict: dictionary containing lists contaning instances of the class MPPData
+        norm_vals: np array containing the normalizing value of each channel.
+        channels_ids: ids of the channels to be saved
+        outdir: directory to save the processed data
+    Output:
+        output_paths: dictionary containing the file paths for each key in mppdata_dict where images and mask were saved.
+    """
+    log = logging.getLogger()
+
+    # Create directories to save images
+    log.info('Creating directories to save data from instances...')
+    instance_masks_names = [name+'_masks' for name in list(mppdata_dict.keys())]
+    output_paths = {}
+    for dir_names in [list(mppdata_dict.keys()), instance_masks_names]:
+        for inst_name in dir_names:
+            path_temp = os.path.join(outdir, inst_name)
+            output_paths[inst_name] = path_temp
+            if os.path.exists(path_temp):
+                # Remove previous files
+                for f in os.listdir(path_temp):
+                    os.remove(os.path.join(path_temp,f))
+            else:
+                os.makedirs(path_temp, exist_ok=False)
+    log.info('Directories created:\n{}'.format(output_paths))
+
+    k = list(mppdata_dict.keys())[0]
+    n_channels = mppdata_dict[k][0].images.shape[-1]
+    if channels_ids is None:
+        channels_ids = range(n_channels)
+    if norm_vals is None:
+        norm_vals = np.ones(n_channels)
+
+    # Iterate over train, val and test lists of instances
+    for key in mppdata_dict.keys():
+        msg = 'Saving {} images and masks...'.format(key)
+        log.info(msg)
+        print(msg)
+        # iterate over each mppdata instances in e.g. train list
+        for i, mppdata in enumerate(mppdata_dict[key]):
+            n_cells = mppdata.metadata.shape[0]
+            msg = 'Saving {} images form {}-well {}/{}...'.format(n_cells,key, i, len(mppdata_dict[key]))
+            log.info(msg)
+            print(msg)
+            for j in range(n_cells):
+                # Create file name
+                cell_id = mppdata.metadata.iloc[j]['mapobject_id_cell']
+                file_name = str(cell_id)+'.npy'
+                file_name = os.path.join(output_paths[key], file_name)
+                file_name_mask = str(cell_id)+'.npy'
+                file_name_mask = os.path.join(output_paths[key+'_masks'], file_name_mask)
+
+                # Create normalized temp image to save in disk
+                temp_img = mppdata.images[j,:,:,channels_ids].reshape((-1, n_channels)).copy()
+                temp_img = temp_img.astype(np.float64)
+                temp_img /= norm_vals
+
+                # Save
+                np.save(file_name, temp_img)
+                np.save(file_name_mask, mppdata.images_masks[j,:])
+
+    msg = 'MPPData images and masks saving process finished!'
+    log.info(msg)
+    print(msg)
+
+    return output_paths
+
+def get_concatenated_metadata(mppdata_dict=None, normalize=True, norm_key='train', projection_method='avg', percentile=98):
+    """
+    Concatenate (and normalize projected data, if normalize=True) metadata of MPPData instances given.
+    Input:
+        mppdata_dict: dictionary containing lists contaning instances of the class MPPData
+        normalize: boolean. If true, then normalization of projected data is done.
+        norm_key: string indicating the mppdata_dict key that contains the data to calculate the normalization values (usaually 'train' or 'training').
+        projection_method: method used to project each mpp image channel into a scalar.
+        percentile: integer in [0,100].
+    Output:
+        metadata: pandas df with the concatenated metadata in mppdata_dict
+        normalization_vals: numpy array of lenght number_of_channels, containing the normalization values for each channel.
+    """
+
+    log = logging.getLogger()
+    msg='Starting metadata concatenation process...'
+    log.info(msg)
+
+    # First, merge all metadata
+    k = list(mppdata_dict.keys())[0]
+    metadata_cols = list(mppdata_dict[k][0].metadata.columns)
+    metadata = pd.DataFrame(columns=metadata_cols+['set'])
+
+    for key in mppdata_dict.keys():
+        for well in mppdata_dict[key]:
+            temp_df = well.metadata.copy()
+            temp_df['set'] = key
+            metadata = pd.concat([metadata, temp_df],
+                                 axis=0,
+                                 ignore_index=True)
+
+    if normalize:
+        msg='Normalizing projected values in metadata...'
+        log.info(msg)
+        # Second, get normalization values
+        norm_columns = [c+'_'+projection_method for c in mppdata_dict[norm_key][0].channels.name.values]
+        normalization_vals =np.percentile(metadata[norm_columns][metadata.set == norm_key].values, percentile, axis=0)
+
+        # Finally, normalize values
+        for i, col in enumerate(norm_columns):
+            metadata[col] /= normalization_vals[i]
+
+        msg='Normalization values:\n{}'.format(normalization_vals)
+        log.info(msg)
+
+        return metadata, normalization_vals
+    else:
+        return metadata
