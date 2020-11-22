@@ -20,7 +20,6 @@
 
     "_comment": "where to put processed data----------------------------------",
     "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_images_and_masks_all_wells",
-    "imgs_per_file": 1,
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,

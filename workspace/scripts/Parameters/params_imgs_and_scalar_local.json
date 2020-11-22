@@ -5,7 +5,7 @@
 
     "_comment": "Which perturbations and wells to load------------------------",
     "perturbations_and_wells": {
-    "184A1_hannah_unperturbed": ["I09"]
+    "184A1_hannah_unperturbed": ["I09", "I11"]
     },
 
     "_comment": "Path where external libraries are:",
@@ -98,6 +98,6 @@
     "method": "avg",
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
-    "log_file": "/home/hhughes/Documents/Master_Thesis/Project/workspace/notebooks/NB_output/logs/Convert_data_into_images_all_wells.log",
+    "log_file": "/home/hhughes/Documents/Master_Thesis/Project/workspace/notebooks/NB_output/Convert_data_into_images_all_wells.log",
     "log_level": "INFO"
 }
