@@ -458,19 +458,32 @@ class MPPData:
             information that fulfill the given parameters
         """
 
+        msg = 'Starting filtering process with filters:\n{}\n{}'.format(filter_criteria, filter_values)
+        self.log.info(msg)
+
         if len(filter_criteria) != len(filter_values):
-            raise Exception('length of filter_criteria and filter_values defined in input parameters does not match!')
+            msg = 'length of filter_criteria and filter_values defined in input parameters does not match!'
+            self.log.error(msg)
+            raise Exception(msg)
 
         metadata_mask = np.ones(self.metadata.shape[0]).astype(bool)
-        print('Total number of cells: {}'.format(int(np.sum(metadata_mask))))
+        msg = 'Total number of cells: {}'.format(int(np.sum(metadata_mask)))
+        self.log.info(msg)
+        print(msg)
         for f, f_val in zip(filter_criteria, filter_values):
             if (f_val == 'nan') or (f_val == 'NaN') or (f_val == 'NAN'):
                 mask_temp = ~self.metadata[f].isna().values
             else:
                 mask_temp = ~(self.metadata[f] == f_val).values
-            print('{} cells cutted by filter: {} == {}'.format(self.metadata.shape[0]-np.sum(mask_temp), f, f_val))
+
+            msg = '{} cells cutted by filter: {} == {}'.format(self.metadata.shape[0]-np.sum(mask_temp), f, f_val)
+            self.log.info(msg)
+            print(msg)
+
             metadata_mask &= mask_temp
-        print('Number of cutted cells: {}'.format(int(self.metadata.shape[0] - np.sum(metadata_mask))))
+        msg = 'Number of cutted cells: {}'.format(int(self.metadata.shape[0] - np.sum(metadata_mask)))
+        self.log.info(msg)
+        print(msg)
 
         # Filter metadata
         self.metadata = self.metadata.iloc[metadata_mask]
@@ -480,13 +493,9 @@ class MPPData:
         # Get mask and filter lables, x, y, mapobject_ids, mpp, conditions and mcu_ids
         mask = np.in1d(self.mapobject_ids, mapobject_ids)
 
-        self.labels = self.labels[mask]
-        self.x = self.x[mask]
-        self.y = self.y[mask]
-        self.mapobject_ids = self.mapobject_ids[mask]
-        self.mpp = self.mpp[mask]
-        self.mcu_ids = self.mcu_ids[mask]
-        self.conditions = self.conditions[mask]
+        instance_vars = {'labels', 'x', 'y', 'mpp', 'mapobject_ids', 'mcu_ids','conditions'}
+        for var in instance_vars:
+            setattr(self, var, getattr(self, var)[mask])
 
     def train_val_test_split(self, train_frac=0.8, val_frac=0.1):
         """split along mapobject_ids for train/val/test split"""
@@ -587,8 +596,13 @@ class MPPData:
         Output: self.metadata with cell cycle information
         """
 
+        msg = 'Adding Cell Cycle to metadata using file:\n{}'.format(cc_file)
+        self.log.info(msg)
+
         if not os.path.exists(cc_file):
-            raise Exception('Cell cycle file {} not found!'.format(cc_file))
+            msg = 'Cell cycle file {} not found!'.format(cc_file)
+            self.log.error(msg)
+            raise Exception(msg)
 
         cc_data = pd.read_csv(cc_file)
         self.metadata = self.metadata.merge(cc_data,
@@ -606,15 +620,22 @@ class MPPData:
         Output: self.metadata with well information
         """
 
+        msg = 'Adding Well info to metadata using file:\n{}'.format(well_file)
+        self.log.info(msg)
+
         if not os.path.exists(well_file):
-            raise Exception('Well metadata file {} not found!'.format(well_file))
+            msg = 'Well metadata file {} not found!'.format(well_file)
+            self.log.error(msg)
+            raise Exception(msg)
 
         well_data = pd.read_csv(well_file)
         well_data = well_data[['plate_name', 'well_name', 'cell_type', 'perturbation', 'duration']]
 
         # Check for rows in well_data df with same plate_name and well_name values
         if (np.sum(well_data.groupby(['plate_name', 'well_name']).size().values > 1) > 0):
-            raise Exception('More than one row in {} with same combination of plate_name and well_name values!'.format(well_file))
+            msg = 'More than one row in {} with same combination of plate_name and well_name values!'.format(well_file)
+            self.log.error(msg)
+            raise Exception(msg)
 
         self.metadata = self.metadata.merge(well_data,
              left_on=['plate_name_cell', 'well_name_cell'],
@@ -626,9 +647,9 @@ class MPPData:
 
     def add_image_and_mask(self, data='MPP', remove_original_data=False, channel_ids=None, img_size=None, pad=0):
         """
-        Very similar to get_object_imgs method, only difference is that
-        get_object_imgs_and_mask returns images and mask indicating the
-        measured values.
+        Add images and its respective mask to instance vars as numpy arrays.
+        IMPORTANT: Images are stored as np.uint16 which means that it can only hold values in [0,65535] (which is the range values for MPPData). This allows to store images without using tons of ram memory. Therefore, this method should be run BEFORE normalizing the original data! Otherwise most of the data will be set to 0!
+        The normalization of the images can be done only during saving into disk. To do it, after running this method run the function get_image_normalization_vals to get the normalizing values per channel, and then run the function normalize_and_save_MPPData_images to normalize them during saving.
         TODO: Implement support for data different than 'MPP'
         Input:
             data: str indicating data type
@@ -641,6 +662,10 @@ class MPPData:
             -mask: boolean array of same shape as imgs. Array entrance = True
                 if value came from MPPData.
         """
+
+        msg = 'Adding images and masks to MPPData'
+        self.log.info(msg)
+
         imgs = []
         mask = []
         for mapobject_id in self.metadata.mapobject_id:
@@ -648,6 +673,8 @@ class MPPData:
                 res = self.get_mpp_img(mapobject_id, channel_ids, img_size=img_size, pad=pad)
                 res_m = self.get_mpp_img(mapobject_id, get_mask=True, img_size=img_size, pad=pad).astype(np.bool).reshape(res.shape[:-1])
             else:
+                msg = 'Data type different that MPP given! Not implemented yet!'
+                self.error.info(msg)
                 raise NotImplementedError
             if img_size is None:
                 res = res[0]
@@ -656,6 +683,9 @@ class MPPData:
             mask.append(res_m)
 
         if remove_original_data:
+            msg = 'Deleting origin MPPData...'
+            self.log.info(msg)
+            print(msg)
             del(self.labels, self.x, self.y, self.mpp, self.mapobject_ids, self.mcu_ids, self.conditions)
 
         self.images = np.array(imgs).astype(np.uint16)
@@ -731,7 +761,6 @@ class MPPData:
         self.mapobject_ids = self.mapobject_ids[mask]
         self.metadata = self.metadata[self.metadata.mapobject_id.isin(np.unique(self.mapobject_ids))]
         self.conditions = self.conditions[mask]
-
 
     def subset_channels(self, channels):
         """
@@ -967,10 +996,22 @@ class MPPData:
         return self.get_img_from_data(x, y, data, **kwargs)
 
     def get_object_imgs(self, data='MPP', channel_ids=None, img_size=None, pad=0):
+        """
+        Return images from differen data types.
+        Input:
+            data: string indicating data type. Note: MPP-mask returns the corresponding masks to MPP data that indicates which pixels were measured in the origin data and which ones were added to construct the image.
+            channel_ids: channel ids to be included in the output images.
+            img_size: integer to indicat size of output images (shape:(n_cels,img_size,img_size,len(channel_ids)))
+            pad: integer indicatting number of 0 rows and columns around the original image.
+        Output:
+        """
         imgs = []
         for mapobject_id in self.metadata.mapobject_id:
             if data == 'MPP':
                 res = self.get_mpp_img(mapobject_id, channel_ids, img_size=img_size, pad=pad)
+            elif data == 'MPP-mask':
+                res = self.get_mpp_img(mapobject_id, get_mask=True, img_size=img_size, pad=pad).astype(np.bool)
+                res = res.reshape(res.shape[:-1])
             elif data == 'MCU':
                 res = self.get_mcu_img(mapobject_id, img_size=img_size, pad=pad)
             elif data == 'condition':
@@ -1036,114 +1077,6 @@ def get_image_normalization_vals(instance_dict=None, percentile=98):
     log.info(msg)
 
     return rescale_values
-
-def save_mpp_images_in_separated_files(imgs_per_file=1, mpp_instances=None, instance_names=None, channels_ids=None, outdir=None):
-    """
-    Save MPPData.images and MPPData.images_masks numpy arrays into separated files of fixed size. The objective of this function is to make processed data More manageable.
-    Input:
-        imgs_per_file: how many images at most will have each file. If imgs_per_file=1, then each image is saved in separated files using its mapobject_id_cell as name.
-        mpp_instances: list containing instances of the class MPPData
-        instance_names: list containing the name of the mpp_instances
-        channels_ids: ids of the channels to be saved
-        outdir: directory to save the processed data
-    Output:
-        If imgs_per_file >1, then output_files: dictionary containing the file path+names for each instance. If imgs_per_file=1, then output_paths: dictionary containing the file path for each instance.
-        files containing the image(s) (and mask(s))
-        If imgs_per_file >1, then id_cell_index.csv: file containing the file name and array index of each cell (indexed using mapobject_id_cell)
-    """
-
-    log = logging.getLogger()
-
-    # Create directories to save images
-    log.info('Creating directories to save data from instances...')
-    instance_masks_names = [name+'_masks' for name in instance_names]
-    output_paths = {}
-    for dir_names in [instance_names, instance_masks_names]:
-        for inst_name in dir_names:
-            path_temp = os.path.join(outdir, inst_name)
-            output_paths[inst_name] = path_temp
-            if os.path.exists(path_temp):
-                # Remove previous files
-                for f in os.listdir(path_temp):
-                    os.remove(os.path.join(path_temp,f))
-            else:
-                os.makedirs(path_temp, exist_ok=False)
-    log.info('Directories created:\n{}'.format(output_paths))
-
-    if (len(mpp_instances) != len(instance_names)):
-        msg = 'mpp_instances, instance_name lists have not the same lenght!'
-        log.info(msg)
-        raise Exception(msg)
-
-    if channels_ids == None:
-        channels_ids = range(mpp_instances[0].images.shape[-1])
-
-    # Create df containing info about in which file is each cell image
-    if imgs_per_file > 1:
-        index_file = os.path.join(outdir, 'id_cell_index.csv')
-        if os.path.exists(index_file):
-            os.remove(index_file)
-        id_cell_index = pd.DataFrame(columns=['mapobject_id_cell', 'File', 'array_index'])
-
-    # save the name of the files
-    output_files = {}
-    for mppdata, instance_name in zip(mpp_instances, instance_names):
-
-        msg = 'Saving '+instance_name+' images and masks...'
-        log.info(msg)
-        print(msg)
-
-        img_files = []
-        mask_files = []
-        n_imgs = mppdata.images.shape[0]
-        n_files = math.ceil(n_imgs / imgs_per_file)
-        l_idx = 0
-        u_idx = 0
-
-        for i in range(n_files):
-            l_idx = (i)*imgs_per_file
-            u_idx = (i+1)*imgs_per_file
-            if u_idx > n_imgs:
-                u_idx = n_imgs
-            cell_ids = mppdata.metadata.iloc[l_idx:u_idx]['mapobject_id_cell']
-
-            if imgs_per_file == 1:
-                cell_id = cell_ids.values[0]
-                # save each image using its mapobject_id_cell
-                file_name = str(cell_id)+'.npy'
-                file_name = os.path.join(output_paths[instance_name], file_name)
-                file_name_mask = str(cell_id)+'.npy'
-                file_name_mask = os.path.join(output_paths[instance_name+'_masks'], file_name_mask)
-            else:
-                file_name = instance_name+'_images_'+str(i)+'.npy'
-                file_name = os.path.join(output_paths[instance_name], file_name)
-                file_name_mask = instance_name+'_mask_'+str(i)+'.npy'
-                file_name_mask = os.path.join(output_paths[instance_name+'_masks'], file_name_mask)
-
-                # Add information to a df about which cell is in which file and index
-                tmp_idx = pd.DataFrame(cell_ids)
-                tmp_idx.insert(0,'File', file_name)
-                tmp_idx['array_index'] = range(tmp_idx.shape[0])
-                id_cell_index = pd.concat((id_cell_index, tmp_idx), axis=0)
-
-            img_files.append(file_name)
-            mask_files.append(file_name_mask)
-
-            # Save data
-            np.save(file_name, mppdata.images[l_idx:u_idx,:,:,channels_ids])
-            np.save(file_name_mask, mppdata.images_masks[l_idx:u_idx,:])
-
-        output_files[instance_name+'_images'] = img_files
-        output_files[instance_name+'_masks'] = mask_files
-
-    if imgs_per_file == 1:
-        return output_paths
-    else:
-        # Save mapobject_id_cell index file
-        id_cell_index = id_cell_index.set_index('mapobject_id_cell')
-        id_cell_index.to_csv(index_file)
-
-        return output_files
 
 def normalize_and_save_MPPData_images(mppdata_dict=None, norm_vals=None, channels_ids=None, outdir=None):
     """
