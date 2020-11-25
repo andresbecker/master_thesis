@@ -61,6 +61,7 @@ cat $PARM_FILE > $PARM_dir"/tf_dataset_parameters.json"
 # Get the absolute path where the tf dataset builders are
 DATASET_BUILDER_PATH=$(realpath $0)
 DATASET_BUILDER_PATH=$(dirname $DATASET_BUILDER_PATH)
+SCRIPT_PATH=$DATASET_BUILDER_PATH
 DATASET_BUILDER_PATH=$(readlink -m $DATASET_BUILDER_PATH"/"$TF_DATASET_NAME)
 cd $DATASET_BUILDER_PATH
 
@@ -82,8 +83,11 @@ else
   exit 1
 fi
 
+# Export variable to change default tf dataset output
 export TFDS_DATA_DIR
 
 # To run the following command install first (in your conda environment):
 # pip install -q tfds-nightly
-tfds build --register_checksums
+tfds build --register_checksums 2>&1 | tee  $SCRIPT_PATH"/Create_tf_dataset.log"
+
+echo "Execution of "$0" finished."

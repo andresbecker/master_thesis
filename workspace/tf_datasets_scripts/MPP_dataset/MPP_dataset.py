@@ -109,12 +109,12 @@ class MppDataset(tfds.core.GeneratorBasedBuilder):
         'train': self._generate_examples(
             images_path = input_data_path / 'train',
         ),
-        'validation': self._generate_examples(
-            images_path = input_data_path / 'val',
-        ),
-        'test': self._generate_examples(
-            images_path = input_data_path / 'test',
-        ),
+    #    'validation': self._generate_examples(
+    #        images_path = input_data_path / 'val',
+    #    ),
+    #    'test': self._generate_examples(
+    #        images_path = input_data_path / 'test',
+    #    ),
     }
 
   def _generate_examples(self, images_path):
