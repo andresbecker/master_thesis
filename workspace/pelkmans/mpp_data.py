@@ -1030,11 +1030,12 @@ def test_get_neighborhood():
     assert (mpp_data.center_mpp[:1000] == neigh[:,1,1]).all()
     return True
 
-def get_image_normalization_vals(instance_dict=None, percentile=98):
+def get_image_normalization_vals(instance_dict=None, input_channel_ids=None, percentile=98):
     """
     This function calculate the percentiles for each channel of a group of MPPData images. The main advantage of this function is that it calculates the percentile from data in separated arrays.
     Input:
         instance_dict: dictionary containing MPPData instances WITH attributes images and images_masks.
+        input_channel_ids: list indicating for which channels we must calculate the normalization parameters.
         percentile: integer in [0,100].
     Output:
         rescale_values: numpy array of lenght number_of_channels, containing the normalization values of each channel
@@ -1043,6 +1044,12 @@ def get_image_normalization_vals(instance_dict=None, percentile=98):
     log = logging.getLogger()
     msg = 'Starting computation of normalization values (from mpp images and masks).'
     log.info(msg)
+
+    n_channels = instance_dict[0].images.shape[-1]
+    if input_channel_ids is None:
+        input_channel_ids = range(n_channels)
+    else:
+        n_channels = len(input_channel_ids)
 
     # Since there is no wey to concatenate np arrays in place (without creating a copy), we first create an array that will be filled with the values necessary to calculate the percentile per channel. Note that the size of this array is the same for every channel.
     #https://stackoverflow.com/questions/7869095/concatenate-numpy-arrays-without-copying
@@ -1053,9 +1060,8 @@ def get_image_normalization_vals(instance_dict=None, percentile=98):
     log.info(msg)
 
     # For each channel we gather the values from all the images to calculete the percentile
-    n_channels =  instance_dict[0].images.shape[-1]
     rescale_values = []
-    for c in range(n_channels):
+    for c in input_channel_ids:
         msg = 'Calculating percentil {} for channel {}/{}...'.format(percentile, c, n_channels)
         log.info(msg)
         #print(msg)
@@ -1078,13 +1084,16 @@ def get_image_normalization_vals(instance_dict=None, percentile=98):
 
     return rescale_values
 
-def normalize_and_save_MPPData_images(mppdata_dict=None, norm_vals=None, channels_ids=None, outdir=None):
+def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_vals=None, channels_ids=None, projection_method='avg', outdir=None):
     """
-    Normalize and save MPPData.images and MPPData.images_masks numpy arrays into separated files (one file per image and one file per mask) of fixed size. The normalization is also made in this function to avoid duplicating np arrays in ram memory during this process. Another advatnage is that this allow us to save in ram memory MPPData.images as np.uint16 (integer in [0, 65535], which is the range of values for MPPData) during data processing, reducing signifacntly the necessary ram memory.
+    This function take a dictionary (mppdata_dict), where each entrance is a list with MPPData objects, and save each image, mask and target values in a singel npz file using the mapobject_id_cell as name (i.e. one npz file per cell).
+    The normalization is also made in this function to avoid duplicating np arrays in ram memory during this process. Another advatnage is that this allow us to save in ram memory MPPData.images as np.uint16 (integer in [0, 65535], which is the range of values for MPPData) during data processing, reducing signifacntly the necessary ram memory.
+    Beside the image and its mask, the npz file also contain a vector call 'targets' which has the projection of each channel into a scalar.
     Input:
-        mppdata_dict: dictionary containing lists contaning instances of the class MPPData
+        mppdata_dict: dictionary containing lists contaning instances of the class MPPData.
         norm_vals: np array containing the normalizing value of each channel.
-        channels_ids: ids of the channels to be saved
+        channels_ids: np array containing the ids of the channels to be saved.
+        projection_method: Method used to project each image channel into a scalar. The implemented ones are average 'avg' and 'median'.
         outdir: directory to save the processed data
     Output:
         output_paths: dictionary containing the file paths for each key in mppdata_dict where images and mask were saved.
@@ -1093,24 +1102,27 @@ def normalize_and_save_MPPData_images(mppdata_dict=None, norm_vals=None, channel
 
     # Create directories to save images
     log.info('Creating directories to save data from instances...')
-    instance_masks_names = [name+'_masks' for name in list(mppdata_dict.keys())]
     output_paths = {}
-    for dir_names in [list(mppdata_dict.keys()), instance_masks_names]:
-        for inst_name in dir_names:
-            path_temp = os.path.join(outdir, inst_name)
-            output_paths[inst_name] = path_temp
-            if os.path.exists(path_temp):
-                # Remove previous files
-                for f in os.listdir(path_temp):
-                    os.remove(os.path.join(path_temp,f))
-            else:
-                os.makedirs(path_temp, exist_ok=False)
+    for dir_names in list(mppdata_dict.keys()):
+        path_temp = os.path.join(outdir, dir_names)
+        output_paths[dir_names] = path_temp
+        if os.path.exists(path_temp):
+            # Remove previous files
+            for f in os.listdir(path_temp):
+                os.remove(os.path.join(path_temp,f))
+        else:
+            os.makedirs(path_temp, exist_ok=False)
     log.info('Directories created:\n{}'.format(output_paths))
 
     k = list(mppdata_dict.keys())[0]
     n_channels = mppdata_dict[k][0].images.shape[-1]
     if channels_ids is None:
-        channels_ids = range(n_channels)
+        channels_ids = np.arange(n_channels)
+    else:
+        n_channels = channels_ids.shape[0]
+    img_shape = mppdata_dict[k][0].images[:,:,:,channels_ids].shape[1:]
+
+    # If normalization values are not given, then we devide by 1
     if norm_vals is None:
         norm_vals = np.ones(n_channels)
 
@@ -1128,19 +1140,37 @@ def normalize_and_save_MPPData_images(mppdata_dict=None, norm_vals=None, channel
             for j in range(n_cells):
                 # Create file name
                 cell_id = mppdata.metadata.iloc[j]['mapobject_id_cell']
-                file_name = str(cell_id)+'.npy'
+                file_name = str(cell_id)+'.npz'
                 file_name = os.path.join(output_paths[key], file_name)
-                file_name_mask = str(cell_id)+'.npy'
-                file_name_mask = os.path.join(output_paths[key+'_masks'], file_name_mask)
 
-                # Create normalized temp image to save in disk
-                temp_img = mppdata.images[j,:,:,channels_ids].reshape((-1, n_channels)).copy()
+                # Get image and mask to create projection and save
+                temp_mask = mppdata.images_masks[j]
+                temp_img = mppdata.images[j][:,:,channels_ids].copy()
+
+                # Project each channel to a singel number (avg) to save them as a vector of targets
+                # Note that the target value is calculated without Normalization!
+                targets = []
+                for c in channels_ids:
+                    if (projection_method == 'avg'):
+                        temp_target = temp_img[:,:,c][temp_mask].mean()
+                    elif (projection_method == 'median'):
+                        temp_target = np.median(temp_img[:,:,c][temp_mask], axis=0)
+                    else:
+                        msg = 'Projection method {} not implemented yet!'
+                        log.error(msg)
+                        raise NotImplementedError(msg)
+                    targets.append(temp_target)
+                targets = np.asarray(targets)
+
+                temp_img = temp_img.reshape((-1, n_channels))
                 temp_img = temp_img.astype(np.float64)
-                temp_img /= norm_vals
+                temp_img /= norm_vals[channels_ids]
+                temp_img = temp_img.reshape(img_shape)
 
-                # Save
-                np.save(file_name, temp_img)
-                np.save(file_name_mask, mppdata.images_masks[j,:])
+                #raise Exception()
+
+                # Save everything
+                np.savez(file_name, img=temp_img, mask=temp_mask, targets=targets)
 
     msg = 'MPPData images and masks saving process finished!'
     log.info(msg)
