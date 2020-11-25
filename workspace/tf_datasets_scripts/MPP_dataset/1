@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "/home/hhughes/anaconda3/envs/icb_mt/bin/tfds", line 8, in <module>
+    sys.exit(launch_cli())
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/tensorflow_datasets/scripts/cli/main.py", line 63, in launch_cli
+    app.run(main, flags_parser=_parse_flags)
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/absl/app.py", line 300, in run
+    _run_main(main, args)
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/absl/app.py", line 251, in _run_main
+    sys.exit(main(argv))
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/tensorflow_datasets/scripts/cli/main.py", line 58, in main
+    args.subparser_fn(args)
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/tensorflow_datasets/scripts/cli/build.py", line 194, in _build_datasets
+    for builder in _make_builders(args, ds_to_build):
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/tensorflow_datasets/scripts/cli/build.py", line 203, in _make_builders
+    builder_cls, builder_kwargs = _get_builder_cls(ds_to_build)
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/tensorflow_datasets/scripts/cli/build.py", line 262, in _get_builder_cls
+    builder_name, builder_kwargs = extract_name_and_kwargs(ds_to_build)
+  File "/home/hhughes/anaconda3/envs/icb_mt/lib/python3.8/site-packages/tensorflow_datasets/core/load.py", line 511, in dataset_name_and_kwargs_from_name_str
+    raise ValueError(_NAME_STR_ERR.format(name_str))
+ValueError: Parsing builder name string test.log failed.
+The builder name string must be of the following format:
+  dataset_name[/config_name][:version][/kwargs]
+
+  Where:
+
+    * dataset_name and config_name are string following python variable naming.
+    * version is of the form x.y.z where {x,y,z} can be any digit or *.
+    * kwargs is a comma list separated of arguments and values to pass to
+      builder.
+
+  Examples:
+    my_dataset
+    my_dataset:1.2.*
+    my_dataset/config1
+    my_dataset/config1:1.*.*
+    my_dataset/config1/arg1=val1,arg2=val2
+    my_dataset/config1:1.2.3/right=True,foo=bar,rate=1.2
+
