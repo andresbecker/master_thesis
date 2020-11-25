@@ -4,19 +4,35 @@ import tensorflow_datasets as tfds
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+import os
+import json
 
-# TODO(MPP_dataset): Markdown description  that will appear on the catalog page.
 _DESCRIPTION = """
-Description is **formatted** as markdown.
-
-It should also contain any processing which has been applied (if any),
-(e.g. corrupted example skipped, images cropped,...):
+Dataset containing images of Multiplexed protein maps.
+The elements of this data sets are multichannel images of singel cells alongside with its transcription rate.
+This Dataset was builded after a preprocessing using the python script Transform_MPPData_into_images_from_script.ipynb. During this preprocessing the original MPPData was:
+- Converted into images.
+- Cleaned. Border and mitotic cells were removed.
+- Normalized. Each channel was normalized using scale parameters obtained from the training set.
+- Target value (scalar) calculated. The transcription rate was approximated taking the average of the measured pixels of the channel 00_EU. It is important to mention that the the target value was calculated BEFORE the normalization process.
 """
 
-# TODO(MPP_dataset): BibTeX citation
 _CITATION = """
+@article {Guteaar7042,
+	author = {Gut, Gabriele and Herrmann, Markus D. and Pelkmans, Lucas},
+	title = {Multiplexed protein maps link subcellular organization to cellular states},
+	volume = {361},
+	number = {6401},
+	elocation-id = {eaar7042},
+	year = {2018},
+	doi = {10.1126/science.aar7042},
+	publisher = {American Association for the Advancement of Science},
+	issn = {0036-8075},
+	URL = {https://science.sciencemag.org/content/361/6401/eaar7042},
+	eprint = {https://science.sciencemag.org/content/361/6401/eaar7042.full.pdf},
+	journal = {Science}
+}
 """
-
 
 class MppDataset(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for MPP_dataset dataset."""
@@ -28,24 +44,55 @@ class MppDataset(tfds.core.GeneratorBasedBuilder):
 
   def _info(self) -> tfds.core.DatasetInfo:
     """Returns the dataset metadata."""
-    # TODO(MPP_dataset): Specifies the tfds.core.DatasetInfo object
+
+    # Load tf dataset parameters
+    # Path where the parameters to create the tf dataset are
+    tf_param_path = './Parameters'
+    with open(os.path.join(tf_param_path, 'tf_dataset_parameters.json')) as pp_file:
+        tf_param = json.load(pp_file)
+
+    # Path where the preprocessed data to be transformed into tf dataset is
+    self.data_source_path = tf_param['data_source_path']
+
+    # Load channel file:
+    with open(os.path.join(self.data_source_path, 'channels.csv')) as channel_file:
+        channels =  pd.read_csv(channel_file)
+    # Load preprocessing parameters
+    with open(os.path.join(self.data_source_path, 'params.json')) as pp_file:
+        pp_param = json.load(pp_file)
+
+    # Get info from the preprocessing parameters
+    img_size = pp_param['img_size']
+
+    input_channels = tf_param['input_channels']
+    self.input_ids = channels.set_index('name').loc[input_channels]['channel_id'].values
+    n_channels = self.input_ids.shape[0]
+
+    output_channel = tf_param['output_channels']
+    self.output_id = channels.set_index('name').loc[output_channel]['channel_id'].values[0]
+
+    normalization_vals = pp_param['normalise_rescale_values']
+    normalization_vals = np.asarray(normalization_vals)[self.input_ids]
+
+    # Add info to the description
+    global _DESCRIPTION
+    _DESCRIPTION += '\ninput_channels:\n{}'.format(input_channels)
+    _DESCRIPTION += '\n\noutput_channel:\n{}'.format(output_channel)
+    _DESCRIPTION += '\n\nNormalization parameters:\n{}'.format(normalization_vals)
+
     return tfds.core.DatasetInfo(
         builder=self,
         description=_DESCRIPTION,
         features=tfds.features.FeaturesDict({
             # These are the features of your dataset like images, labels ...
             'mapobject_id_cell': tfds.features.Text(),
-            #'image': tfds.features.Image(shape=(224, 224, 38)),
-            'image': tfds.features.Tensor(shape=(224, 224, 38), dtype=tf.float64),
+            'image': tfds.features.Tensor(shape=(img_size, img_size, n_channels), dtype=tf.float64),
             'target': tfds.features.Tensor(shape=(1,), dtype=tf.float64),
         }),
-        # If there's a common (input, target) tuple from the
-        # features, specify them here. They'll be used if
-        # `as_supervised=True` in `builder.as_dataset`.
-        #supervised_keys=None,
+
         supervised_keys=('image', 'target'),  # Set to `None` to disable
-        #homepage='https://dataset-homepage/',
-        #citation=_CITATION,
+        homepage='https://www.helmholtz-muenchen.de/icb',
+        citation=_CITATION,
     )
 
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):
@@ -55,45 +102,37 @@ class MppDataset(tfds.core.GeneratorBasedBuilder):
     This dataset was created following the guide:
     https://www.tensorflow.org/datasets/add_dataset
     """
-    # TODO(MPP_dataset): Downloads the data and defines the splits
-    #path = dl_manager.download_and_extract('https://todo-data-url')
-    preprocessed_data_path = '/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test'
-    #https://www.tensorflow.org/datasets/api_docs/python/tfds/download/DownloadManager
-    extracted_path = dl_manager.extract(preprocessed_data_path)
 
-    # TODO(MPP_dataset): Returns the Dict[split names, Iterator[Key, Example]]
+    input_data_path = dl_manager.extract(self.data_source_path)
+
     return {
         'train': self._generate_examples(
-            images_path = extracted_path / 'test',
-            metadata_path = extracted_path / 'metadata.csv',
+            images_path = input_data_path / 'train',
         ),
         'validation': self._generate_examples(
-            images_path = extracted_path / 'val',
-            metadata_path = extracted_path / 'metadata.csv',
+            images_path = input_data_path / 'val',
+        ),
+        'test': self._generate_examples(
+            images_path = input_data_path / 'test',
         ),
     }
 
-  def _generate_examples(self, images_path, metadata_path):
-    """
-    What is yield?
-    https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
-    generates the examples for each split from the source data.
-    Yields examples.
-    """
+  def _generate_examples(self, images_path):
+      """
+      What is yield?
+      https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
+      generates the examples for each split from the source data.
+      Yields examples.
+      """
 
-    #metadata = pd.read_csv(metadata_path)
+      for f in images_path.glob('*.npz'):
+          cell = np.load(f)
+          cell_id = int(f.name.split('.')[0])
+          cell_img = cell['img'][:,:,self.input_ids]
+          cell_target = [cell['targets'][self.output_id]]
 
-    # TODO(MPP_dataset): Yields (key, example) tuples from the dataset
-    for f in images_path.glob('*.npz'):
-
-      cell_id = int(f.name.split('.')[0])
-      #mask = (metadata.mapobject_id_cell == int(cell_id))
-      #tr = metadata['00_EU_avg'][mask].values
-      mpp_img = np.load(f)
-      #print('sssssssssssssssssssssssss', mpp_img['img'].shape, 'sssssssssssssss')
-      #print('sssssssssssssssssssssssss', mpp_img['targets'][35], 'sssssssssssssss')
-      yield cell_id, {
-          'mapobject_id_cell': str(cell_id),
-          'image': mpp_img['img'],
-          'target': [mpp_img['targets'][35]],
-      }
+          yield cell_id, {
+            'mapobject_id_cell': str(cell_id),
+            'image': cell_img,
+            'target': cell_target,
+            }
