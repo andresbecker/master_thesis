@@ -4,7 +4,7 @@
 #SBATCH -e /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/tf_datasets_scripts/SLURM_output/Create_MPP_dataset_errors.out
 #SBATCH -J Create_tf_dataset
 #SBATCH -p icb_cpu
-#SBATCH -c 2
+#SBATCH -c 4
 #SBATCH --mem-per-cpu 32G
 #SBATCH -t 12:00:00
 #SBATCH --nice=10000
