@@ -1,0 +1,7 @@
+# Track Ram memory used by a process (in GB)
+pid=$(ps -o pid,ppid,user,user,%mem,command ax | grep hhugh | grep ipykernel | grep python | awk '{print $1}')
+while true; do  pmap $pid -x | grep total | awk '{print $3/1E6, $4/1E6, $5/1E6}'; sleep 20; done
+
+# Turn off and on the swap memory
+sudo swapoff -a #this command actually moves stuff in swap to ram and then disable it
+sudo swapon -a
