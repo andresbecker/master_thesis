@@ -19,7 +19,7 @@ This Dataset was builded after a preprocessing using the python script Transform
 
 _CITATION = """
 @article {Guteaar7042,
-	author = {Gut, Gabriele and Herrmann, Markus D. and Pelkmans, Lucas},
+author = {Gut, Gabriele and Herrmann, Markus D. and Pelkmans, Lucas},
 	title = {Multiplexed protein maps link subcellular organization to cellular states},
 	volume = {361},
 	number = {6401},
@@ -35,104 +35,110 @@ _CITATION = """
 """
 
 class MppDataset(tfds.core.GeneratorBasedBuilder):
-  """DatasetBuilder for MPP_dataset dataset."""
+	"""DatasetBuilder for MPP_dataset dataset."""
+	VERSION = tfds.core.Version('1.0.1')
+	RELEASE_NOTES = {
+		'1.0.1': 'Added Cell shuffling before tf dataset creation.',
+		}
 
-  VERSION = tfds.core.Version('1.0.0')
-  RELEASE_NOTES = {
-      '1.0.0': 'Initial release.',
-  }
+	def _info(self) -> tfds.core.DatasetInfo:
+		"""Returns the dataset metadata."""
+	  	# Load tf dataset parameters
+	  	# Path where the parameters to create the tf dataset are
+		tf_param_path = './Parameters'
+		with open(os.path.join(tf_param_path, 'tf_dataset_parameters.json')) as pp_file:
+			tf_param = json.load(pp_file)
 
-  def _info(self) -> tfds.core.DatasetInfo:
-    """Returns the dataset metadata."""
+		# Path where the preprocessed data to be transformed into tf dataset is
+		self.data_source_path = tf_param['data_source_path']
 
-    # Load tf dataset parameters
-    # Path where the parameters to create the tf dataset are
-    tf_param_path = './Parameters'
-    with open(os.path.join(tf_param_path, 'tf_dataset_parameters.json')) as pp_file:
-        tf_param = json.load(pp_file)
+		# Load channel file:
+		with open(os.path.join(self.data_source_path, 'channels.csv')) as channel_file:
+			channels =  pd.read_csv(channel_file)
 
-    # Path where the preprocessed data to be transformed into tf dataset is
-    self.data_source_path = tf_param['data_source_path']
+		# Load preprocessing parameters
+		with open(os.path.join(self.data_source_path, 'params.json')) as pp_file:
+			pp_param = json.load(pp_file)
 
-    # Load channel file:
-    with open(os.path.join(self.data_source_path, 'channels.csv')) as channel_file:
-        channels =  pd.read_csv(channel_file)
-    # Load preprocessing parameters
-    with open(os.path.join(self.data_source_path, 'params.json')) as pp_file:
-        pp_param = json.load(pp_file)
+		# Get info from the preprocessing parameters
+		img_size = pp_param['img_size']
 
-    # Get info from the preprocessing parameters
-    img_size = pp_param['img_size']
+		# Get random seed
+		try:
+			self.seed = pp_param['seed']
+		except:
+			self.seed = 123
 
-    input_channels = tf_param['input_channels']
-    self.input_ids = channels.set_index('name').loc[input_channels]['channel_id'].values
-    n_channels = self.input_ids.shape[0]
+		input_channels = tf_param['input_channels']
+		self.input_ids = channels.set_index('name').loc[input_channels]['channel_id'].values
+		n_channels = self.input_ids.shape[0]
 
-    output_channel = tf_param['output_channels']
-    self.output_id = channels.set_index('name').loc[output_channel]['channel_id'].values[0]
+		output_channel = tf_param['output_channels']
+		self.output_id = channels.set_index('name').loc[output_channel]['channel_id'].values[0]
 
-    normalization_vals = pp_param['normalise_rescale_values']
-    normalization_vals = np.asarray(normalization_vals)[self.input_ids]
+		normalization_vals = pp_param['normalise_rescale_values']
+		normalization_vals = np.asarray(normalization_vals)[self.input_ids]
 
-    # Add info to the description
-    global _DESCRIPTION
-    _DESCRIPTION += '\ninput_channels:\n{}'.format(input_channels)
-    _DESCRIPTION += '\n\noutput_channel:\n{}'.format(output_channel)
-    _DESCRIPTION += '\n\nNormalization parameters:\n{}'.format(normalization_vals)
+		# Add info to the description
+		global _DESCRIPTION
+		_DESCRIPTION += '\ninput_channels:\n{}'.format(input_channels)
+		_DESCRIPTION += '\n\noutput_channel:\n{}'.format(output_channel)
+		_DESCRIPTION += '\n\nNormalization parameters:\n{}'.format(normalization_vals)
 
-    return tfds.core.DatasetInfo(
-        builder=self,
-        description=_DESCRIPTION,
-        features=tfds.features.FeaturesDict({
-            # These are the features of your dataset like images, labels ...
-            'mapobject_id_cell': tfds.features.Text(),
-            'image': tfds.features.Tensor(shape=(img_size, img_size, n_channels), dtype=tf.float64),
-            'target': tfds.features.Tensor(shape=(1,), dtype=tf.float64),
-        }),
+		return tfds.core.DatasetInfo(
+			builder=self,
+			description=_DESCRIPTION,
+			features=tfds.features.FeaturesDict({
+				# These are the features of your dataset like images, labels ...
+				'mapobject_id_cell': tfds.features.Text(),
+				'image': tfds.features.Tensor(shape=(img_size, img_size, n_channels), dtype=tf.float64),
+				'target': tfds.features.Tensor(shape=(1,), dtype=tf.float64),
+				}),
 
-        supervised_keys=('image', 'target'),  # Set to `None` to disable
-        homepage='https://www.helmholtz-muenchen.de/icb',
-        citation=_CITATION,
-    )
+				supervised_keys=('image', 'target'),  # Set to `None` to disable
+				homepage='https://www.helmholtz-muenchen.de/icb',
+				citation=_CITATION,
+			)
 
-  def _split_generators(self, dl_manager: tfds.download.DownloadManager):
-    """
-    downloads and splits data
-    Returns SplitGenerators.
-    This dataset was created following the guide:
-    https://www.tensorflow.org/datasets/add_dataset
-    """
+	def _split_generators(self, dl_manager: tfds.download.DownloadManager):
+		"""
+		downloads and splits data
+		Returns SplitGenerators.
+		This dataset was created following the guide:
+		https://www.tensorflow.org/datasets/add_dataset
+		"""
 
-    input_data_path = dl_manager.extract(self.data_source_path)
+		input_data_path = dl_manager.extract(self.data_source_path)
 
-    return {
-        'train': self._generate_examples(
-            images_path = input_data_path / 'train',
-        ),
-        'validation': self._generate_examples(
-            images_path = input_data_path / 'val',
-        ),
-        'test': self._generate_examples(
-            images_path = input_data_path / 'test',
-        ),
-    }
+		return {
+			'train': self._generate_examples(
+				images_path = input_data_path / 'train'),
+			'validation': self._generate_examples(
+            	images_path = input_data_path / 'val'),
+        	'test': self._generate_examples(
+            	images_path = input_data_path / 'test'),
+				}
 
-  def _generate_examples(self, images_path):
-      """
-      What is yield?
-      https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
-      generates the examples for each split from the source data.
-      Yields examples.
-      """
+	def _generate_examples(self, images_path):
+		"""
+	  	What is yield?
+	  	https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
+	  	generates the examples for each split from the source data. Yields examples.
+	  	"""
 
-      for f in images_path.glob('*.npz'):
-          cell = np.load(f)
-          cell_id = int(f.name.split('.')[0])
-          cell_img = cell['img'][:,:,self.input_ids]
-          cell_target = [cell['targets'][self.output_id]]
+		# Get file names and shuffle them
+		file_names = np.asarray([file.name for file in images_path.glob('*.npz')])
+		np.random.seed(self.seed)
+		np.random.shuffle(file_names)
 
-          yield cell_id, {
-            'mapobject_id_cell': str(cell_id),
-            'image': cell_img,
-            'target': cell_target,
-            }
+		for fn in file_names:
+			cell = np.load(images_path.joinpath(fn))
+			cell_id = int(fn.split('.')[0])
+			cell_img = cell['img'][:,:,self.input_ids]
+			cell_target = [cell['targets'][self.output_id]]
+
+			yield cell_id, {
+				'mapobject_id_cell': str(cell_id),
+				'image': cell_img,
+				'target': cell_target,
+				}
