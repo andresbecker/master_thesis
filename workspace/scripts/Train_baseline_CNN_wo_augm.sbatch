@@ -4,9 +4,9 @@
 #SBATCH -e /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/SLURM_output/Train_baseline_CNN_wo_augm_error.out
 #SBATCH -J BaseLine_w_a
 #SBATCH -p icb_gpu
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5]
-#SBATCH -c 3
+#SBATCH -c 4
 #SBATCH --mem-per-cpu 16G
 #SBATCH -t 4:00:00
 #SBATCH --nice=10000
