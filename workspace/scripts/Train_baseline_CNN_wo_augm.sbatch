@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH -o /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/SLURM_output/Train_baseline_CNN_w_augm.out
-#SBATCH -e /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/SLURM_output/Train_baseline_CNN_w_augm_error.out
+#SBATCH -o /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/SLURM_output/Train_baseline_CNN_wo_augm.out
+#SBATCH -e /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/SLURM_output/Train_baseline_CNN_wo_augm_error.out
 #SBATCH -J BaseLine_w_a
 #SBATCH -p icb_gpu
 #SBATCH --gres=gpu:1 <- how many GPUs you request, use 1
