@@ -1,6 +1,6 @@
 {
     "_comment": "where to the models and checkpoints--------------------------",
-    "model_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/models/baseline_model",
+    "model_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/models",
 
     "_comment": "Path where external libraries are:",
     "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/libs",
