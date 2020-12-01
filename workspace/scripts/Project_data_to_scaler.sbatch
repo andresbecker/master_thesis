@@ -4,6 +4,7 @@
 #SBATCH -e /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/scripts/SLURM_output/Project_data_to_scaler_errors.out
 #SBATCH -J Project2scalars
 #SBATCH -p icb_cpu
+#SBATCH --exclude=ibis-ceph-0[02-05,08-19],ibis216-010-0[20-37,64],icb-rsrv[05-06,08]
 #SBATCH -c 1
 #SBATCH --mem-per-cpu 32G
 #SBATCH -t 12:00:00
