@@ -16,7 +16,7 @@
     "_comment": "184A1_hannah_meayamycin-J17 is empty",
 
     "_comment": "Path where external libraries are:",
-    "external_libs_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace",
+    "external_libs_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/libs",
 
     "_comment": "where to put processed data----------------------------------",
     "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_avg_projection_all_wells",

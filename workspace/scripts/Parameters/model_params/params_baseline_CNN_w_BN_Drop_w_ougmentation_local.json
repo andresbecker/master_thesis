@@ -27,10 +27,10 @@
 		"set_memory_growth": 1,
 
 		"_comment": "Model selection----------------------------------------------",
-    "model_name": "baseline_CNN",
+    "model_name": "baseline_CNN_w_BN_Drop",
     "number_of_epochs": 50,
     "_comment": "Losses: mse, huber-------------------------------------------",
-    "loss": "mse",
+    "loss": "huber",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,

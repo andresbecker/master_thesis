@@ -9,7 +9,7 @@
     },
 
     "_comment": "Path where external libraries are:",
-    "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace",
+    "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/libs",
 
     "_comment": "where to put processed data----------------------------------",
     "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test",

@@ -29,6 +29,8 @@
 		"_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN",
     "number_of_epochs": 3,
+    "_comment": "Losses: mse, huber-------------------------------------------",
+    "loss": "huber",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
