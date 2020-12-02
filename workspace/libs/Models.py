@@ -26,6 +26,10 @@ class Predef_models():
 
         elif self.model_name == '2ConvLey_2DensLey_w_BN_and_LeakyRelu':
             self.model = self._get_2ConvLey_2DensLey_w_BN_and_LeakyRelu()
+
+        elif self.model_name == 'baseline_CNN_w_BN_Drop':
+            self.model = self._get_baseline_CNN_w_BN_Drop()
+
         else:
             msg = 'Specified model {} not implemented!'.format(self.model_name)
             self.log.error(msg)
@@ -35,7 +39,7 @@ class Predef_models():
 
     def _get_baseline_CNN(self):
 
-        msg = 'Base line model selected!'
+        msg = '{} selected!'.format(self.model_name)
         self.log.info(msg)
         print(msg)
 
@@ -58,9 +62,39 @@ class Predef_models():
 
         return model
 
+    def _get_baseline_CNN_w_BN_Drop(self):
+
+        msg = '{} selected!'.format(self.model_name)
+        self.log.info(msg)
+        print(msg)
+
+        model = tf.keras.Sequential([
+            tf.keras.layers.Conv2D(64, (3,3),
+                                   padding='same',
+                                   kernel_initializer='glorot_normal',
+                                   input_shape=self.input_shape),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.Conv2D(128, (3,3),
+                                   padding='same',
+                                   kernel_initializer='glorot_normal'),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.Dropout(0.5),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(256, activation=tf.nn.relu),
+            tf.keras.layers.Dense(1)
+        ])
+
+        return model
+
     def _get_2ConvLey_2DensLey_w_BN_and_LeakyRelu(self):
 
-        msg = 'Model 2ConvLey_2DensLey_w_BN_and_LeakyRelu selected!'
+        msg = '{} selected!'.format(self.model_name)
         self.log.info(msg)
         print(msg)
 
