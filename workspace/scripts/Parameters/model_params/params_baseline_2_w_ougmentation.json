@@ -1,15 +1,15 @@
 {
     "_comment": "where to the models and checkpoints--------------------------",
-    "model_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/models",
+    "model_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/models",
 
     "_comment": "Path where external libraries are:",
-    "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/libs",
+    "external_libs_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/libs",
 
     "_comment": "Preprocessed data path---------------------------------------",
-    "pp_path": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test",
+    "pp_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_images_and_masks_all_wells",
 
 		"_comment": "Tensorflow datasets parameters-------------------------------",
-		"local_tf_datasets": "/home/hhughes/Documents/Master_Thesis/Project/datasets/tensorflow_datasets",
+		"local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/tensorflow_datasets",
 		"tf_ds_name": "MPP_dataset",
     "shuffle_files": 1,
 
@@ -23,12 +23,12 @@
     "log_level": "INFO",
 
 		"_comment": "Cuda Config (boolean)----------------------------------------",
-    "disable_gpu": 1,
-		"set_memory_growth": 1,
+    "disable_gpu": 0,
+		"set_memory_growth": 0,
 
 		"_comment": "Model selection----------------------------------------------",
-    "model_name": "baseline_CNN",
-    "number_of_epochs": 30,
+    "model_name": "baseline_CNN_2",
+    "number_of_epochs": 100,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
 
