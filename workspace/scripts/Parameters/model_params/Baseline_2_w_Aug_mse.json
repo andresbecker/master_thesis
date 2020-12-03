@@ -30,7 +30,7 @@
     "model_name": "baseline_CNN_2",
     "number_of_epochs": 30,
     "_comment": "Losses: mse, huber-------------------------------------------",
-    "loss": "huber",
+    "loss": "mse",
     "BATCH_SIZE": 64,
 
     "_comment": "make results reproducible------------------------------------",

@@ -14,8 +14,8 @@
     "shuffle_files": 1,
 
 		"_comment": "Augment dataset flags----------------------------------------",
-    "random_horizontal_flipping": 1,
-		"random_90deg_rotations": 1,
+    "random_horizontal_flipping": 0,
+		"random_90deg_rotations": 0,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
 		"_comment": "The log file will be placed inside the dir create to store the model",
