@@ -1,6 +1,7 @@
 {
     "_comment": "where to the models and checkpoints--------------------------",
     "model_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/models",
+    "clean_model_dir": 1,
 
     "_comment": "Path where external libraries are:",
     "external_libs_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/libs",
