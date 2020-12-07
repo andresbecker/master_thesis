@@ -29,7 +29,7 @@
 
 		"_comment": "Model selection----------------------------------------------",
     "model_name": "ResNet50V2",
-    "number_of_epochs": 50,
+    "number_of_epochs": 80,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "BATCH_SIZE": 64,
