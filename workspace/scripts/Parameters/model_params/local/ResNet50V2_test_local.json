@@ -1,0 +1,46 @@
+{
+    "_comment": "where to the models and checkpoints--------------------------",
+    "model_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/models",
+
+    "_comment": "Path where external libraries are:",
+    "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/libs",
+
+    "_comment": "Preprocessed data path---------------------------------------",
+    "pp_path": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test",
+
+		"_comment": "Tensorflow datasets parameters-------------------------------",
+		"local_tf_datasets": "/home/hhughes/Documents/Master_Thesis/Project/datasets/tensorflow_datasets",
+		"tf_ds_name": "MPP_dataset",
+    "shuffle_files": 0,
+
+		"_comment": "Augment dataset flags----------------------------------------",
+    "random_horizontal_flipping": 1,
+		"random_90deg_rotations": 1,
+
+    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
+		"_comment": "The log file will be placed inside the dir create to store the model",
+    "log_file_name": "model.log",
+    "log_level": "INFO",
+
+		"_comment": "Cuda Config (boolean)----------------------------------------",
+    "disable_gpu": 1,
+		"set_memory_growth": 1,
+
+		"_comment": "Model selection----------------------------------------------",
+    "model_name": "baseline_CNN_2",
+    "number_of_epochs": 2,
+    "_comment": "Losses: mse, huber-------------------------------------------",
+    "loss": "huber",
+    "BATCH_SIZE": 32,
+
+    "_comment": "make results reproducible------------------------------------",
+    "seed": 42,
+
+    "_comment": "input/output channels definition----------------------------",
+    "_comment": "Hannah is not using: 00_BG488, 00_BG568, 09_SRRM2_ILASTIK, 15_SON_ILASTIK",
+    "input_channels": [
+        "01_CDK9_pT186",
+        "05_Sm",
+        "10_POL2RA_pS2"
+    ]
+}
