@@ -1,4 +1,6 @@
 import sys, os
+from datetime import datetime
+import shutil
 
 class Tee_Logger(object):
     """
@@ -43,3 +45,54 @@ class Tee_Logger(object):
         if self.file != None:
             self.file.close()
             self.file = None
+
+def create_model_dirs(parameters: dict):
+
+    # clean_model_dir not given, then set as defaul
+    if not 'clean_model_dir' in parameters.keys():
+        parameters['clean_model_dir'] = True
+        
+    # Check if path where model instances are saved exist
+    temp_path = os.path.join(parameters['model_path'], parameters['model_name'])
+    try:
+        os.makedirs(temp_path, exist_ok=True)
+    except OSError as e:
+        msg  = 'Dir {} could not be created!\n\nOSError: {}'.format(temp_path, e)
+        raise Exception(msg)
+
+    # Create directory where this execution will be saved
+    try:
+        tag = parameters['model_dir']
+    except:
+        # tagged with the date and time
+        tag = datetime.now().strftime("%d%m%y_%H%M")
+
+    base_path = os.path.join(temp_path, tag)
+    if os.path.exists(base_path) & parameters['clean_model_dir']:
+        msg = 'Warning! Directory {} already exist! Deleting...\n'.format(base_path)
+        print(msg)
+        try:
+            shutil.rmtree(base_path)
+        except OSError as e:
+            msg  = 'Dir {} could not be deleted!\n\nOSError: {}'.format(base_path, e)
+            raise Exception(msg)
+        msg = 'Creating dir: {}'.format(base_path)
+        print(msg)
+    os.makedirs(base_path, exist_ok=True)
+
+    # Create dir for model and checkpoint saiving
+    model_path = os.path.join(base_path, 'model')
+    try:
+        os.makedirs(model_path, exist_ok=True)
+    except:
+        msg  = 'Dir {} could not be created!'.format(model_path)
+        raise Exception(msg)
+
+    checkpoints_path = os.path.join(base_path, 'checkpoints')
+    try:
+        os.makedirs(checkpoints_path, exist_ok=True)
+    except:
+        msg  = 'Dir {} could not be created!'.format(checkpoints_path)
+        raise Exception(msg)
+
+    return base_path, model_path, checkpoints_path
