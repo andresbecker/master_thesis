@@ -20,6 +20,10 @@ class Predef_models():
         else:
             self.input_shape = input_shape
 
+        msg = '{} selected!'.format(self.model_name)
+        self.log.info(msg)
+        print(msg)
+
         self.model = None
         if self.model_name == 'baseline_CNN':
             self.model = self._get_baseline_CNN()
@@ -36,6 +40,9 @@ class Predef_models():
         elif self.model_name == 'small_CNN':
             self.model = self._get_small_CNN()
 
+        elif self.model_name == 'ResNet50V2':
+            self.model = self._get_ResNet50V2()
+
         else:
             msg = 'Specified model {} not implemented!'.format(self.model_name)
             self.log.error(msg)
@@ -44,10 +51,6 @@ class Predef_models():
         return self.model
 
     def _get_baseline_CNN(self):
-
-        msg = '{} selected!'.format(self.model_name)
-        self.log.info(msg)
-        print(msg)
 
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(64, (3,3),
@@ -69,10 +72,6 @@ class Predef_models():
         return model
 
     def _get_baseline_CNN_2(self):
-
-        msg = '{} selected!'.format(self.model_name)
-        self.log.info(msg)
-        print(msg)
 
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(64, (3,3),
@@ -103,10 +102,6 @@ class Predef_models():
 
     def _get_small_CNN(self):
 
-        msg = '{} selected!'.format(self.model_name)
-        self.log.info(msg)
-        print(msg)
-
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(self.input_shape[-1], (3,3),
                                    padding='same',
@@ -129,10 +124,6 @@ class Predef_models():
         return model
 
     def _get_baseline_CNN_w_BN_Drop(self):
-
-        msg = '{} selected!'.format(self.model_name)
-        self.log.info(msg)
-        print(msg)
 
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(64, (3,3),
@@ -160,10 +151,6 @@ class Predef_models():
 
     def _get_2ConvLey_2DensLey_w_BN_and_LeakyRelu(self):
 
-        msg = '{} selected!'.format(self.model_name)
-        self.log.info(msg)
-        print(msg)
-
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(64, (3,3),
                                    padding='same',
@@ -190,5 +177,30 @@ class Predef_models():
             tf.keras.layers.Dense(512, activation=tf.nn.relu),
             tf.keras.layers.Dense(1)
         ])
+
+        return model
+
+    def _get_ResNet50V2(self):
+
+        input_layer = tf.keras.Input(shape=self.input_shape,
+            #batch_size=p['BATCH_SIZE'],
+            name='InputLayer')
+
+        base_model = tf.keras.applications.ResNet50V2(
+            include_top=False,
+            weights=None,
+            input_tensor=input_layer,
+            #input_shape=None,
+            pooling=None,
+            #classes=1000,
+            classifier_activation=None,
+            #classifier_activation='softmax',
+            )
+
+        x = base_model.output
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
+        prediction = tf.keras.layers.Dense(1)(x)
+
+        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
 
         return model
