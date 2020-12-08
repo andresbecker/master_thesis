@@ -5,8 +5,8 @@
 #SBATCH -J Conv2images
 #SBATCH -p icb_cpu
 #SBATCH --exclude=ibis-ceph-0[02-05,08-19],ibis216-010-0[20-37,64],icb-rsrv[05-06,08]
-#SBATCH -c 1
-#SBATCH --mem-per-cpu 128G
+#SBATCH -c 3
+#SBATCH --mem-per-cpu 64G
 #SBATCH -t 15:00:00
 #SBATCH --nice=10000
 
