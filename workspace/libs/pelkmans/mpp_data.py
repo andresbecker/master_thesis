@@ -1084,7 +1084,7 @@ def get_image_normalization_vals(instance_dict=None, input_channel_ids=None, per
 
     return rescale_values
 
-def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_vals=None, channels_ids=None, projection_method='avg', outdir=None):
+def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_vals=None, channels_ids=None, projection_method='avg', outdir=None, dtype=np.float32):
     """
     This function take a dictionary (mppdata_dict), where each entrance is a list with MPPData objects, and save each image, mask and target values in a singel npz file using the mapobject_id_cell as name (i.e. one npz file per cell).
     The normalization is also made in this function to avoid duplicating np arrays in ram memory during this process. Another advatnage is that this allow us to save in ram memory MPPData.images as np.uint16 (integer in [0, 65535], which is the range of values for MPPData) during data processing, reducing signifacntly the necessary ram memory.
@@ -1124,7 +1124,9 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
 
     # If normalization values are not given, then we devide by 1
     if norm_vals is None:
-        norm_vals = np.ones(n_channels)
+        norm_vals = np.ones(n_channels).astype(dtype)
+    else:
+        norm_vals = norm_vals.astype(dtype)
 
     # Iterate over train, val and test lists of instances
     for key in mppdata_dict.keys():
@@ -1160,14 +1162,12 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
                         log.error(msg)
                         raise NotImplementedError(msg)
                     targets.append(temp_target)
-                targets = np.asarray(targets)
+                targets = np.asarray(targets).astype(dtype)
 
                 temp_img = temp_img.reshape((-1, n_channels))
-                temp_img = temp_img.astype(np.float64)
+                temp_img = temp_img.astype(dtype)
                 temp_img /= norm_vals[channels_ids]
                 temp_img = temp_img.reshape(img_shape)
-
-                #raise Exception()
 
                 # Save everything
                 np.savez(file_name, img=temp_img, mask=temp_mask, targets=targets)

@@ -12,7 +12,7 @@
     "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/libs",
 
     "_comment": "where to put processed data----------------------------------",
-    "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test",
+    "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test_32",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
@@ -69,19 +69,19 @@
     "img_size": 224,
 
     "_comment": "Subtract background------------------------------------------",
-    "subtract_background": true,
+    "subtract_background": 1,
     "background_value": "secondary_only_relative_normalisation.csv",
 
     "_comment": "normalisation------------------------------------------------",
-    "normalise": true,
+    "normalise": 1,
     "percentile": 98.0,
 
     "_comment": "Add Cell cycle to metadata-----------------------------------",
-    "add_cell_cycle_to_metadata": true,
+    "add_cell_cycle_to_metadata": 1,
     "cell_cycle_file": "cell_cycle_classification.csv",
 
     "_comment": "Add well info to metadata (cell_type, perturbation, duration)",
-    "add_well_info_to_metadata": true,
+    "add_well_info_to_metadata": 1,
     "well_info_file": "wells_metadata.csv",
 
     "_comment": "Remove unwanted cells (metadata colums and values)-----------",
@@ -89,11 +89,11 @@
     "filter_values": [1, 1, 1, "NaN"],
 
     "_comment": "Convert mpp data into image----------------------------------",
-    "convert_into_image": true,
-    "remove_original_data": true,
+    "convert_into_image": 1,
+    "remove_original_data": 1,
 
     "_comment": "Project unichannel images into a scalar (avg or median)------",
-    "project_into_scalar": true,
+    "project_into_scalar": 1,
     "method": "avg",
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
