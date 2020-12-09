@@ -10,22 +10,24 @@
 # Created by Andres Becker
 ################################################################################
 
+ERROR_msg="\nPlease specify the tf dataset name, the output directory, the path where the input parameters file is and the conda environment name where the tf dataset will be registered.\nFor example:\n"$0" -n MPP_dataset -o /TFDS_DATA_DIR -p /absolute_path/params.json -e my_conda_env_name\n"
+
 # Check if needed number of parameters were given
-if [ $# -ne 6 ]; then
-  echo -e "\nPlease specify the tf dataset name, the output directory and the path to the input parameters.\nFor example:"
-  echo -e $0" -o /TFDS_DATA_DIR -n MPP_dataset -p /absolute_path/params.json\n"
+if [ $# -ne 8 ]; then
+  echo -e $ERROR_msg
   exit 1
 fi
 
 TF_DATASET_NAME=""
 TFDS_DATA_DIR=""
 PARM_FILE=""
+ENVI=""
 #TF_DATASET_NAME="MPP_dataset"
 #TFDS_DATA_DIR="/home/hhughes/Documents/Master_Thesis/Project/datasets/tensorflow_datasets"
 
 
 # Read parameters and values
-while getopts 'o:n:p:' flag; do
+while getopts 'o:n:p:e:' flag; do
   case "${flag}" in
     o)
       TFDS_DATA_DIR="${OPTARG}"
@@ -36,9 +38,11 @@ while getopts 'o:n:p:' flag; do
     p)
       PARM_FILE="${OPTARG}"
       ;;
+    e)
+      ENVI="${OPTARG}"
+      ;;
     *)
-      echo -e "\nPlease specify the tf dataset name, the output directory and the path to the input parameters.\nFor example:"
-      echo -e $0" -o /TFDS_DATA_DIR -n MPP_dataset -i /absolute_path/params.json\n"
+      echo -e $ERROR_msg
       exit 1
       ;;
   esac
@@ -73,7 +77,6 @@ fi
 
 # Load conda environment
 source ~/.bashrc
-ENVI="icb_mt"
 echo -e "\nLoading environment "$ENVI"..."
 source activate $ENVI
 if [ $? -eq 0 ]; then
@@ -86,9 +89,12 @@ fi
 # Export variable to change default tf dataset output
 export TFDS_DATA_DIR
 
-# To run the following command install first (in your conda environment):
-# pip install -q tfds-nightly
+# Install the tensorflow datasets builder in the specified conda environment:
+pip install -q tfds-nightly
 #tfds build --register_checksums 2>&1 | tee  $SCRIPT_PATH"/Create_tf_dataset.log"
 tfds build --register_checksums
+OUT_FLAG=$?
 
 echo "Execution of "$0" finished."
+
+exit $OUT_FLAG
