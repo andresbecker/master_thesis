@@ -1,16 +1,16 @@
 {
     "_comment": "where to save the models and checkpoints---------------------",
-    "model_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/models",
+    "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models",
     "clean_model_dir": 1,
 
     "_comment": "Path where external libraries are:",
-    "external_libs_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/libs",
+    "external_libs_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/libs",
 
     "_comment": "Preprocessed data path---------------------------------------",
-    "pp_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_images_and_masks_all_wells",
+    "pp_path": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_images_and_masks_all_wells",
 
 		"_comment": "Tensorflow datasets parameters-------------------------------",
-		"local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/tensorflow_datasets",
+		"local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets",
 		"tf_ds_name": "MPP_dataset",
     "shuffle_files": 1,
 
@@ -20,7 +20,7 @@
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
 		"_comment": "The log file will be placed inside the dir create to store the model",
-    "log_file_name": "model.log",
+    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Train_baseline_CNN_w_augm.log",
     "log_level": "INFO",
 
 		"_comment": "Cuda Config (boolean)----------------------------------------",
