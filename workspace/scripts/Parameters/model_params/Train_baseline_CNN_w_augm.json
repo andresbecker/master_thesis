@@ -28,7 +28,7 @@
 		"set_memory_growth": 0,
 
 		"_comment": "Model selection----------------------------------------------",
-    "model_name": "baseline_CNN_2",
+    "model_name": "baseline_CNN",
     "number_of_epochs": 30,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
