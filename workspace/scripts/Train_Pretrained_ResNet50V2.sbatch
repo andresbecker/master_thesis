@@ -5,7 +5,7 @@
 #SBATCH -J PreTrain_ResNet50V2
 #SBATCH -p icb_gpu
 #SBATCH --gres=gpu:1
-#SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5]
+#SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5],icb-gpusrv0[6-8]
 #SBATCH -c 4
 #SBATCH --mem-per-cpu 16G
 #SBATCH -t 8:00:00
