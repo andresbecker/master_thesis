@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH -o ./SLURM_output/Train_baseline_CNN_2_w_augm.out
-#SBATCH -e ./SLURM_output/Train_baseline_CNN_2_w_augm_error.out
-#SBATCH -J BaseLine2_w_a
+#SBATCH -o ./SLURM_output/Train_baseline_CNN_w_augm.out
+#SBATCH -e ./SLURM_output/Train_baseline_CNN_w_augm_error.out
+#SBATCH -J BaseLine_w_a
 #SBATCH -p icb_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5]
