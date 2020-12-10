@@ -11,5 +11,4 @@
 #SBATCH -t 5:00:00
 #SBATCH --nice=10000
 
-
 ./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/CNN_model_from_script.ipynb -p ./Parameters/model_params/Train_baseline_CNN_wo_augm.json

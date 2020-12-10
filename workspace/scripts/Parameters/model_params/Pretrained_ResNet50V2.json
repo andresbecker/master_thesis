@@ -2,7 +2,7 @@
     "_comment": "where to save the models and checkpoints---------------------",
     "_comment": "If model_dir is not given, then date-time tag used instead---",
     "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models",
-    "model_dir": "Without_Data_Augm",
+    "model_dir": "PreTreined_w_Data_Augm",
     "clean_model_dir": 1,
 
     "_comment": "Path where external libraries are:",
@@ -11,17 +11,17 @@
     "_comment": "Preprocessed data path---------------------------------------",
     "pp_path": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_images_and_masks_all_wells",
 
-		"_comment": "Tensorflow datasets parameters-------------------------------",
+    "_comment": "Tensorflow datasets parameters-------------------------------",
 		"local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets",
 		"tf_ds_name": "MPP_dataset",
     "shuffle_files": 1,
 
 		"_comment": "Augment dataset flags----------------------------------------",
-    "random_horizontal_flipping": 0,
-		"random_90deg_rotations": 0,
+    "random_horizontal_flipping": 1,
+		"random_90deg_rotations": 1,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
-    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Train_baseline_CNN_wo_augm.log",
+    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/PreTrain_ResNet50V2.log",
     "log_level": "INFO",
 
 		"_comment": "Cuda Config (boolean)----------------------------------------",
@@ -29,8 +29,12 @@
 		"set_memory_growth": 0,
 
 		"_comment": "Model selection----------------------------------------------",
-    "model_name": "baseline_CNN",
-    "number_of_epochs": 30,
+    "model_name": "ResNet50V2_PreTrained",
+    "first_trianing_stage_epochs": 50,
+    "second_trianing_stage_epochs": 80,
+    "_comment": "Second trianing stage learning rate (lr)---------------------",
+    "second_trianing_stage_lr": 0.0001,
+
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "BATCH_SIZE": 64,
