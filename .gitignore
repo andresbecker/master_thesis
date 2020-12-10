@@ -1,6 +1,7 @@
 **/datasets
 **/models
 *.log
+**/logs
 *.npy
 *.csv
 *.html
