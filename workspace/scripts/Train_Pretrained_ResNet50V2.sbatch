@@ -8,7 +8,7 @@
 #SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5]
 #SBATCH -c 4
 #SBATCH --mem-per-cpu 16G
-#SBATCH -t 5:00:00
+#SBATCH -t 8:00:00
 #SBATCH --nice=10000
 
 
