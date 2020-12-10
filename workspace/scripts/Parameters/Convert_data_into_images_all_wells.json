@@ -16,10 +16,10 @@
     "_comment": "184A1_hannah_meayamycin-J17 is empty",
 
     "_comment": "Path where external libraries are:",
-    "external_libs_path": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/libs",
+    "external_libs_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/libs",
 
     "_comment": "where to put processed data----------------------------------",
-    "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/184A1_hannah_images_and_masks_all_wells_dtype_float32",
+    "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_images_and_masks_all_wells_dtype_float32",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
@@ -104,6 +104,6 @@
     "method": "avg",
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
-    "log_file": "/storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/notebooks/NB_output/Convert_data_into_images_all_wells.log",
+    "log_file": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Convert_data_into_images_all_wells.log",
     "log_level": "INFO"
 }
