@@ -33,7 +33,7 @@
     "first_trianing_stage_epochs": 50,
     "second_trianing_stage_epochs": 100,
     "_comment": "Second trianing stage learning rate (lr)---------------------",
-    "second_trianing_stage_lr": 0.0001,
+    "second_trianing_stage_lr": 0.001,
 
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
