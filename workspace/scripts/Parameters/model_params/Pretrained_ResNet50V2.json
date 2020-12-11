@@ -2,7 +2,7 @@
     "_comment": "where to save the models and checkpoints---------------------",
     "_comment": "If model_dir is not given, then date-time tag used instead---",
     "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models",
-    "model_dir": "PreTreined_w_Data_Augm",
+    "model_dir": "PreTreined_w_Data_Augm_lr_001",
     "clean_model_dir": 1,
 
     "_comment": "Path where external libraries are:",
