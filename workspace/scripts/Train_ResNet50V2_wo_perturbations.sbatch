@@ -12,4 +12,4 @@
 #SBATCH --nice=10000
 
 
-./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/CNN_model_from_script.ipynb -p ./Parameters/model_params/Pretrained_ResNet50V2_wo_perturbations.json
+./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/CNN_model_from_script.ipynb -p ./Parameters/model_params/ResNet50V2_wo_perturbations.json
