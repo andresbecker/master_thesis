@@ -5,7 +5,8 @@
 
     "_comment": "Which perturbations and wells to load------------------------",
     "perturbations_and_wells": {
-    "184A1_hannah_unperturbed": ["I09", "I11"]
+    "184A1_hannah_unperturbed": ["I09", "I11"],
+    "184A1_hannah_AZD4573": ["I13"]
     },
 
     "_comment": "Path where external libraries are:",
@@ -13,6 +14,10 @@
 
     "_comment": "where to put processed data----------------------------------",
     "output_data_dir": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test_32",
+
+    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
+    "log_file": "/home/hhughes/Documents/Master_Thesis/Project/workspace/logs/Convert_data_into_images.log",
+    "log_level": "INFO",
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
@@ -94,9 +99,5 @@
 
     "_comment": "Project unichannel images into a scalar (avg or median)------",
     "project_into_scalar": 1,
-    "method": "avg",
-
-    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
-    "log_file": "/home/hhughes/Documents/Master_Thesis/Project/workspace/notebooks/NB_output/Convert_data_into_images_all_wells.log",
-    "log_level": "INFO"
+    "method": "avg"
 }
