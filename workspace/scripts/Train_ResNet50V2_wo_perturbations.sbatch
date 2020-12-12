@@ -2,7 +2,7 @@
 
 #SBATCH -o ./SLURM_output/ResNet50V2_wo_pert.log
 #SBATCH -e ./SLURM_output/ResNet50V2_wo_pert.log
-#SBATCH -J BaseLine_wo_pert
+#SBATCH -J ResNet50V2_wo_pert
 #SBATCH -p icb_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5],icb-gpusrv0[6-8]
