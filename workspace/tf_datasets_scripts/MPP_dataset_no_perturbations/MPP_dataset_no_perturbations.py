@@ -1,4 +1,4 @@
-"""MPP_dataset dataset."""
+"""MPP_dataset_no_perturbations dataset."""
 
 import tensorflow_datasets as tfds
 import pandas as pd
@@ -15,6 +15,9 @@ This Dataset was builded after a preprocessing using the python script Transform
 - Cleaned. Border and mitotic cells were removed.
 - Normalized. Each channel was normalized using scale parameters obtained from the training set.
 - Target value (scalar) calculated. The transcription rate was approximated taking the average of the measured pixels of the channel 00_EU. It is important to mention that the the target value was calculated BEFORE the normalization process.
+
+This Dataset contains only the cells with no perturbations (i.e. cells such that perturbation in ['normal', 'DMSO']). Although perturbations 'TSA' seams not to have influence over the TR (00_EU avg), it seams to have an influence on the intensity of the channel 10_H3K27ac, and therefore it is not included.
+
 """
 
 _CITATION = """
@@ -34,11 +37,11 @@ author = {Gut, Gabriele and Herrmann, Markus D. and Pelkmans, Lucas},
 }
 """
 
-class MppDataset(tfds.core.GeneratorBasedBuilder):
-	"""DatasetBuilder for MPP_dataset dataset."""
-	VERSION = tfds.core.Version('1.0.1')
+class MppDataset_no_perturbations(tfds.core.GeneratorBasedBuilder):
+	"""DatasetBuilder for MPP_dataset_no_perturbations dataset."""
+	VERSION = tfds.core.Version('1.0.0')
 	RELEASE_NOTES = {
-		'1.0.1': 'Added Cell shuffling before tf dataset creation.',
+		'1.0.0': 'First Release. Only normal and DMSO perturbations included.',
 		}
 
 	def _info(self) -> tfds.core.DatasetInfo:
@@ -54,6 +57,20 @@ class MppDataset(tfds.core.GeneratorBasedBuilder):
 
 		# Path where the preprocessed data to be transformed into tf dataset is
 		self.data_source_path = tfds_param['data_source_path']
+
+		# Which perturbations to use?
+		perturbations = tfds_param['perturbations']
+
+		# Load metadata file:
+		with open(os.path.join(self.data_source_path, 'metadata.csv')) as file:
+			metadata =  pd.read_csv(file)
+		# filter acordinglly to the selected perturbations
+		metadata = metadata[metadata.perturbation.isin(perturbations)]
+		# leave only unique elements
+		metadata = metadata.groupby(['mapobject_id_cell'], sort=False, as_index=False).first()
+
+		# filtered mapobject_id_cells
+		self.filtered_cells = metadata.mapobject_id_cell.values.astype(str)
 
 		# Load channel file:
 		with open(os.path.join(self.data_source_path, 'channels.csv')) as file:
@@ -130,7 +147,12 @@ class MppDataset(tfds.core.GeneratorBasedBuilder):
 	  	"""
 
 		# Get file names and shuffle them
-		file_names = np.asarray([file.name for file in images_path.glob('*.npz')])
+		file_names = [file.name for file in images_path.glob('*.npz')]
+		# filtered mapobject_id_cells
+		file_names = [fn for fn in file_names if fn[:-4] in self.filtered_cells]
+		file_names = np.array(file_names)
+
+		# Shuffle files (not sure if this is necessary)
 		np.random.seed(self.seed)
 		np.random.shuffle(file_names)
 

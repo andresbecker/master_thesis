@@ -9,4 +9,4 @@
 #SBATCH -t 23:59:00
 #SBATCH --nice=10000
 
-./Create_tf_dataset.sh -o /storage/groups/ml01/workspace/andres.becker/master_thesis/datasets/tensorflow_datasets -n MPP_dataset -p /storage/groups/ml01/workspace/andres.becker/master_thesis/workspace/tf_datasets_scripts/MPP_dataset/Parameters/tf_dataset_parameters_server.json -e icb_mt
+./Create_tf_dataset.sh -o /storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets -n MPP_dataset -p ./MPP_dataset/Parameters/tf_dataset_parameters_server.json -e icb_mt

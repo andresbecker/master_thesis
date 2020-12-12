@@ -3,6 +3,9 @@
     "data_source_path": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test_32",
     "images_dtype": "float32",
 
+    "_comment": "Which perturbations?-----------------------------------------",
+    "perturbations": ["normal"],
+
     "_comment": "input/output channels definition----------------------------",
     "_comment": "Hannah is not using: 00_BG488, 00_BG568, 09_SRRM2_ILASTIK, 15_SON_ILASTIK",
     "input_channels": [
