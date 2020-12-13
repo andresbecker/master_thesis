@@ -16,9 +16,11 @@ class Predef_models():
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('Predef_models_and_utils class initialed')
 
-    def select_model(self, model_name, input_shape=None):
+    def select_model(self, model_name=None, input_shape=None, pre_training=False):
 
         self.model_name = model_name
+        self.pre_training = pre_training
+
         if input_shape is None:
             msg = 'Please specify the input shape! E.g.:\n'
             msg += 'input_shape=(224, 224, 37)'
@@ -269,12 +271,13 @@ class Predef_models():
 
         # Now freez the pretrained layers for the first training (only train
         # last (dense) layers)
-        for layer in base_model.layers:
-            l_name = layer.name
-            if l_name in pretrain_weights_and_biases.keys():
-                layer.trainable = False
-            else:
-                layer.trainable = True
+        if self.pre_training:
+            for layer in base_model.layers:
+                l_name = layer.name
+                if l_name in pretrain_weights_and_biases.keys():
+                    layer.trainable = False
+                else:
+                    layer.trainable = True
 
         # Finally add some dense layers to predict the TR:
         x = base_model.output
