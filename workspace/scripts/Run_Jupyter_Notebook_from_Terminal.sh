@@ -69,10 +69,12 @@ fi
 # Create output notebook
 # First create output notebook absolute path
 TIME_TAG=$(date +"%d%m%y_%H%M")
-OUTPUT_NOTEBOOK_NAME=$(basename $INPUT_NOTEBOOK | awk 'BEGIN{FS="."}{print $1}')
+#OUTPUT_NOTEBOOK_NAME=$(basename $INPUT_NOTEBOOK | awk 'BEGIN{FS="."}{print $1}')
+OUTPUT_NOTEBOOK_NAME=$(basename $PARM_FILE | awk 'BEGIN{FS="."}{print $1}')
 OUTPUT_NOTEBOOK=$OUTPUT_PATH"/"$OUTPUT_NOTEBOOK_NAME"_"$TIME_TAG".ipynb"
 # we mark the "Processing" NB in case we stop the process
 OUTPUT_NOTEBOOK_TEMP=$OUTPUT_PATH"/"$OUTPUT_NOTEBOOK_NAME"_"$TIME_TAG"_processing.ipynb"
+
 # Now, replace input parametrs file with correct one
 awk -v parm_file="$PARM_FILE" '{
   # include input variables in the output jupyter notebook
