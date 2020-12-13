@@ -595,10 +595,13 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
                 for c in channels_ids:
                     if (projection_method == 'avg'):
                         temp_target = temp_img[:,:,c][temp_mask].mean()
+                    elif (projection_method == 'avg_no_mask'):
+                        temp_mask = (temp_img[:,:,c] > 0)
+                        temp_target = (temp_mask.sum(), temp_img[:,:,c][temp_mask].sum())
                     elif (projection_method == 'median'):
                         temp_target = np.median(temp_img[:,:,c][temp_mask], axis=0)
                     else:
-                        msg = 'Projection method {} not implemented yet!'
+                        msg = 'Projection method {} not implemented yet!'.format(projection_method)
                         log.error(msg)
                         raise NotImplementedError(msg)
                     targets.append(temp_target)
@@ -610,7 +613,10 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
                 temp_img = temp_img.reshape(img_shape)
 
                 # Save everything
-                np.savez(file_name, img=temp_img, mask=temp_mask, targets=targets)
+                if (projection_method == 'avg_no_mask'):
+                    np.savez(file_name, img=temp_img, targets=targets)
+                else:
+                    np.savez(file_name, img=temp_img, mask=temp_mask, targets=targets)
 
     msg = 'MPPData images and masks saving process finished!'
     log.info(msg)
@@ -665,4 +671,4 @@ def get_concatenated_metadata(mppdata_dict=None, normalize=True, norm_key='train
 
         return metadata, normalization_vals
     else:
-        return metadata
+        return metadata, 0
