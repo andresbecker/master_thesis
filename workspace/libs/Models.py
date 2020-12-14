@@ -49,6 +49,9 @@ class Predef_models():
         elif self.model_name == 'ResNet50V2':
             self.model = self._get_ResNet50V2()
 
+        elif self.model_name == 'ResNet50V2_R2':
+            self.model = self._get_ResNet50V2_R2()
+
         elif self.model_name == 'ResNet50V2_PreTrained':
             self.model = self._get_ResNet50V2_PreTrained()
 
@@ -204,6 +207,35 @@ class Predef_models():
 
         return model
 
+    def _get_ResNet50V2_R2(self):
+
+        input_layer = tf.keras.Input(shape=self.input_shape,
+            #batch_size=p['BATCH_SIZE'],
+            name='InputLayer')
+
+        base_model = tf.keras.applications.ResNet50V2(
+            include_top=False,
+            weights=None,
+            input_tensor=input_layer,
+            #input_shape=None,
+            pooling=None,
+            #classes=1000,
+            classifier_activation=None,
+            #classifier_activation='softmax',
+            )
+
+        x = base_model.output
+        x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.Dense(512)(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+        x = tf.keras.layers.Dense(128)(x)
+        prediction = tf.keras.layers.Dense(2)(x)
+
+        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
+
+        return model
+
     def _get_ResNet50V2_PreTrained(self):
         """
         Since we are using pretrained weights, then it is necessary two stages of training, one where the pretrained layers are freezed and a second one where the whole architecture is trained (with a small learning rate). Therefore, this function returns the model WITH THE PRETRAINED LAYERS FREZZED (i.e. pretrained_layer.trainable=False).
@@ -322,14 +354,14 @@ class Predef_models():
 
         return model
 
-def plot_error_dist(df, y_models):
+def plot_error_dist(df, y_true='y', y_models=['y_hat']):
     temp_df = df.copy()
     diff_names = ['set', 'perturbation']
     for y_model in y_models:
         # Column name for difference between y and y_model
-        col_name = 'y - '+y_model
+        col_name = y_true+' - '+y_model
         diff_names.append(col_name)
-        temp_df[col_name] = temp_df['y'] - temp_df[y_model]
+        temp_df[col_name] = temp_df[y_true] - temp_df[y_model]
 
     temp_df = temp_df[diff_names].set_index(['set', 'perturbation'])
     temp_df = temp_df.stack().reset_index()
@@ -347,16 +379,20 @@ def plot_error_dist(df, y_models):
     plt.xlabel('y - y_hat')
     plt.title('Error KDE per model')
 
-    plt.figure(figsize=(len(y_models)*7,7))
-    sns.boxplot(y='value',
-                x='diff_name',
-                hue='perturbation',
-                data=temp_df)
-    plt.xlabel('Diff Name')
-    plt.ylabel('y - y_hat')
-    plt.title('Error Distribution per set')
+    #plt.figure(figsize=(len(y_models)*7,7))
+    #sns.boxplot(y='value',
+    #            x='diff_name',
+    #            hue='perturbation',
+    #            data=temp_df)
+    #plt.xlabel('Diff Name')
+    #plt.ylabel('y - y_hat')
+    #plt.title('Error Distribution per set')
 
-    temp_df = df.loc[:, df.columns != 'perturbation']
+def plot_y_dist(df, y_true='y', y_hat='y_hat'):
+    temp_df = df.copy()
+    columns = [y_true, y_hat, 'mapobject_id_cell', 'set']
+    temp_df = temp_df[columns]
+    #temp_df = df.loc[:, df.columns != 'perturbation']
     temp_df = temp_df.set_index(['mapobject_id_cell', 'set']).stack().reset_index()
     temp_df.columns = ['mapobject_id_cell', 'set', 'var', 'value']
 
@@ -367,33 +403,33 @@ def plot_error_dist(df, y_models):
                 data=temp_df)
     plt.title('Transcription Rate (TR) values distribution')
 
-def plot_residuals(df, y_hat):
+def plot_residuals(df=None, y_true='y', y_hat='y_hat'):
 
-    df['diff'] = df['y'] - df[y_hat]
+    df['diff'] = df[y_true] - df[y_hat]
     std = df['diff'].std()
     df['std_residuals'] = df['diff'] / std
 
     sns.scatterplot(
         data=df,
-        x = 'y',
+        x = y_true,
         y = 'std_residuals',
         hue = 'perturbation',
     )
-    plt.hlines(y=2, xmin=np.min(df['y']), xmax=np.max(df['y']), color='red', ls='dashed')
-    plt.hlines(y=-2, xmin=np.min(df['y']), xmax=np.max(df['y']), color='red', ls='dashed')
+    plt.hlines(y=2, xmin=np.min(df[y_true]), xmax=np.max(df[y_true]), color='red', ls='dashed')
+    plt.hlines(y=-2, xmin=np.min(df[y_true]), xmax=np.max(df[y_true]), color='red', ls='dashed')
     plt.title(y_hat)
 
-def plot_y_vs_y_hat(df, y_hat):
+def plot_y_vs_y_hat(df, y_true='y', y_hat='y_hat'):
     sns.scatterplot(data=df,
-                    x='y',
+                    x=y_true,
                     y=y_hat,
                     hue='perturbation',
                     #s=15,
                     alpha=0.5)
     plt.axis('equal')
 
-    min_val = df[['y', y_hat]].min().values.min()
-    max_val = df[['y', y_hat]].max().values.min()
+    min_val = df[[y_true, y_hat]].min().values.min()
+    max_val = df[[y_true, y_hat]].max().values.min()
 
     x_line = [min_val, max_val]
     y_line = x_line
@@ -409,7 +445,7 @@ def get_BIC(y, y_hat, k):
     else:
         return 0
 
-def get_metrics(df=None, k=0):
+def get_metrics(df=None, k=0, y_true='y', y_hat='y_hat'):
     huber_loss = tf.keras.losses.Huber()
 
     # Create df to store metrics to compare models
@@ -418,14 +454,14 @@ def get_metrics(df=None, k=0):
 
     for ss in np.unique(df['set']):
         mask = (df['set'] == ss)
-        y = df['y'][mask].values
-        y_hat = df['y_hat'][mask].values
-        r2 = r2_score(y, y_hat)
-        bic = get_BIC(y=y, y_hat=y_hat, k=k)
-        mse = mean_squared_error(y, y_hat)
-        mae = mean_absolute_error(y, y_hat)
-        huber = huber_loss(y, y_hat).numpy()
-        temp_df = temp_df.append({'model':'y_hat', 'set':ss, 'R2':r2, 'BIC':bic, 'MSE':mse, 'MAE':mae, 'Huber':huber}, ignore_index=True)
+        y = df[y_true][mask].values
+        y_hat_vals = df[y_hat][mask].values
+        r2 = r2_score(y, y_hat_vals)
+        bic = get_BIC(y=y, y_hat=y_hat_vals, k=k)
+        mse = mean_squared_error(y, y_hat_vals)
+        mae = mean_absolute_error(y, y_hat_vals)
+        huber = huber_loss(y, y_hat_vals).numpy()
+        temp_df = temp_df.append({'model':y_hat, 'set':ss, 'R2':r2, 'BIC':bic, 'MSE':mse, 'MAE':mae, 'Huber':huber}, ignore_index=True)
 
     return temp_df.round(4)
 
