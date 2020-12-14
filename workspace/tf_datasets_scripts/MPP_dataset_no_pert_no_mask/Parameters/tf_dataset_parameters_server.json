@@ -1,6 +1,6 @@
 {
     "_comment": "Path where the preprocessed data is:",
-    "data_source_path": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_imgs_scalars_no_mask",
+    "data_source_path": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_all_wells_no_mask",
 
     "_comment": "Which perturbations?-----------------------------------------",
     "perturbations": ["normal", "DMSO"],
