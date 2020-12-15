@@ -306,24 +306,39 @@ class MPPData:
         """
         n_cells = self.metadata.shape[0]
         n_channels = self.mpp.shape[-1]
-        cell_ids = np.array(self.metadata.mapobject_id.values).reshape((-1,1))
+        cell_ids = np.array(self.metadata.mapobject_id.values)
 
-        col_name = ['mapobject_id']
-        col_name += [self.channels.set_index('channel_id').loc[c].values[0]+'_'+method for c in range(n_channels)]
+        col_name = ['mapobject_id', 'cell_size']
+        if (method == 'size_and_sum'):
+            col_name += [self.channels.set_index('channel_id').loc[c].values[0]+'_sum' for c in range(n_channels)]
+            col_name += [self.channels.set_index('channel_id').loc[c].values[0]+'_size' for c in range(n_channels)]
+        else:
+            col_name += [self.channels.set_index('channel_id').loc[c].values[0]+'_'+method for c in range(n_channels)]
+
         scalar_vals_df = pd.DataFrame(columns=col_name)
 
         for map_id in cell_ids:
             mask = (self.mapobject_ids == map_id)
+            cell_size = self.mpp[mask].shape[0]
+            temp_data = np.array([map_id, cell_size])
 
             if (method == 'avg'):
-                channel_sclara = self.mpp[mask].mean(axis=0).reshape((1,-1))
+                channel_sclara = self.mpp[mask].mean(axis=0).reshape(-1)
+
             elif (method == 'median'):
-                channel_sclara = np.median(self.mpp[mask], axis=0)
+                channel_sclara = np.median(self.mpp[mask], axis=0).reshape(-1)
+
+            elif (method == 'size_and_sum'):
+                channel_sum = self.mpp[mask].sum(axis=0).reshape(-1)
+                channel_size = list((self.mpp[mask] > 0).sum(axis=0).reshape(-1))
+                channel_sclara = np.concatenate((channel_sum, channel_size), axis=0)
+
             else:
                 print('Available methods:\n avg, median')
                 raise NotImplementedError(method)
 
-            temp_df = pd.DataFrame(np.insert(channel_sclara, 0, map_id).reshape((1, -1)), columns=col_name)
+            channel_sclara = np.concatenate((np.array([map_id, cell_size]), channel_sclara), axis=0).reshape((1,-1))
+            temp_df = pd.DataFrame(channel_sclara, columns=col_name)
             scalar_vals_df = scalar_vals_df.append(temp_df, ignore_index=True)
 
         scalar_vals_df.mapobject_id = scalar_vals_df.mapobject_id.astype('uint32')
@@ -595,11 +610,13 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
                 for c in channels_ids:
                     if (projection_method == 'avg'):
                         temp_target = temp_img[:,:,c][temp_mask].mean()
-                    elif (projection_method == 'avg_no_mask'):
-                        temp_mask = (temp_img[:,:,c] > 0)
-                        temp_target = (temp_mask.sum(), temp_img[:,:,c][temp_mask].sum())
+
+                    elif (projection_method == 'size_and_sum'):
+                        temp_target = ((temp_img[:,:,c] > 0).sum(), temp_img[:,:,c].sum())
+
                     elif (projection_method == 'median'):
                         temp_target = np.median(temp_img[:,:,c][temp_mask], axis=0)
+
                     else:
                         msg = 'Projection method {} not implemented yet!'.format(projection_method)
                         log.error(msg)
@@ -613,10 +630,7 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
                 temp_img = temp_img.reshape(img_shape)
 
                 # Save everything
-                if (projection_method == 'avg_no_mask'):
-                    np.savez(file_name, img=temp_img, targets=targets)
-                else:
-                    np.savez(file_name, img=temp_img, mask=temp_mask, targets=targets)
+                np.savez(file_name, img=temp_img, mask=temp_mask, targets=targets)
 
     msg = 'MPPData images and masks saving process finished!'
     log.info(msg)
@@ -659,7 +673,11 @@ def get_concatenated_metadata(mppdata_dict=None, normalize=True, norm_key='train
         msg='Normalizing projected values in metadata...'
         log.info(msg)
         # Second, get normalization values
-        norm_columns = [c+'_'+projection_method for c in mppdata_dict[norm_key][0].channels.name.values]
+        if projection_method == 'size_and_sum':
+            norm_columns = [c+'_sum' for c in mppdata_dict[norm_key][0].channels.name.values]
+            norm_columns += [c+'_size' for c in mppdata_dict[norm_key][0].channels.name.values]
+        else:
+            norm_columns = [c+'_'+projection_method for c in mppdata_dict[norm_key][0].channels.name.values]
         normalization_vals =np.percentile(metadata[norm_columns][metadata.set == norm_key].values, percentile, axis=0)
 
         # Finally, normalize values

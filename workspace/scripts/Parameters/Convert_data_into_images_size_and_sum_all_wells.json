@@ -19,7 +19,7 @@
     "external_libs_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/libs",
 
     "_comment": "where to put processed data----------------------------------",
-    "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_all_wells_no_mask",
+    "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_size_and_sum_all_wells",
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
     "log_file": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Convert_data_into_images_all_wells.log",
@@ -71,8 +71,9 @@
     ],
     "output_channels": ["00_EU"],
     "_comment": "output channels as a single number---------------------------",
-    "_comment": "Options: max, avg, None results in output images-------------",
-    "aggregate_output": "avg_no_mask",
+    "_comment": "Project unichannel images into a scalar (avg or median, avg or median)",
+    "project_into_scalar": 1,
+    "aggregate_output": "size_and_sum",
 
     "_comment": "train/val/test split-----------------------------------------",
     "train_frac": 0.8,
@@ -102,9 +103,5 @@
     "_comment": "Convert mpp data into image----------------------------------",
     "convert_into_image": 1,
     "images_dtype": "float64",
-    "remove_original_data": 1,
-
-    "_comment": "Project unichannel images into a scalar (avg or median)------",
-    "project_into_scalar": 0,
-    "method": "avg"
+    "remove_original_data": 1
 }
