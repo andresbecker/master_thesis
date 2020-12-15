@@ -11,4 +11,4 @@
 #SBATCH -t 8:00:00
 #SBATCH --nice=10000
 
-./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/CNN_model_sum_from_script.ipynb -p ./Parameters/model_params/ResNet50V2_sum.json
+./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/CNN_model_V2_from_script.ipynb -p ./Parameters/model_params/ResNet50V2_sum.json
