@@ -58,6 +58,9 @@ class Predef_models():
         elif self.model_name == 'ResNet50V2_test':
             self.model = self._get_ResNet50V2_test()
 
+        elif self.model_name == 'ResNet50V2_test2':
+            self.model = self._get_ResNet50V2_test2()
+
         else:
             msg = 'Specified model {} not implemented!'.format(self.model_name)
             self.log.error(msg)
@@ -356,6 +359,37 @@ class Predef_models():
         x = base_model.output
         x = tf.keras.layers.Flatten()(x)
         #x = tf.keras.layers.GlobalAveragePooling2D()(x)
+
+        x = tf.keras.layers.Dense(1024)(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+
+        prediction = tf.keras.layers.Dense(1)(x)
+
+        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
+
+        return model
+
+    def _get_ResNet50V2_test2(self):
+
+        input_layer = tf.keras.Input(shape=self.input_shape,
+            #batch_size=p['BATCH_SIZE'],
+            name='InputLayer')
+
+        base_model = tf.keras.applications.ResNet50V2(
+            include_top=False,
+            weights=None,
+            input_tensor=input_layer,
+            #input_shape=None,
+            pooling=None,
+            #classes=1000,
+            classifier_activation=None,
+            #classifier_activation='softmax',
+            )
+
+        x = base_model.output
+        #x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
         x = tf.keras.layers.Dense(1024)(x)
         x = tf.keras.layers.BatchNormalization()(x)
