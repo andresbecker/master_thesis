@@ -318,7 +318,7 @@ class Predef_models():
                 else:
                     layer.trainable = True
 
-        # Finally add some dense layers to predict the TR: 
+        # Finally add some dense layers to predict the TR:
         x = base_model.output
         x = tf.keras.layers.Flatten()(x)
 
@@ -329,6 +329,8 @@ class Predef_models():
         x = tf.keras.layers.Dense(128)(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
+
+        prediction = tf.keras.layers.Dense(1)(x)
 
         model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
 
