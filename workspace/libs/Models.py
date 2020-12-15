@@ -318,7 +318,7 @@ class Predef_models():
                 else:
                     layer.trainable = True
 
-        # Finally add some dense layers to predict the TR:
+        # Finally add some dense layers to predict the TR: 
         x = base_model.output
         x = tf.keras.layers.Flatten()(x)
 
