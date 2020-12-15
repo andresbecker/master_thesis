@@ -61,6 +61,12 @@ class Predef_models():
         elif self.model_name == 'ResNet50V2_test2':
             self.model = self._get_ResNet50V2_test2()
 
+        elif self.model_name == 'ResNet50V2_test3':
+            self.model = self._get_ResNet50V2_test3()
+
+        elif self.model_name == 'ResNet50V2_test4':
+            self.model = self._get_ResNet50V2_test4()
+
         else:
             msg = 'Specified model {} not implemented!'.format(self.model_name)
             self.log.error(msg)
@@ -394,6 +400,87 @@ class Predef_models():
         x = tf.keras.layers.Dense(1024)(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
+
+        prediction = tf.keras.layers.Dense(1)(x)
+
+        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
+
+        return model
+
+    def _get_ResNet50V2_test3(self):
+
+        input_layer = tf.keras.Input(shape=self.input_shape,
+            #batch_size=p['BATCH_SIZE'],
+            name='InputLayer')
+
+        base_model = tf.keras.applications.ResNet50V2(
+            include_top=False,
+            weights=None,
+            input_tensor=input_layer,
+            #input_shape=None,
+            pooling=None,
+            #classes=1000,
+            classifier_activation=None,
+            #classifier_activation='softmax',
+            )
+
+        x = base_model.output
+        #x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
+
+        x = tf.keras.layers.Dense(
+            units=1024,
+            tf.keras.kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            tf.keras.bias_regularizer=regularizers.l2(1e-4),
+            #tf.keras.activity_regularizer=regularizers.l2(1e-5)
+        )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+
+        x = tf.keras.layers.Dense(
+            units=512,
+            tf.keras.kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            tf.keras.bias_regularizer=regularizers.l2(1e-4),
+            #tf.keras.activity_regularizer=regularizers.l2(1e-5)
+        )(x)
+
+        prediction = tf.keras.layers.Dense(
+            units=1,
+            tf.keras.kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            tf.keras.bias_regularizer=regularizers.l2(1e-4),
+            #tf.keras.activity_regularizer=regularizers.l2(1e-5)
+        )(x)
+
+        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
+
+        return model
+
+    def _get_ResNet50V2_test4(self):
+
+        input_layer = tf.keras.Input(shape=self.input_shape,
+            #batch_size=p['BATCH_SIZE'],
+            name='InputLayer')
+
+        base_model = tf.keras.applications.ResNet50V2(
+            include_top=False,
+            weights=None,
+            input_tensor=input_layer,
+            #input_shape=None,
+            pooling=None,
+            #classes=1000,
+            classifier_activation=None,
+            #classifier_activation='softmax',
+            )
+
+        x = base_model.output
+        #x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
+
+        x = tf.keras.layers.Dense(1024)(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+
+        x = tf.keras.layers.Dense(512)(x)
 
         prediction = tf.keras.layers.Dense(1)(x)
 
