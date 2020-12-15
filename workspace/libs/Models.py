@@ -430,25 +430,25 @@ class Predef_models():
 
         x = tf.keras.layers.Dense(
             units=1024,
-            tf.keras.kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),
-            tf.keras.bias_regularizer=regularizers.l2(1e-4),
-            #tf.keras.activity_regularizer=regularizers.l2(1e-5)
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            bias_regularizer=tf.keras.regularizers.l2(1e-4),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
 
         x = tf.keras.layers.Dense(
             units=512,
-            tf.keras.kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),
-            tf.keras.bias_regularizer=regularizers.l2(1e-4),
-            #tf.keras.activity_regularizer=regularizers.l2(1e-5)
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            bias_regularizer=tf.keras.regularizers.l2(1e-4),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
         prediction = tf.keras.layers.Dense(
             units=1,
-            tf.keras.kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),
-            tf.keras.bias_regularizer=regularizers.l2(1e-4),
-            #tf.keras.activity_regularizer=regularizers.l2(1e-5)
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            bias_regularizer=tf.keras.regularizers.l2(1e-4),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
         model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
