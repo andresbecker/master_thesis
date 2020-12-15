@@ -86,6 +86,8 @@ class Predef_models():
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
             tf.keras.layers.Dense(128),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
 
             tf.keras.layers.Dense(1)
         ])
@@ -197,10 +199,15 @@ class Predef_models():
 
         x = base_model.output
         x = tf.keras.layers.Flatten()(x)
+
         x = tf.keras.layers.Dense(512)(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
+
         x = tf.keras.layers.Dense(128)(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+
         prediction = tf.keras.layers.Dense(1)(x)
 
         model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
@@ -314,11 +321,14 @@ class Predef_models():
         # Finally add some dense layers to predict the TR:
         x = base_model.output
         x = tf.keras.layers.Flatten()(x)
+
         x = tf.keras.layers.Dense(512)(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
+
         x = tf.keras.layers.Dense(128)(x)
-        prediction = tf.keras.layers.Dense(1)(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
 
         model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
 
