@@ -8,11 +8,11 @@
     "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/libs",
 
     "_comment": "Preprocessed data path---------------------------------------",
-    "pp_path": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test_32",
+    "pp_path": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_no_mask",
 
 		"_comment": "Tensorflow datasets parameters-------------------------------",
 		"local_tf_datasets": "/home/hhughes/Documents/Master_Thesis/Project/datasets/tensorflow_datasets",
-		"tf_ds_name": "MPP_dataset_no_perturbations",
+		"tf_ds_name": "MPP_dataset_no_pert_no_mask",
     "shuffle_files": 1,
 
 		"_comment": "Augment dataset flags----------------------------------------",
@@ -20,7 +20,7 @@
 		"random_90deg_rotations": 1,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
-    "log_file_name": "//home/hhughes/Documents/Master_Thesis/Project/workspace/logs/Baseline_no_perturbations.log",
+    "log_file_name": "/home/hhughes/Documents/Master_Thesis/Project/workspace/logs/Baseline_no_perturbations.log",
     "log_level": "INFO",
 
 		"_comment": "Cuda Config (boolean)----------------------------------------",
