@@ -344,7 +344,6 @@ class Predef_models():
 
         base_model = tf.keras.applications.ResNet50V2(
             include_top=False,
-            #weights="imagenet",
             weights=None,
             input_tensor=input_layer,
             #input_shape=None,
@@ -356,10 +355,12 @@ class Predef_models():
 
         x = base_model.output
         x = tf.keras.layers.Flatten()(x)
-        x = tf.keras.layers.Dense(512)(x)
+        #x = tf.keras.layers.GlobalAveragePooling2D()(x)
+
+        x = tf.keras.layers.Dense(1024)(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
-        x = tf.keras.layers.Dense(128)(x)
+
         prediction = tf.keras.layers.Dense(1)(x)
 
         model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
