@@ -329,17 +329,36 @@ class Predef_models():
 
         # Finally add some dense layers to predict the TR:
         x = base_model.output
-        x = tf.keras.layers.Flatten()(x)
+        #x = tf.keras.layers.Flatten()(x)
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
-        x = tf.keras.layers.Dense(512)(x)
+        #x = tf.keras.layers.Dense(512)(x)
+        x = tf.keras.layers.Dense(
+            units=1024,
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            bias_regularizer=tf.keras.regularizers.l2(1e-4),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+        )(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
 
-        x = tf.keras.layers.Dense(128)(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.ReLU()(x)
+        #x = tf.keras.layers.Dense(128)(x)
+        x = tf.keras.layers.Dense(
+            units=512,
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            bias_regularizer=tf.keras.regularizers.l2(1e-4),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+        )(x)
+        #x = tf.keras.layers.BatchNormalization()(x)
+        #x = tf.keras.layers.ReLU()(x)
 
-        prediction = tf.keras.layers.Dense(1)(x)
+        #prediction = tf.keras.layers.Dense(1)(x)
+        prediction = tf.keras.layers.Dense(
+            units=1,
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+            bias_regularizer=tf.keras.regularizers.l2(1e-4),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+        )(x)
 
         model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
 
