@@ -19,10 +19,6 @@
     "random_horizontal_flipping": 1,
 		"random_90deg_rotations": 1,
 
-    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
-    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/PreTrain_ResNet50V2_wo_per.log",
-    "log_level": "INFO",
-
 		"_comment": "Cuda Config (boolean)----------------------------------------",
     "disable_gpu": 0,
 		"set_memory_growth": 0,
@@ -30,13 +26,20 @@
 		"_comment": "Model selection----------------------------------------------",
     "model_name": "ResNet50V2_PreTrained",
     "first_trianing_stage_epochs": 50,
+    "_comment": "First trianing stage learning rate (lr) (default=0.001)------",
+    "first_trianing_stage_lr": 0.001,
     "second_trianing_stage_epochs": 100,
     "_comment": "Second trianing stage learning rate (lr)---------------------",
-    "second_trianing_stage_lr": 0.001,
-
+    "second_trianing_stage_lr": 0.0001,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
-    "BATCH_SIZE": 64,
+    "BATCH_SIZE": 128,
+
+    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
+    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/PreTrain_ResNet50V2_wo_per.log",
+    "log_level": "INFO",
+    "_comment": "if tensorboard=1, then tb_logs_path=log_file_name+tensorboard",
+    "tensorboard": 1,
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
