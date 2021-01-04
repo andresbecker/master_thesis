@@ -94,6 +94,13 @@ else
   exit 1
 fi
 
+# Enable persistence mode for GPU
+nvidia-smi -pm 1
+
+# Export Environment variables for CUDA 11.1
+export PATH=/usr/local/cuda-11.1/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.1/lib64
+
 # Execute notebook
 jupyter nbconvert --to notebook --execute $OUTPUT_NOTEBOOK_TEMP --inplace --allow-errors
 #jupyter-nbconvert --to notebook --execute $INPUT_NOTEBOOK --allow-errors --output $OUTPUT_NAME
