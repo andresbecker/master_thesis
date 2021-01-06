@@ -100,6 +100,7 @@ fi
 # Export Environment variables for CUDA 11.1
 export PATH=/usr/local/cuda-11.1/bin:$PATH
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.1/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.1/targets/x86_64-linux/lib
 
 # Execute notebook
 jupyter nbconvert --to notebook --execute $OUTPUT_NOTEBOOK_TEMP --inplace --allow-errors
