@@ -95,7 +95,7 @@ else
 fi
 
 # Enable persistence mode for GPU
-nvidia-smi -pm 1
+#nvidia-smi -pm 1
 
 # Export Environment variables for CUDA 11.1
 export PATH=/usr/local/cuda-11.1/bin:$PATH
