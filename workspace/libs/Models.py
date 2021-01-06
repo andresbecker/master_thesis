@@ -46,6 +46,9 @@ class Predef_models():
         if self.model_name == 'baseline_CNN_test3':
             self.model = self._get_baseline_CNN_test3()
 
+        if self.model_name == 'baseline_CNN_test4':
+            self.model = self._get_baseline_CNN_test4()
+
         elif self.model_name == 'small_CNN':
             self.model = self._get_small_CNN()
 
@@ -140,7 +143,7 @@ class Predef_models():
 
     def _get_baseline_CNN_test2(self):
         """
-        BL without avg instead of flatten
+        BL with avg instead of flatten
         """
 
         model = tf.keras.Sequential([
@@ -173,7 +176,7 @@ class Predef_models():
 
     def _get_baseline_CNN_test3(self):
         """
-        BL without avg instead of flatten and without last BN and ReLu
+        BL with avg instead of flatten and without last BN and ReLu
         """
 
         model = tf.keras.Sequential([
@@ -200,6 +203,56 @@ class Predef_models():
             #tf.keras.layers.ReLU(),
 
             tf.keras.layers.Dense(1)
+        ])
+
+        return model
+
+    def _get_baseline_CNN_test4(self):
+        """
+        BL with avg instead of flatten and without last BN and ReLu
+        and regularization
+        """
+
+        model = tf.keras.Sequential([
+            tf.keras.layers.Conv2D(64, (3,3),
+                                   padding='same',
+                                   input_shape=self.input_shape),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.Conv2D(128, (3,3),
+                                   padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            #tf.keras.layers.Flatten(),
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dense(
+                units=256,
+                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+                bias_regularizer=tf.keras.regularizers.l2(1e-4),
+                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+            ),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+
+            tf.keras.layers.Dense(
+                units=128,
+                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+                bias_regularizer=tf.keras.regularizers.l2(1e-4),
+                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+            ),
+            #tf.keras.layers.BatchNormalization(),
+            #tf.keras.layers.ReLU(),
+
+            tf.keras.layers.Dense(
+                units=1,
+                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
+                bias_regularizer=tf.keras.regularizers.l2(1e-4),
+                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+            ),
         ])
 
         return model
