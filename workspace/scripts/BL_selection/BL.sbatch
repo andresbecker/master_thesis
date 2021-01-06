@@ -2,7 +2,7 @@
 
 #SBATCH -o ./SLURM_output/BL.log
 #SBATCH -e ./SLURM_output/BL.error.log
-#SBATCH -J SLURM_output
+#SBATCH -J BL
 #SBATCH -p gpu_p
 #SBATCH --gres=gpu:1
 #SBATCH -c 4
