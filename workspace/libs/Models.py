@@ -251,6 +251,8 @@ class Predef_models():
                 units=1,
                 kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-4),
                 bias_regularizer=tf.keras.regularizers.l2(1e-4),
+                #kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-3),
+                #bias_regularizer=tf.keras.regularizers.l2(1e-3),
                 #activity_regularizer=tf.keras.regularizers.l2(1e-5)
             ),
         ])
