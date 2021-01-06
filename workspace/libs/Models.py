@@ -653,7 +653,7 @@ def plot_y_dist(df, y_true='y', y_hat='y_hat'):
                 data=temp_df)
     plt.title('Transcription Rate (TR) values distribution')
 
-def plot_residuals(df=None, y_true='y', y_hat='y_hat'):
+def plot_residuals(df=None, y_true='y', y_hat='y_hat', hue='perturbation'):
 
     df['diff'] = df[y_true] - df[y_hat]
     std = df['diff'].std()
@@ -663,17 +663,17 @@ def plot_residuals(df=None, y_true='y', y_hat='y_hat'):
         data=df,
         x = y_true,
         y = 'std_residuals',
-        hue = 'perturbation',
+        hue = hue,
     )
     plt.hlines(y=2, xmin=np.min(df[y_true]), xmax=np.max(df[y_true]), color='red', ls='dashed')
     plt.hlines(y=-2, xmin=np.min(df[y_true]), xmax=np.max(df[y_true]), color='red', ls='dashed')
     plt.title(y_hat)
 
-def plot_y_vs_y_hat(df, y_true='y', y_hat='y_hat'):
+def plot_y_vs_y_hat(df, y_true='y', y_hat='y_hat', hue='perturbation'):
     sns.scatterplot(data=df,
                     x=y_true,
                     y=y_hat,
-                    hue='perturbation',
+                    hue=hue,
                     #s=15,
                     alpha=0.5)
     plt.axis('equal')
