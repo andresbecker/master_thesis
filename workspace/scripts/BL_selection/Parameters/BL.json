@@ -9,7 +9,7 @@
 
     "_comment": "Preprocessed data path---------------------------------------",
     "pp_path": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_images_and_masks_all_wells",
-    
+
     "_comment": "Tensorflow datasets parameters-------------------------------",
     "local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets",
     "tf_ds_name": "Mpp_dataset_no_perturbations",
@@ -26,12 +26,12 @@
 
     "_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN",
-    "number_of_epochs": 80,
+    "number_of_epochs": 120,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)---------------------",
     "learning_rate": 0.001,
-    "BATCH_SIZE": 128,
+    "BATCH_SIZE": 64,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
     "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/BL.log",

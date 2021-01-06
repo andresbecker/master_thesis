@@ -26,12 +26,12 @@
 
 		"_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN_test4",
-    "number_of_epochs": 80,
+    "number_of_epochs": 120,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)---------------------",
     "learning_rate": 0.001,
-    "BATCH_SIZE": 128,
+    "BATCH_SIZE": 64,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
     "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/BL_test4_w_uzoom.log",
