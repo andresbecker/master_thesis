@@ -37,14 +37,17 @@ class Predef_models():
         if self.model_name == 'baseline_CNN':
             self.model = self._get_baseline_CNN()
 
+        if self.model_name == 'baseline_CNN_test1':
+            self.model = self._get_baseline_CNN_test1()
+
+        if self.model_name == 'baseline_CNN_test2':
+            self.model = self._get_baseline_CNN_test2()
+
+        if self.model_name == 'baseline_CNN_test3':
+            self.model = self._get_baseline_CNN_test3()
+
         elif self.model_name == 'small_CNN':
             self.model = self._get_small_CNN()
-
-        elif self.model_name == 'baseline_CNN_w_Drop':
-            self.model = self._get_baseline_CNN_w_Drop()
-
-        elif self.model_name == '2ConvLey_2DensLey_w_BN_and_LeakyRelu':
-            self.model = self._get_2ConvLey_2DensLey_w_BN_and_LeakyRelu()
 
         elif self.model_name == 'ResNet50V2':
             self.model = self._get_ResNet50V2()
@@ -103,6 +106,104 @@ class Predef_models():
 
         return model
 
+    def _get_baseline_CNN_test1(self):
+        """
+        BL without last BN and ReLu
+        """
+
+        model = tf.keras.Sequential([
+            tf.keras.layers.Conv2D(64, (3,3),
+                                   padding='same',
+                                   input_shape=self.input_shape),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.Conv2D(128, (3,3),
+                                   padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(256),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.Dense(128),
+            #tf.keras.layers.BatchNormalization(),
+            #tf.keras.layers.ReLU(),
+
+            tf.keras.layers.Dense(1)
+        ])
+
+        return model
+
+    def _get_baseline_CNN_test2(self):
+        """
+        BL without avg instead of flatten
+        """
+
+        model = tf.keras.Sequential([
+            tf.keras.layers.Conv2D(64, (3,3),
+                                   padding='same',
+                                   input_shape=self.input_shape),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.Conv2D(128, (3,3),
+                                   padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            #tf.keras.layers.Flatten(),
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dense(256),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.Dense(128),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+
+            tf.keras.layers.Dense(1)
+        ])
+
+        return model
+
+    def _get_baseline_CNN_test3(self):
+        """
+        BL without avg instead of flatten and without last BN and ReLu
+        """
+
+        model = tf.keras.Sequential([
+            tf.keras.layers.Conv2D(64, (3,3),
+                                   padding='same',
+                                   input_shape=self.input_shape),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.Conv2D(128, (3,3),
+                                   padding='same'),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            #tf.keras.layers.Flatten(),
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dense(256),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.Dense(128),
+            #tf.keras.layers.BatchNormalization(),
+            #tf.keras.layers.ReLU(),
+
+            tf.keras.layers.Dense(1)
+        ])
+
+        return model
+
     def _get_small_CNN(self):
 
         model = tf.keras.Sequential([
@@ -125,65 +226,6 @@ class Predef_models():
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
             tf.keras.layers.Dense(128, activation=tf.nn.relu),
-            tf.keras.layers.Dense(1)
-        ])
-
-        return model
-
-    def _get_baseline_CNN_w_Drop(self):
-
-        model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(64, (3,3),
-                                   padding='same',
-                                   input_shape=self.input_shape),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
-
-            tf.keras.layers.Conv2D(128, (3,3),
-                                   padding='same'),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
-
-            tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(256),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.Dense(128),
-
-            tf.keras.layers.Dense(1)
-        ])
-
-        return model
-
-    def _get_2ConvLey_2DensLey_w_BN_and_LeakyRelu(self):
-
-        model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(64, (3,3),
-                                   padding='same',
-                                   input_shape=self.input_shape),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.LeakyReLU(alpha=0.3),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
-
-            tf.keras.layers.Conv2D(128, (3,3),
-                                   padding='same'),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.LeakyReLU(alpha=0.3),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
-
-            tf.keras.layers.Conv2D(256, (3,3),
-                                   padding='same'),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.LeakyReLU(alpha=0.3),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
-
-            tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(1024, activation=tf.nn.relu),
-            tf.keras.layers.Dense(512, activation=tf.nn.relu),
             tf.keras.layers.Dense(1)
         ])
 
