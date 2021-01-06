@@ -37,16 +37,16 @@ class Predef_models():
         if self.model_name == 'baseline_CNN':
             self.model = self._get_baseline_CNN()
 
-        if self.model_name == 'baseline_CNN_test1':
+        elif self.model_name == 'baseline_CNN_test1':
             self.model = self._get_baseline_CNN_test1()
 
-        if self.model_name == 'baseline_CNN_test2':
+        elif self.model_name == 'baseline_CNN_test2':
             self.model = self._get_baseline_CNN_test2()
 
-        if self.model_name == 'baseline_CNN_test3':
+        elif self.model_name == 'baseline_CNN_test3':
             self.model = self._get_baseline_CNN_test3()
 
-        if self.model_name == 'baseline_CNN_test4':
+        elif self.model_name == 'baseline_CNN_test4':
             self.model = self._get_baseline_CNN_test4()
 
         elif self.model_name == 'small_CNN':
