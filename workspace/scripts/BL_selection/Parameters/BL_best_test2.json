@@ -1,7 +1,7 @@
 {
     "_comment": "where to save the models and checkpoints---------------------",
     "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models",
-    "model_dir": "BL_test2_w_hardreg_w_uzoom",
+    "model_dir": "BL_best_test2",
     "clean_model_dir": 1,
 
     "_comment": "Path where external libraries are:",
@@ -27,8 +27,8 @@
 		"_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN_test2",
     "_comment": "Regularization: conv_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]-------",
-    "conv_reg": [1e-4, 1e-3],
-    "dense_reg": [1e-4, 1e-3],
+    "conv_reg": [0, 1],
+    "dense_reg": [0, 1],
     "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
     "verbose_level": 2,
     "number_of_epochs": 300,
@@ -39,7 +39,7 @@
     "BATCH_SIZE": 64,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
-    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/BL_test2_w_hardreg_w_uzoom.log",
+    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/BL_best_test2.log",
     "log_level": "INFO",
     "_comment": "if tensorboard=1, then tb_logs_path=log_file_name+tensorboard",
     "tensorboard": 0,
