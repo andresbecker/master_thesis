@@ -49,45 +49,52 @@ class Tee_Logger(object):
             self.file.close()
             self.file = None
 
+class early_stop_Callback(tf.keras.callbacks.Callback):
+    def __init__(self, target_name, target_value):
+        super(early_stop_Callback, self).__init__()
+
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.log.info('\nEarly stop callback class initialed')
+
+        self.target_name = target_name
+        self.target_value = target_value
+
+    def on_epoch_end(self, epoch, logs=None):
+        "Stop training if target value is reached"
+        current_value = logs[self.target_name]
+        if current_value < self.target_value:
+            msg = '\nEarly stopping triggered!'
+            msg += '\nTarget name: {}'.format(self.target_name)
+            msg += '\nCurrent value = {} < {} = Target value'.format(current_value, self.target_value)
+            self.log.info(msg)
+            print(msg)
+
+            self.model.stop_training = True
+
+
 class lr_schedule_Callback(tf.keras.callbacks.Callback):
-    def __init__(self, schedule, LR_SCHEDULE):
+    #https://www.tensorflow.org/guide/keras/custom_callback
+    def __init__(self, schedule, current_lr, LR_SCHEDULE):
         super(lr_schedule_Callback, self).__init__()
 
         self.log = logging.getLogger(self.__class__.__name__)
-        self.log.info('Learning rate scheduler class initialed')
+        self.log.info('Learning rate scheduler callback class initialed')
 
         self.schedule = schedule
-        # the warmup finish must be executed only once:
-        self.warmup_finished = False
         # Set criteria to finish warmup
         self.LR_SCHEDULE = LR_SCHEDULE
         self.train_MAE = np.Inf
+        self.current_lr = current_lr
 
     def on_epoch_end(self, epoch, logs=None):
         self.train_MAE = logs['mean_absolute_error']
 
     def on_epoch_begin(self, epoch, logs=None):
 
-        # Unfreez pretrained layers
-        if not self.warmup_finished:
-            if (epoch == self.LR_SCHEDULE[0][0]) or (self.train_MAE <= self.LR_SCHEDULE[0][1]):
-                # Make all layers trainable
-                msg = 'Unfreezing pretrained model layers...'
-                self.log.info('\n\n'+msg+'\n\n')
-                print(msg)
-                for layer in self.model.layers:
-                    #tf.keras.backend.set_value(layer.trainable, 1)
-                    layer.trainable = True
-                self.warmup_finished = True
-
-        # Update lerning rate
-        # Get current lr
-        lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
-        # Call schedule function to get the scheduled learning rate.
-
-        scheduled_lr = self.schedule(epoch, lr, self.train_MAE, self.LR_SCHEDULE)
+        scheduled_lr = self.schedule(epoch, self.current_lr, self.train_MAE, self.LR_SCHEDULE)
         # Set the value back to the optimizer before this epoch starts
         tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
+        self.current_lr = scheduled_lr
         #print(float(tf.keras.backend.get_value(self.model.optimizer.learning_rate)))
         #print('')
 

@@ -493,7 +493,7 @@ class Predef_models():
 
     def _get_ResNet50V2_v2(self):
         """
-        Since we are using pretrained weights, then it is necessary two stages of training, one where the pretrained layers are freezed and a second one where the whole architecture is trained (with a small learning rate). Therefore, this function returns the model WITH THE PRETRAINED LAYERS FREZZED (i.e. pretrained_layer.trainable=False).
+        Pretrained ResNet50V2. This function return all layers trainable.
         """
 
         # First, we need to load the RestNet50V2 arch. However, sine our input
@@ -551,16 +551,6 @@ class Predef_models():
                 l_name = layer.name
                 if l_name in pretrain_weights_and_biases.keys():
                     layer.set_weights(pretrain_weights_and_biases[l_name])
-
-            # Now freez the pretrained layers for the first training (only train
-            # last (dense) layers)
-            if self.freez_pretrain:
-                for layer in base_model.layers:
-                    l_name = layer.name
-                    if l_name in pretrain_weights_and_biases.keys():
-                        layer.trainable = False
-                    else:
-                        layer.trainable = True
 
         # Finally add some dense layers to predict the TR:
         x = base_model.output
