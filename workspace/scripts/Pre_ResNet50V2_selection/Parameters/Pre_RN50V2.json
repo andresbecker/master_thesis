@@ -30,7 +30,7 @@
     "_comment": "Regularization: dense_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]------",
     "dense_reg": [1e-5, 1e-4],
     "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
-    "verbose_level": 1,
+    "verbose_level": 2,
     "_comment": "First training step (fts) parameters-------------------------",
     "fts_lr": 0.001,
     "fts_epochs": 200,
