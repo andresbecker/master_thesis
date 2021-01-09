@@ -34,7 +34,7 @@
     "_comment": "First training step (fts) parameters-------------------------",
     "fts_lr": 0.001,
     "fts_epochs": 200,
-    "fts_target_MAE": 40,
+    "fts_target_MAE": 42,
     "fts_freezed_layers": [0,190],
     "_comment": "Second training step (sts) parameters------------------------",
     "sts_lr": 0.0005,
