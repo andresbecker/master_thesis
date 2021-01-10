@@ -87,6 +87,9 @@ class Predef_models():
         elif self.model_name == 'ResNet50V2_test4':
             self.model = self._get_ResNet50V2_test4()
 
+        elif self.model_name == 'Xception':
+            self.model = self._get_Xception()
+
         else:
             msg = 'Specified model {} not implemented!'.format(self.model_name)
             self.log.error(msg)
@@ -830,6 +833,100 @@ class Predef_models():
         x = tf.keras.layers.Dense(512)(x)
 
         prediction = tf.keras.layers.Dense(1)(x)
+
+        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
+
+        return model
+
+    def _get_Xception(self):
+        """
+        Pretrained Xception. This function return all layers trainable.
+        """
+
+        # First, we need to load the arch. However, sine our input
+        # shape is different from the original one, it is not possible to load
+        # the arch. and the pretrained weights at the same time. Moreover, we
+        # need to creat first a separate input layer with the shape of our data:
+        input_layer = tf.keras.Input(shape=self.input_shape, name='InputLayer')
+
+        # Now we load the base arch. using our input layer:
+        base_model = tf.keras.applications.Xception(
+            include_top=False,
+            weights=None,
+            input_tensor=input_layer,
+            pooling=None,
+            classifier_activation=None
+        )
+
+        if self.pre_training:
+            # create the base pre-trained model
+            pretrained_model = tf.keras.applications.Xception(
+                weights="imagenet",
+                include_top=False
+            )
+
+            # The next step is to save the pretrained weights in a temporary dict:
+            pretrain_weights_and_biases = {}
+            for layer in pretrained_model.layers:
+                ws_and_bs = layer.get_weights()
+                if len(ws_and_bs) != 0:
+                    pretrain_weights_and_biases[layer.name] = ws_and_bs
+
+            # Before loading the pretrained weights and biases in our model, we need
+            # to modify the weights of the first pretrained conv, since its original
+            # shape is (3,3,3,32) (and wee need something like (3,3,31,32)).
+            # To do this, we just avergae the pretrain weights over the third
+            # dimesion, and then stack this mean convolution as many time as
+            # necessary to fit the shape of our data:
+            layer = pretrained_model.layers[1]
+            l_name = layer.name # the name is "block1_conv1"
+            pretrain_conv1_w = layer.get_weights()[0].copy()
+            # create a conv of shape (3,3,1,32) averaging the dim 3:
+            pretrain_conv1_w = pretrain_conv1_w.mean(axis=2).reshape(3,3,1,32)
+            # how many times we will stack the mean conv:
+            n_channels = self.input_shape[-1]
+            # Create the weights of the firts conv
+            conv1_conv_w_avg = pretrain_conv1_w
+            for i in range(1, n_channels):
+                conv1_conv_w_avg = np.concatenate((conv1_conv_w_avg, pretrain_conv1_w), axis=2)
+
+            # Replace the origin pretrained weights for the first conv with the new
+            pretrain_weights_and_biases[l_name] = [conv1_conv_w_avg]
+
+            # Now, load the pretrained weights in our model:
+            for layer in base_model.layers:
+                l_name = layer.name
+                if l_name in pretrain_weights_and_biases.keys():
+                    layer.set_weights(pretrain_weights_and_biases[l_name])
+
+        # Finally add some dense layers to predict the TR:
+        x = base_model.output
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
+
+        x = tf.keras.layers.Dense(
+            units=256,
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
+            bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+        )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+
+        x = tf.keras.layers.Dense(
+            units=128,
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
+            bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+        )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+
+        prediction = tf.keras.layers.Dense(
+            units=1,
+            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
+            bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
+            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+        )(x)
 
         model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
 
