@@ -1126,9 +1126,16 @@ def get_metrics(df=None, k=0, y_true='y', y_hat='y_hat'):
 def plot_loss(history, metrics, p):
     keys = ['loss'] + metrics
     for i, key in enumerate(keys,1):
-        warm_stage = int(p['number_of_epochs']*0.20)
-        min_val = np.asarray(history[key]+history['val_'+key]).min()
-        max_val = np.asarray(history[key][warm_stage:]+history['val_'+key][warm_stage:]).max()
+        if key == 'mse':
+            min_val = 700
+            max_val = 5000
+        elif key == 'mean_absolute_error':
+            min_val = 50
+            max_val = 15
+        else:
+            warm_stage = int(p['number_of_epochs']*0.20)
+            min_val = np.asarray(history[key]+history['val_'+key]).min()
+            max_val = np.asarray(history[key][warm_stage:]+history['val_'+key][warm_stage:]).max()
 
         plt.subplot(3,1,i)
         plt.plot(history[key], label=key)
