@@ -43,7 +43,7 @@
     "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/RN50V2_test8.log",
     "log_level": "INFO",
     "_comment": "if tensorboard=1, then tb_logs_path=log_file_name+tensorboard",
-    "tensorboard": 0,
+    "tensorboard": 1,
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
