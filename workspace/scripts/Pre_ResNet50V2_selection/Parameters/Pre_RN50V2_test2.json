@@ -25,7 +25,7 @@
 		"set_memory_growth": 0,
 
 		"_comment": "Model selection----------------------------------------------",
-    "model_name": "ResNet50V2_PreTrained",
+    "model_name": "ResNet50V2_v2",
     "pre_training": 1,
     "_comment": "Regularization: dense_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]------",
     "dense_reg": [1e-5, 1e-4],
@@ -37,9 +37,9 @@
     "fts_target_MAE": 42,
     "fts_freezed_layers": [0,190],
     "_comment": "Second training step (sts) parameters------------------------",
-    "sts_lr": 0.0001,
-    "sts_epochs": 700,
-    "sts_freezed_layers": [],
+    "sts_lr": 0.001,
+    "sts_epochs": 300,
+    "sts_freezed_layers": [40,153],
 
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
