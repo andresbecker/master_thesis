@@ -35,22 +35,14 @@
     "fts_lr": 0.001,
     "fts_epochs": 200,
     "fts_target_MAE": 42,
-    "fts_freezed_layers": [0,190],
+    "fts_freezed_layers": [3,190],
     "_comment": "Second training step (sts) parameters------------------------",
-    "sts_lr": 0.0001,
-    "sts_epochs": 500,
+    "sts_lr": 0.001,
+    "sts_epochs": 700,
     "sts_freezed_layers": [],
-    "_comment": "LR_SCHEDULE: (epoch, MAE, learning rate)---------------------",
-    "LR_SCHEDULE": [
-      [200, 35, 0.00005],
-      [300, 30, 0.00001],
-      [400, 25, 0.000005]
-    ],
 
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
-    "_comment": "Learning rate (lr default=0.001)---------------------",
-    "learning_rate": 0.001,
     "BATCH_SIZE": 64,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
