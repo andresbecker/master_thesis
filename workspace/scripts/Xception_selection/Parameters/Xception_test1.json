@@ -1,7 +1,7 @@
 {
     "_comment": "where to save the models and checkpoints---------------------",
     "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models",
-    "model_dir": "Xception",
+    "model_dir": "Xception_test1",
     "clean_model_dir": 1,
 
     "_comment": "Path where external libraries are:",
@@ -40,7 +40,7 @@
     "BATCH_SIZE": 64,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
-    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Xception.log",
+    "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Xception_test1.log",
     "log_level": "INFO",
     "_comment": "if tensorboard=1, then tb_logs_path=log_file_name+tensorboard",
     "tensorboard": 1,
