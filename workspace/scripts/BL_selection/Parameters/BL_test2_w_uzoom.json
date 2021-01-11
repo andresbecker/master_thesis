@@ -31,7 +31,7 @@
     "dense_reg": [0, 0],
     "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
     "verbose_level": 2,
-    "number_of_epochs": 200,
+    "number_of_epochs": 400,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)---------------------",
@@ -42,7 +42,7 @@
     "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/BL_test2_w_uzoom.log",
     "log_level": "INFO",
     "_comment": "if tensorboard=1, then tb_logs_path=log_file_name+tensorboard",
-    "tensorboard": 0,
+    "tensorboard": 1,
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,
