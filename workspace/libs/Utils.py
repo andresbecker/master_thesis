@@ -107,6 +107,7 @@ class save_best_model_Callback(tf.keras.callbacks.Callback):
 
         best_val = np.min(self.history)
         if best_val < self.best_values['all_epochs']:
+            self.best_values['all_epochs'] = best_val
             msg = '\nBest value for {} found on epoch {}:\n{}'.format(self.monitor, epoch, round(best_val,4))
             self.log.info(msg)
             print(msg)
@@ -118,6 +119,7 @@ class save_best_model_Callback(tf.keras.callbacks.Callback):
             self.avg_history[str(avg_size)].append(avg)
 
             if avg < self.best_values[str(avg_size)]:
+                self.best_values[str(avg_size)] = avg
                 msg = '\nBest value for {} and average size {} found on epoch {}:\n{}'.format(self.monitor, avg_size, epoch, round(avg,4))
                 self.log.info(msg)
                 print(msg)
