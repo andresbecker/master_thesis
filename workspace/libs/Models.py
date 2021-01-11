@@ -1171,24 +1171,26 @@ def plot_loss(history, metrics, p, sample_size=32):
             max_val = np.asarray(history[key][warm_stage:]+history['val_'+key][warm_stage:]).max()
 
         # get sample average
-        avg_history={}
-        avg_history[key] = []
-        avg_history['val_'+key] = []
-        for j in range(len(history[key])):
-            temp_data = history[key][:j+1]
-            val_temp_data = history['val_'+key][:j+1]
-            avg = np.mean(temp_data[-sample_size:])
-            val_avg = np.mean(val_temp_data[-sample_size:])
-            avg_history[key].append(avg)
-            avg_history['val_'+key].append(val_avg)
+        if sample_size > 0:
+            avg_history={}
+            avg_history[key] = []
+            avg_history['val_'+key] = []
+            for j in range(len(history[key])):
+                temp_data = history[key][:j+1]
+                val_temp_data = history['val_'+key][:j+1]
+                avg = np.mean(temp_data[-sample_size:])
+                val_avg = np.mean(val_temp_data[-sample_size:])
+                avg_history[key].append(avg)
+                avg_history['val_'+key].append(val_avg)
 
         plt.subplot(3,1,i)
         # Plot loss
         plt.plot(history[key], alpha=0.5, label=key, c='darkorange')
         plt.plot(history['val_'+key], alpha=0.5, label='val_'+key, c='darkblue')
         # Plot avg loss
-        plt.plot(avg_history[key], label='avg '+key, c='orange')
-        plt.plot(avg_history['val_'+key], label='avg val_'+key, c='blue')
+        if sample_size > 0:
+            plt.plot(avg_history[key], label='avg '+key, c='orange')
+            plt.plot(avg_history['val_'+key], label='avg val_'+key, c='blue')
 
         # Best val value in history
         val_min = np.asarray(history['val_'+key]).min()
@@ -1197,10 +1199,11 @@ def plot_loss(history, metrics, p, sample_size=32):
         plt.scatter(x=val_min_idx, y=val_min, c='brown', linewidths=4, label=label)
 
         # best avg val value in history
-        val_min_idx = np.argmin(avg_history['val_'+key])
-        val_min = history['val_'+key][val_min_idx]
-        label='bets avg val value\nEpoch={}\n{}={}'.format(val_min_idx,key,round(val_min,2))
-        plt.scatter(x=val_min_idx, y=val_min, c='red', linewidths=4, label=label)
+        if sample_size > 0:
+            val_min_idx = np.argmin(avg_history['val_'+key])
+            val_min = history['val_'+key][val_min_idx]
+            label='bets avg val value\nEpoch={}\n{}={}'.format(val_min_idx,key,round(val_min,2))
+            plt.scatter(x=val_min_idx, y=val_min, c='red', linewidths=4, label=label)
 
         plt.grid(True)
         plt.ylim([min_val, max_val])
