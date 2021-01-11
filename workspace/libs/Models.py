@@ -57,8 +57,8 @@ class Predef_models():
         elif self.model_name == 'baseline_CNN_test4':
             self.model = self._get_baseline_CNN_test4()
 
-        elif self.model_name == 'small_CNN':
-            self.model = self._get_small_CNN()
+        elif self.model_name == 'baseline_CNN_test5':
+            self.model = self._get_baseline_CNN_test5()
 
         elif self.model_name == 'ResNet50V2':
             self.model = self._get_ResNet50V2()
@@ -298,29 +298,50 @@ class Predef_models():
 
         return model
 
-    def _get_small_CNN(self):
+    def _get_baseline_CNN_test5(self):
 
         model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(self.input_shape[-1], (3,3),
+            tf.keras.layers.Conv2D(64, (3,3),
                                    padding='same',
+                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
+                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg),
                                    input_shape=self.input_shape),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
             tf.keras.layers.MaxPooling2D((2,2), strides=2),
 
-            tf.keras.layers.Conv2D(64, (3,3),
-                                   padding='same'),
+            tf.keras.layers.Conv2D(128, (3,3),
+                                   padding='same',
+                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
+                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg)),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
             tf.keras.layers.MaxPooling2D((2,2), strides=2),
 
-            #tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(256),
+            tf.keras.layers.Conv2D(256, (3,3),
+                                   padding='same',
+                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
+                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg)),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
-            tf.keras.layers.Dense(128, activation=tf.nn.relu),
-            tf.keras.layers.Dense(1)
+            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dense(
+                units=128,
+                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
+                bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
+                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+            ),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+
+            tf.keras.layers.Dense(
+                units=1,
+                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
+                bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
+                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+            ),
         ])
 
         return model
@@ -1063,6 +1084,9 @@ def plot_y_dist(df, y_true='y', y_hat='y_hat'):
 
 def plot_residuals(df=None, y_true='y', y_hat='y_hat', hue='perturbation'):
 
+    min_val = int(df[y_true].min()) - 50
+    max_val = int(df[y_true].max()) + 50
+
     df['diff'] = df[y_true] - df[y_hat]
     std = df['diff'].std()
     df['std_residuals'] = df['diff'] / std
@@ -1073,26 +1097,33 @@ def plot_residuals(df=None, y_true='y', y_hat='y_hat', hue='perturbation'):
         y = 'std_residuals',
         hue = hue,
     )
-    plt.hlines(y=2, xmin=np.min(df[y_true]), xmax=np.max(df[y_true]), color='red', ls='dashed')
-    plt.hlines(y=-2, xmin=np.min(df[y_true]), xmax=np.max(df[y_true]), color='red', ls='dashed')
-    plt.title(y_hat)
+    plt.hlines(y=2, xmin=min_val, xmax=max_val, color='red', ls='dashed')
+    plt.hlines(y=-2, xmin=min_val, xmax=max_val, color='red', ls='dashed')
+    plt.xlim([min_val, max_val])
+    plt.ylim([-7, 7])
+    plt.title('('+y_true+'-'+y_hat+')/std('+y_true+'-'+y_hat+')')
 
 def plot_y_vs_y_hat(df, y_true='y', y_hat='y_hat', hue='perturbation'):
+
+    #min_val = df[[y_true, y_hat]].min().values.min()
+    min_val = int(df[y_true].min()) - 50
+    #max_val = df[[y_true, y_hat]].max().values.max()
+    max_val = int(df[y_true].max()) + 50
+
     sns.scatterplot(data=df,
                     x=y_true,
                     y=y_hat,
                     hue=hue,
                     #s=15,
                     alpha=0.5)
-    plt.axis('equal')
-
-    min_val = df[[y_true, y_hat]].min().values.min()
-    max_val = df[[y_true, y_hat]].max().values.min()
 
     x_line = [min_val, max_val]
     y_line = x_line
     plt.plot(x_line, y_line, linestyle='dashed', color='red')
-    plt.title(y_hat)
+    plt.xlim([min_val, max_val])
+    plt.ylim([min_val, max_val])
+    plt.axis('equal')
+    plt.title(y_true+' vs '+y_hat)
 
 def get_BIC(y, y_hat, k):
     if k > 0:
@@ -1123,27 +1154,54 @@ def get_metrics(df=None, k=0, y_true='y', y_hat='y_hat'):
 
     return temp_df.round(4)
 
-def plot_loss(history, metrics, p):
+def plot_loss(history, metrics, p, sample_size=32):
     keys = ['loss'] + metrics
     for i, key in enumerate(keys,1):
+
+        # set limits for plots
         if key == 'mse':
             min_val = 700
             max_val = 5000
         elif key == 'mean_absolute_error':
-            min_val = 50
-            max_val = 15
+            min_val = 15
+            max_val = 50
         else:
             warm_stage = int(p['number_of_epochs']*0.20)
             min_val = np.asarray(history[key]+history['val_'+key]).min()
             max_val = np.asarray(history[key][warm_stage:]+history['val_'+key][warm_stage:]).max()
 
+        # get sample average
+        avg_history={}
+        avg_history[key] = []
+        avg_history['val_'+key] = []
+        for j in range(len(history[key])):
+            temp_data = history[key][:j+1]
+            val_temp_data = history['val_'+key][:j+1]
+            avg = np.mean(temp_data[-sample_size:])
+            val_avg = np.mean(val_temp_data[-sample_size:])
+            avg_history[key].append(avg)
+            avg_history['val_'+key].append(val_avg)
+
         plt.subplot(3,1,i)
-        plt.plot(history[key], label=key)
-        plt.plot(history['val_'+key], label='val_'+key)
+        # Plot loss
+        plt.plot(history[key], alpha=0.5, label=key, c='darkorange')
+        plt.plot(history['val_'+key], alpha=0.5, label='val_'+key, c='darkblue')
+        # Plot avg loss
+        plt.plot(avg_history[key], label='avg '+key, c='orange')
+        plt.plot(avg_history['val_'+key], label='avg val_'+key, c='blue')
+
+        # Best val value in history
         val_min = np.asarray(history['val_'+key]).min()
         val_min_idx = np.argmin(history['val_'+key])
         label='bets val value\nEpoch={}\n{}={}'.format(val_min_idx,key,round(val_min,2))
+        plt.scatter(x=val_min_idx, y=val_min, c='brown', linewidths=4, label=label)
+
+        # best avg val value in history
+        val_min_idx = np.argmin(avg_history['val_'+key])
+        val_min = history['val_'+key][val_min_idx]
+        label='bets avg val value\nEpoch={}\n{}={}'.format(val_min_idx,key,round(val_min,2))
         plt.scatter(x=val_min_idx, y=val_min, c='red', linewidths=4, label=label)
+
         plt.grid(True)
         plt.ylim([min_val, max_val])
         plt.xlabel('Epoch')
