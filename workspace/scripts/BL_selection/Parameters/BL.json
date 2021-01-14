@@ -18,7 +18,7 @@
     "_comment": "Augment dataset flags----------------------------------------",
     "random_horizontal_flipping": 1,
     "random_90deg_rotations": 1,
-    "random_CenterZoom": 0,
+    "random_CenterZoom": 1,
 
     "_comment": "Cuda Config (boolean)----------------------------------------",
     "disable_gpu": 0,
@@ -26,7 +26,13 @@
 
     "_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN",
-    "number_of_epochs": 120,
+    "pre_training": 0,
+    "_comment": "Regularization: conv_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]-------",
+    "conv_reg": [0, 0],
+    "dense_reg": [0, 0],
+    "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
+    "verbose_level": 2,
+    "number_of_epochs": 450,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)---------------------",
