@@ -244,7 +244,7 @@ class Predef_models():
         )
 
         if self.pre_training:
-            base_model = _set_ResNet50V2_pretrained_w_and_b(base_model)
+            base_model = self._set_ResNet50V2_pretrained_w_and_b(base_model)
 
         # Add some dense layers to predict the TR:
         x = base_model.output
@@ -305,7 +305,7 @@ class Predef_models():
         )
 
         if self.pre_training:
-            base_model = _set_ResNet50V2_pretrained_w_and_b(base_model)
+            base_model = self._set_ResNet50V2_pretrained_w_and_b(base_model)
 
         # Add some dense layers to predict the TR:
         x = base_model.output
@@ -358,7 +358,7 @@ class Predef_models():
         )
 
         if self.pre_training:
-            base_model = _set_Xception_pretrained_w_and_b(base_model)
+            base_model = self._set_Xception_pretrained_w_and_b(base_model)
 
         # Finally add some dense layers to predict the TR:
         x = base_model.output
