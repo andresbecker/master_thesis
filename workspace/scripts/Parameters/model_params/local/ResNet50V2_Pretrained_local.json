@@ -1,28 +1,24 @@
 {
-    "_comment": "where to save the models and checkpoints---------------------",
-    "model_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/models",
-    "model_dir": "PreTreined_model",
-    "clean_model_dir": 1,
+  "_comment": "where to save the models and checkpoints---------------------",
+  "model_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/models",
+  "model_dir": "Pretrain_ResNetV2",
+  "clean_model_dir": 1,
 
     "_comment": "Path where external libraries are:",
     "external_libs_path": "/home/hhughes/Documents/Master_Thesis/Project/workspace/libs",
 
     "_comment": "Preprocessed data path---------------------------------------",
-    "pp_path": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test",
+    "pp_path": "/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test_32",
 
-		"_comment": "Tensorflow datasets parameters-------------------------------",
+    "_comment": "Tensorflow datasets parameters-------------------------------",
 		"local_tf_datasets": "/home/hhughes/Documents/Master_Thesis/Project/datasets/tensorflow_datasets",
-		"tf_ds_name": "MPP_dataset",
+		"tf_ds_name": "MPP_dataset_no_perturbations",
     "shuffle_files": 1,
 
-		"_comment": "Augment dataset flags----------------------------------------",
+    "_comment": "Augment dataset flags----------------------------------------",
     "random_horizontal_flipping": 1,
 		"random_90deg_rotations": 1,
-
-    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
-		"_comment": "The log file will be placed inside the dir create to store the model",
-    "log_file_name": "model.log",
-    "log_level": "INFO",
+    "random_CenterZoom": 1,
 
 		"_comment": "Cuda Config (boolean)----------------------------------------",
     "disable_gpu": 1,
@@ -30,14 +26,35 @@
 
 		"_comment": "Model selection----------------------------------------------",
     "model_name": "ResNet50V2_PreTrained",
-    "first_trianing_stage_epochs": 10,
-    "second_trianing_stage_epochs": 15,
-    "_comment": "Second trianing stage learning rate (lr)---------------------",
-    "second_trianing_stage_lr": 0.0001,
+    "pre_training": 1,
+    "_comment": "Regularization: dense_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]------",
+    "dense_reg": [1e-5, 1e-4],
+    "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
+    "verbose_level": 1,
+    "_comment": "First training step (fts) parameters-------------------------",
+    "fts_lr": 0.001,
+    "fts_epochs": 5,
+    "fts_target_MAE": 60,
+    "fts_freezed_layers": [0,190],
+    "_comment": "Second training step (sts) parameters------------------------",
+    "sts_lr": 0.0001,
+    "sts_epochs": 10,
+    "sts_freezed_layers": [],
+    "_comment": "LR_SCHEDULE: (epoch, MAE, learning rate)---------------------",
+    "LR_SCHEDULE": [
+      [5, 80, 0.00005],
+      [7, 40, 0.00001]
+    ],
 
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "BATCH_SIZE": 32,
+
+    "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
+    "log_file_name": "/home/hhughes/Documents/Master_Thesis/Project/workspace/logs/Pretrain_ResNetV2.log",
+    "log_level": "INFO",
+    "_comment": "if tensorboard=1, then tb_logs_path=log_file_name+tensorboard",
+    "tensorboard": 1,
 
     "_comment": "make results reproducible------------------------------------",
     "seed": 42,

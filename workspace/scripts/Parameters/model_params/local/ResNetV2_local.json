@@ -27,7 +27,12 @@
 		"_comment": "Model selection----------------------------------------------",
     "model_name": "ResNet50V2_v2",
     "pre_training": 1,
-    "freez_pretrain": 0,
+    "freez_pretrain": 1,
+    "_comment": "LR_SCHEDULE: (epoch, MAE, learning rate)---------------------",
+    "LR_SCHEDULE": [
+      [2, 300, 0.0005],
+      [3, 299, 0.0001]
+    ],
     "_comment": "Regularization: dense_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]------",
     "dense_reg": [1e-5, 1e-4],
     "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
