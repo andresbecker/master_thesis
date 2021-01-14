@@ -93,6 +93,9 @@ class Predef_models():
         elif self.model_name == 'Xception':
             self.model = self._get_Xception()
 
+        elif self.model_name == 'Quick_test':
+            self.model = self._get_Quick_test()
+
         else:
             msg = 'Specified model {} not implemented!'.format(self.model_name)
             self.log.error(msg)
@@ -318,17 +321,41 @@ class Predef_models():
             tf.keras.layers.ReLU(),
             tf.keras.layers.MaxPooling2D((2,2), strides=2),
 
-            tf.keras.layers.Conv2D(256, (3,3),
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dense(
+                units=64,
+                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
+                bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
+                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+            ),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.ReLU(),
+
+            tf.keras.layers.Dense(
+                units=1,
+                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
+                bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
+                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
+            ),
+        ])
+
+        return model
+
+    def _get_Quick_test(self):
+
+        model = tf.keras.Sequential([
+            tf.keras.layers.Conv2D(64, (3,3),
                                    padding='same',
                                    kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
-                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg)),
+                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg),
+                                   input_shape=self.input_shape),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
             tf.keras.layers.MaxPooling2D((2,2), strides=2),
 
             tf.keras.layers.GlobalAveragePooling2D(),
             tf.keras.layers.Dense(
-                units=128,
+                units=32,
                 kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
                 bias_regularizer=tf.keras.regularizers.l2(self.dense_l2_reg),
                 #activity_regularizer=tf.keras.regularizers.l2(1e-5)
