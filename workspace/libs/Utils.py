@@ -11,6 +11,7 @@ import seaborn as sns
 sns.set_theme(style="darkgrid")
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+import copy
 
 class Tee_Logger(object):
     """
@@ -102,6 +103,7 @@ class save_best_model_Callback(tf.keras.callbacks.Callback):
             self.best_values[str(avg_size)] = np.Inf
 
     def on_epoch_end(self, epoch, logs=None):
+        # Epoch start on 0!
 
         self.history.append(logs[self.monitor])
 
@@ -125,6 +127,93 @@ class save_best_model_Callback(tf.keras.callbacks.Callback):
                 print(msg)
 
                 self.model.save_weights(self.path+'/avg_'+str(avg_size)+'_best/ckpt', overwrite=True)
+
+class save_best_model_base_on_CMA_Callback(tf.keras.callbacks.Callback):
+    """
+    Save model checkpoint (only weights) accordingly to the Central Moving Average CMA
+    """
+    #https://www.tensorflow.org/guide/keras/custom_callback
+    def __init__(self, monitor='val_loss', avg_sizes=[11, 21, 31]):
+        super(save_best_model_base_on_CMA_Callback, self).__init__()
+
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.log.info('\nSave_best_model callback class initialed')
+
+        for s in avg_sizes:
+            if (s < 3) or (s % 2 != 1):
+                msg = '\nNumbers on avg_sizes most be odd numbers and bigger than 3'
+                self.log.error(msg)
+                raise Exception(msg)
+
+        self.monitor = monitor
+        self.history = []
+        self.avg_sizes = avg_sizes
+        self.avg_lags = (np.array(self.avg_sizes) + 1) // 2
+        self.max_avg_lag = np.max(self.avg_lags)
+        self.min_avg_lag = np.min(self.avg_lags)
+        # Dictionary to save the CMA history
+        self.CMA_history = {}
+        # Dictionary to save the last self.max_avg_lag models
+        self.model_stack = {}
+        # Dictionary to save best models (depending to the CMA)
+        self.best_models = {}
+        for avg_size in self.avg_sizes:
+            # Each self.best_models entry contains:
+            # [CMA_epoch, CMA_value, CMA_std, model_weights]
+            self.best_models['CMA_'+str(avg_size)] = [0, np.Inf, 0, None]
+            self.CMA_history['CMA_'+str(avg_size)] = []
+
+        self.best_models['CMA_0'] = [0, np.Inf, 0, None]
+
+    def on_epoch_end(self, epoch, logs=None):
+        # Clean callback message
+        msg = ''
+        # Epoch start on 0!
+        epoch += 1
+
+        # Save the last max_avg_lag models
+        if epoch >= self.min_avg_lag:
+            self.model_stack[epoch] = copy.deepcopy(self.model.get_weights())
+        # Delet last model (which is out of the CMA window)
+        if epoch >= (self.min_avg_lag + self.max_avg_lag):
+            del(self.model_stack[epoch-self.max_avg_lag])
+
+        self.history.append(logs[self.monitor])
+
+        for avg_size, avg_lag in zip(self.avg_sizes, self.avg_lags):
+
+            if epoch >= avg_size:
+                # epoch corresponding with the CMA
+                CMA_epoch = epoch - avg_lag + 1
+                avg = np.mean(self.history[-avg_size:])
+                std = np.std(self.history[-avg_size:])
+
+                # Save CMA history
+                self.CMA_history['CMA_'+str(avg_size)].append([CMA_epoch, avg])
+
+                if avg < self.best_models['CMA_'+str(avg_size)][1]:
+
+                    msg += '\nBest CMA_{} model updated for epoch {}; New CMA_{} value = {} < {} = last CMA_{} value'.format(avg_size, CMA_epoch, avg_size, round(avg, 2), round(self.best_models['CMA_'+str(avg_size)][1], 2), avg_size)
+
+                    # Update value
+                    self.best_models['CMA_'+str(avg_size)] = [CMA_epoch, avg, std, self.model_stack[CMA_epoch]]
+
+        # Save best value without considering the CMA (i.e. regular best model
+        # saving)
+        best_val = np.min(self.history)
+        if best_val < self.best_models['CMA_0'][1]:
+
+            msg += '\nBest general model updated for epoch {}; New value = {} < {} = last value'.format(epoch, round(best_val, 2), round(self.best_models['CMA_0'][1], 2))
+
+            # Update values
+            if epoch in self.model_stack.keys():
+                self.best_models['CMA_0'] = [epoch, best_val, 0,  self.model_stack[epoch]]
+            else:
+                self.best_models['CMA_0'] = [epoch, best_val, 0,  copy.deepcopy(self.model.get_weights())]
+
+        if msg != '':
+            self.log.info(msg)
+            print(msg)
 
 
 class lr_schedule_Callback(tf.keras.callbacks.Callback):
@@ -242,7 +331,6 @@ class evaluate_model():
 
         self._load_dataset()
         self._calculate_predictions()
-        self._get_metrics()
 
     def _calculate_predictions(self):
         columns = ['y', 'y_hat', 'mapobject_id_cell', 'set']
@@ -268,9 +356,9 @@ class evaluate_model():
         with open(os.path.join(self.p['pp_path'], 'metadata.csv'), 'r') as file:
             row_data_metadata = pd.read_csv(file)
             row_data_metadata.mapobject_id_cell = row_data_metadata.mapobject_id_cell.astype(str)
-        per_df = row_data_metadata[['mapobject_id_cell', 'perturbation']]
+        temp_df = row_data_metadata[['mapobject_id_cell', 'perturbation', 'cell_cycle']]
         self.targets_df = self.targets_df.merge(
-                per_df,
+                temp_df,
                 left_on='mapobject_id_cell',
                 right_on='mapobject_id_cell',
                 how='left',
@@ -295,13 +383,14 @@ class evaluate_model():
         self.val_data = self.val_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
         self.test_data = self.test_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
 
-    def _get_metrics(self):
+    def get_metrics(self, CMA_size=0, CMA=0, CMA_Std=0, Epoch=0):
 
         huber_loss = tf.keras.losses.Huber()
 
         # Create df to store metrics to compare models
-        metric_columns = ['model', 'set', 'R2', 'BIC', 'MSE', 'MAE', 'Huber']
-        self.metrics_df = pd.DataFrame(columns=metric_columns)
+        column_names = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'PreTrained', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'Parameters_file_path']
+
+        self.metrics_df = pd.DataFrame(columns=column_names)
 
         for ss in np.unique(self.targets_df['set']):
             mask = (self.targets_df['set'] == ss)
@@ -312,52 +401,75 @@ class evaluate_model():
             mse = mean_squared_error(y, y_hat_vals)
             mae = mean_absolute_error(y, y_hat_vals)
             huber = huber_loss(y, y_hat_vals).numpy()
-            self.metrics_df = self.metrics_df.append({'model':'y_hat', 'set':ss, 'R2':r2, 'BIC':bic, 'MSE':mse, 'MAE':mae, 'Huber':huber}, ignore_index=True)
+            temp_dict = {'Model':self.p['model_name'],
+                        'Loss':self.p['loss'],
+                        'lr':self.p['learning_rate'],
+                        'N_Epochs':self.p['number_of_epochs'],
+                        'Conv_L1_reg':self.p['conv_reg'][0],
+                        'Conv_L2_reg':self.p['conv_reg'][1],
+                        'Dense_L1_reg':self.p['dense_reg'][0],
+                        'Dense_L2_reg':self.p['dense_reg'][1],
+                        'PreTrained':self.p['pre_training'],
+                        'Set':ss,
+                        'Bias':self.targets_df['y - y_hat'].mean(),
+                        'Std':self.targets_df['y - y_hat'].std(),
+                        'R2':r2,
+                        'MAE':mae,
+                        'MSE':mse,
+                        'Huber':huber,
+                        'CMA_size':CMA_size,
+                        'CMA':CMA,
+                        'CMA_Std':CMA_Std,
+                        'Epoch':Epoch,
+                        'Parameters_file_path':self.p['parameters_file_path']}
+            self.metrics_df = self.metrics_df.append(temp_dict, ignore_index=True)
 
         self.metrics_df = self.metrics_df.round(4)
 
-    def plot_error_dist(self, figsize=(20,7), hue='perturbation'):
+    def plot_error_dist(self, figsize=(20,7), hue='perturbation', sets=['train','val', 'test']):
 
-        col_names = ['set', 'perturbation', 'y - y_hat']
+        col_names = ['set', 'perturbation', 'cell_cycle', 'y - y_hat']
         temp_df = self.targets_df[col_names].copy()
-        temp_df= temp_df.set_index(['set', 'perturbation'])
+        temp_df= temp_df.set_index(['set', 'perturbation', 'cell_cycle'])
         temp_df = temp_df.stack().reset_index()
-        temp_df.columns = ['set', 'perturbation'] + ['diff_name', 'value']
+        temp_df.columns = ['set', 'perturbation', 'cell_cycle'] + ['diff_name', 'value']
 
-        plt.figure(figsize=figsize)
-        sns.kdeplot(x='value',
-                    data=temp_df,
-                    hue=hue,
-                    #color=colors,
-                    shade=True,
-                    bw_method=0.2)
+        for set in sets:
+            plt.figure(figsize=figsize)
+            sns.kdeplot(x='value',
+                        data=temp_df[temp_df.set == set],
+                        hue=hue,
+                        #color=colors,
+                        shade=True,
+                        bw_method=0.2)
 
-        plt.xlabel('y - y_hat')
-        plt.title('Error KDE per model')
+            plt.xlabel('y - y_hat')
+            plt.title(set+' Set Error KDE')
 
-        #plt.figure(figsize=(len(y_models)*7,7))
-        #sns.boxplot(y='value',
-        #            x='diff_name',
-        #            hue='perturbation',
-        #            data=temp_df)
-        #plt.xlabel('Diff Name')
-        #plt.ylabel('y - y_hat')
-        #plt.title('Error Distribution per set')
+            #plt.figure(figsize=(len(y_models)*7,7))
+            #sns.boxplot(y='value',
+            #            x='diff_name',
+            #            hue='perturbation',
+            #            data=temp_df)
+            #plt.xlabel('Diff Name')
+            #plt.ylabel('y - y_hat')
+            #plt.title('Error Distribution per set')
 
-    def plot_y_dist(self, figsize=(15,7)):
+    def plot_y_dist(self, figsize=(15,7), x='perturbation', sets=['train','val', 'test']):
         temp_df = self.targets_df.copy()
-        columns = ['y', 'y_hat', 'mapobject_id_cell', 'set']
+        columns = ['y', 'y_hat', 'mapobject_id_cell', 'set', 'cell_cycle', 'perturbation']
         temp_df = temp_df[columns]
         #temp_df = df.loc[:, df.columns != 'perturbation']
-        temp_df = temp_df.set_index(['mapobject_id_cell', 'set']).stack().reset_index()
-        temp_df.columns = ['mapobject_id_cell', 'set', 'var', 'value']
+        temp_df = temp_df.set_index(['mapobject_id_cell', 'set', 'cell_cycle', 'perturbation']).stack().reset_index()
+        temp_df.columns = ['mapobject_id_cell', 'set', 'cell_cycle', 'perturbation', 'var', 'value']
 
-        plt.figure(figsize=figsize)
-        sns.boxplot(y='value',
-                    x='var',
-                    hue='set',
-                    data=temp_df)
-        plt.title('Transcription Rate (TR) values distribution')
+        for set in sets:
+            plt.figure(figsize=figsize)
+            sns.boxplot(y='value',
+                        x=x,
+                        hue='var',
+                        data=temp_df[temp_df.set == set])
+            plt.title('Transcription Rate (TR) values distribution for '+set+' set')
 
     def plot_residuals(self, figsize=(10,7), hue='perturbation'):
 
@@ -404,12 +516,60 @@ class evaluate_model():
 
     def save_model_evaluation_data(self, base_path, eval_name='test'):
 
-        path = os.path.join(base_path, eval_name)
-        os.makedirs(path, exist_ok=True)
         # Sava targets info
-        with open(os.path.join(path, 'targets.csv'), 'w') as file:
+        with open(os.path.join(base_path, 'targets_'+eval_name+'.csv'), 'w') as file:
             self.targets_df.to_csv(file, index=False)
 
-        # Sava metrics info
-        with open(os.path.join(path, 'metrics.csv'), 'w') as file:
-            self.metrics_df.to_csv(file, index=False)
+def plot_train_metrics(history=None, CMA_history=None, CMA_metric=None, metrics=None, p=None, title='', figsize=(15,23)):
+
+    plt.figure(figsize=figsize)
+    if CMA_history is not None:
+        CMA_history = np.array(CMA_history)
+
+    for i, metric in enumerate(metrics,1):
+
+        # set limits for plots
+        if metric == 'mse':
+            min_val = 700
+            max_val = 5000
+        elif metric == 'mean_absolute_error':
+            min_val = 15
+            max_val = 50
+        else:
+            warm_stage = int(p['number_of_epochs']*0.20)
+            min_val = np.asarray(history[metric]+history['val_'+metric]).min()
+            max_val = np.asarray(history[metric][warm_stage:]+history['val_'+metric][warm_stage:]).max()
+
+        plt.subplot(3,1,i)
+        # Plot Train loss
+        plt.plot(history[metric], alpha=0.5, label=metric, c='darkorange')
+        # Plot Validation loss
+        plt.plot(history['val_'+metric], alpha=0.5, label='val_'+metric, c='darkblue')
+        # Plot CMA loss
+        if (CMA_history is not None) and (metric == CMA_metric):
+            plt.plot(CMA_history[:,0], CMA_history[:,1], label='avg val_'+metric, c='blue')
+
+        # Plot a red point in the epoch with the best val metric
+        val_min = np.asarray(history['val_'+metric]).min()
+        val_min_idx = np.argmin(history['val_'+metric])
+        label='Bets singel val\nEpoch={}\n{}={}'.format(val_min_idx,metric,round(val_min,2))
+        plt.scatter(x=val_min_idx, y=val_min, c='brown', linewidths=4, label=label)
+
+        # Plot a green point in the epoch with the best val metric
+        if (CMA_history is not None) and (metric == CMA_metric):
+            temp_idx = np.argmin(CMA_history[:,1])
+            val_min_idx = int(CMA_history[temp_idx,0])
+            val_min_CMA = CMA_history[temp_idx,1]
+            val_min = history['val_'+metric][val_min_idx]
+
+            label='Bets CMA val\nEpoch={}\nCMA={}'.format(val_min_idx,round(val_min,2))
+            plt.scatter(x=val_min_idx, y=val_min_CMA, c='green', linewidths=4, label=label)
+            label='{}={}'.format(metric,round(val_min,2))
+            plt.scatter(x=val_min_idx, y=val_min, c='green', marker='x', linewidths=2, label=label)
+
+        plt.grid(True)
+        plt.ylim([min_val, max_val])
+        plt.xlabel('Epoch')
+        plt.ylabel(metric)
+        plt.legend()
+        plt.title(metric+', '+title)
