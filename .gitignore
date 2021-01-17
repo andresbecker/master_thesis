@@ -20,6 +20,7 @@ tf_dataset_parameters.json
 # Avoid old implementations
 **/Old_notebooks
 **/Old_scripts
+*_local.json
 
 # Latex support files
 **/*.acr
