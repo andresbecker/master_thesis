@@ -577,10 +577,7 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
         n_channels = channels_ids.shape[0]
     img_shape = mppdata_dict[k][0].images[:,:,:,channels_ids].shape[1:]
 
-    # If normalization values are not given, then we devide by 1
-    if norm_vals is None:
-        norm_vals = np.ones(n_channels).astype(dtype)
-    else:
+    if norm_vals is not None:
         norm_vals = norm_vals.astype(dtype)
 
     # Iterate over train, val and test lists of instances
@@ -622,12 +619,13 @@ def save_to_file_targets_masks_and_normalized_images(mppdata_dict=None, norm_val
                         log.error(msg)
                         raise NotImplementedError(msg)
                     targets.append(temp_target)
-                targets = np.asarray(targets).astype(dtype)
+                targets = np.asarray(targets).astype(np.float64)
 
-                temp_img = temp_img.reshape((-1, n_channels))
                 temp_img = temp_img.astype(dtype)
-                temp_img /= norm_vals[channels_ids]
-                temp_img = temp_img.reshape(img_shape)
+                if norm_vals is not None:
+                    temp_img = temp_img.reshape((-1, n_channels))
+                    temp_img /= norm_vals[channels_ids]
+                    temp_img = temp_img.reshape(img_shape)
 
                 # Save everything
                 np.savez(file_name, img=temp_img, mask=temp_mask, targets=targets)
