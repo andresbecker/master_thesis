@@ -86,6 +86,6 @@
 
     "_comment": "Convert mpp data into image----------------------------------",
     "convert_into_image": 1,
-    "images_dtype": "float32",
+    "images_dtype": "uint16",
     "remove_original_data": 1
 }
