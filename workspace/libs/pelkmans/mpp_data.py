@@ -506,7 +506,7 @@ def get_image_normalization_vals(instance_dict=None, input_channel_ids=None, per
     else:
         n_channels = len(input_channel_ids)
 
-    # Since there is no wey to concatenate np arrays in place (without creating a copy), we first create an array that will be filled with the values necessary to calculate the percentile per channel. Note that the size of this array is the same for every channel.
+    # Since there is no way to concatenate np arrays in place (without creating a copy), we first create an array that will be filled with the values necessary to calculate the percentile per channel. Note that the size of this array is the same for every channel.
     #https://stackoverflow.com/questions/7869095/concatenate-numpy-arrays-without-copying
     n_pixels = 0
     for well in instance_dict:
@@ -659,12 +659,17 @@ def get_concatenated_metadata(mppdata_dict=None, normalize=True, norm_key='train
     # First, merge all metadata
     k = list(mppdata_dict.keys())[0]
     metadata_cols = list(mppdata_dict[k][0].metadata.columns)
-    metadata = pd.DataFrame(columns=metadata_cols+['set'])
+    # len(mppdata_dict.keys())==1 means no split (train, val, test) was made
+    if len(mppdata_dict.keys()) > 1:
+        metadata = pd.DataFrame(columns=metadata_cols+['set'])
+    else:
+        metadata = pd.DataFrame(columns=metadata_cols)
 
     for key in mppdata_dict.keys():
         for well in mppdata_dict[key]:
             temp_df = well.metadata.copy()
-            temp_df['set'] = key
+            if len(mppdata_dict.keys()) > 1:
+                temp_df['set'] = key
             metadata = pd.concat([metadata, temp_df],
                                  axis=0,
                                  ignore_index=True)
