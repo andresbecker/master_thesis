@@ -94,5 +94,5 @@
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
     "log_file": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Convert_data_into_images_no_split.log",
-    "log_level": "INFO",
+    "log_level": "INFO"
 }
