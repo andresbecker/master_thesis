@@ -5,7 +5,7 @@
 
     "_comment": "Which perturbations and wells to load------------------------",
     "perturbations_and_wells": {
-    "184A1_hannah_unperturbed": ["I09", "J10"]
+    "184A1_hannah_unperturbed": ["I09"]
     },
 
     "_comment": "Path where external libraries are:",
@@ -65,7 +65,7 @@
     "output_channels": ["00_EU"],
     "_comment": "output channels as a single number---------------------------",
     "_comment": "Options: max, avg, None results in output images-------------",
-    "aggregate_output": "size_and_sum",
+    "aggregate_output": "avg",
     "_comment": "Project unichannel images into a scalar (avg or median)------",
     "project_into_scalar": 1,
 
