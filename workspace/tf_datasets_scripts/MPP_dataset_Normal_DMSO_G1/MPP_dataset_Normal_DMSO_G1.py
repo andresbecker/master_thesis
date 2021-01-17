@@ -47,109 +47,25 @@ class MPP_dataset_Normal_DMSO_G1(tfds.core.GeneratorBasedBuilder):
 	def _info(self) -> tfds.core.DatasetInfo:
 		"""Returns the dataset metadata."""
 
-		# Get the path where the script is executed
-		script_dir = os.path.realpath(__file__)
-		script_dir = os.path.dirname(script_dir)
+		# Load necessary files to create the TFDS
+		self._load_files()
 
-		# Path to save output of this script (params, full_metadata, etc. NO tfds!)
-		self.script_output_path = os.path.join(script_dir, 'Output')
+		# Get filtered metadata (acordinglly with the given perturbations and cell cycle)
+		filtered_metadata = self._get_filtered_metadata()
 
-	  	# Load tf dataset parameters
-		with open(os.path.join('./Parameters', 'tf_dataset_parameters.json')) as file:
-			self.tfds_param = json.load(file)
+		# add train, val and test partitions info to filtered_metadata
+		self.filtered_metadata = self._add_train_val_test_split_to_metadata(filtered_metadata)
 
-		# Load parameters used to generate preprocessed data
-		with open(self.tfds_param['data_source_parameters'], 'r') as file:
-			self.pp_param = json.load(file)
-
-		# Path where the preprocessed data to be transformed into tf dataset is
-		self.data_source_path = self.pp_param['output_data_dir']
-
-		# Load metadata file:
-		with open(os.path.join(self.data_source_path, 'metadata.csv'), 'r') as file:
-			self.full_metadata =  pd.read_csv(file)
-
-		# Load channel file:
-		with open(os.path.join(self.data_source_path, 'channels.csv')) as file:
-			channels =  pd.read_csv(file)
-
-
-		# images data type
-		img_dtype = getattr(tf, self.pp_param['images_dtype'])
-
-		# Get info from the preprocessing parameters
-		img_size = self.pp_param['img_size']
-
-		# Which perturbations to use?
-		perturbations = self.tfds_param['perturbations']
-
-		# Which cell cycles to use?
-		cell_cycles = self.tfds_param['cell_cycles']
-
-		# leave only unique elements
-		self.full_metadata = self.full_metadata.groupby(['mapobject_id_cell'], sort=False, as_index=False).first()
-		# filter acordinglly to the selected perturbations
-		self.filtered_metadata = self.full_metadata[self.full_metadata.perturbation.isin(perturbations) & self.full_metadata.cell_cycle.isin(cell_cycles)]
-
-		# create df containing the mapobject_id_cell and its set
-		set_df = pd.DataFrame(columns=['mapobject_id_cell', 'set'])
-
-		# create train, val and test partitions keeping the proportion of perturbation and cell_cycle
-		for per in perturbations:
-		    for cc in cell_cycles:
-		        # Create mask that contains the cells with the corresponding perturbation and cell_cycle
-		        mask = (self.filtered_metadata.perturbation == per) & (self.filtered_metadata.cell_cycle == cc)
-		        # get mapobject_id_cell and the size of the train, val and test partitions
-		        cell_ids = self.filtered_metadata[mask].mapobject_id_cell.values
-		        n_train = int(len(cell_ids) * self.tfds_param['train_frac'])
-		        n_val = int(len(cell_ids) * self.tfds_param['val_frac'])
-		        n_test = len(cell_ids) - n_train - n_val
-		        print('For partition (perturbation, cell_cycle)=({}, {}):'.format(per, cc))
-		        print('\tNumber of cells in train set: {}, val set: {}, test_set: {}\n\tTotal number of cells: {}\n'.format(n_train, n_val, n_test, n_train+n_val+n_test))
-
-		        # get the mapobject_id_cell belonging to the train, val and test partitions
-		        np.random.seed(self.tfds_param['seed'])
-		        np.random.shuffle(cell_ids)
-		        train_cell_ids = cell_ids[0:n_train]
-		        val_cell_ids = cell_ids[n_train:n_train+n_val]
-		        test_cell_ids = cell_ids[n_train+n_val:n_train+n_val+n_test]
-
-		        # Save cell id with its corresponding set
-		        temp_df = pd.DataFrame(train_cell_ids, columns=['mapobject_id_cell'])
-		        temp_df['set'] = 'train'
-		        set_df = pd.concat((set_df, temp_df), ignore_index=True)
-		        temp_df = pd.DataFrame(val_cell_ids, columns=['mapobject_id_cell'])
-		        temp_df['set'] = 'val'
-		        set_df = pd.concat((set_df, temp_df), ignore_index=True)
-		        temp_df = pd.DataFrame(test_cell_ids, columns=['mapobject_id_cell'])
-		        temp_df['set'] = 'test'
-		        set_df = pd.concat((set_df, temp_df), ignore_index=True)
-		# merge the filtered_metadata with the df containing the set
-		self.filtered_metadata = self.filtered_metadata.merge(set_df,
-		                        left_on='mapobject_id_cell',
-		                        right_on='mapobject_id_cell',
-		                        how='left')
-
-		n_train = np.sum(self.filtered_metadata.set == 'train')
-		n_val = np.sum(self.filtered_metadata.set == 'val')
-		n_test = np.sum(self.filtered_metadata.set == 'test')
-		print('Number of cells in train set: {}, val set: {}, test_set: {}\nTotal number of cells: {}\n'.format(n_train, n_val, n_test, n_train+n_val+n_test))
-
-		input_channels = self.tfds_param['input_channels']
-		self.input_ids = channels.set_index('name').loc[input_channels]['channel_id'].values
-		n_channels = self.input_ids.shape[0]
-
-		output_channel = self.tfds_param['output_channels']
-		self.output_id = channels.set_index('name').loc[output_channel]['channel_id'].values[0]
-
-		# Add info to the description
-		global _DESCRIPTION
-		_DESCRIPTION += '\ninput_channels:\n{}'.format(input_channels)
-		_DESCRIPTION += '\n\noutput_channel:\n{}'.format(output_channel)
-		_DESCRIPTION += '\n\nTFDS metadata path:\n{}'.format(self.script_output_path)
+		# Get channel ids corresponding to the input and the output
+		self.input_ids, self.output_id = self._get_IO_channel_ids()
 
 		# Save output of this script
 		self._save_tfds_metadata()
+
+		# To make return more readable
+		img_size = self.pp_param['img_size']
+		n_channels = self.input_ids.shape[0]
+		img_dtype = getattr(tf, self.pp_param['images_dtype'])
 
 		return tfds.core.DatasetInfo(
 			builder=self,
@@ -211,17 +127,129 @@ class MPP_dataset_Normal_DMSO_G1(tfds.core.GeneratorBasedBuilder):
 				'target': cell_target,
 				}
 
+	def _load_files(self):
+		# Load tf dataset parameters
+		with open(os.path.join('./Parameters', 'tf_dataset_parameters.json')) as file:
+			self.tfds_param = json.load(file)
+
+		# Load parameters used to generate preprocessed data
+		with open(self.tfds_param['data_source_parameters'], 'r') as file:
+			self.pp_param = json.load(file)
+
+		# Path where the preprocessed data to be transformed into tf dataset is
+		self.data_source_path = self.pp_param['output_data_dir']
+
+		# Load metadata file:
+		with open(os.path.join(self.data_source_path, 'metadata.csv'), 'r') as file:
+			self.full_metadata =  pd.read_csv(file)
+
+		# Load channel file:
+		with open(os.path.join(self.data_source_path, 'channels.csv')) as file:
+			self.channels =  pd.read_csv(file)
+
+	def _get_filtered_metadata(self):
+
+		# leave only unique elements
+		self.full_metadata = self.full_metadata.groupby(['mapobject_id_cell'], sort=False, as_index=False).first()
+
+		# get mask acordinglly to the selected perturbations and cell cycle
+		mask = self.full_metadata.perturbation.isin(self.tfds_param['perturbations'])
+		mask &= self.full_metadata.cell_cycle.isin(self.tfds_param['cell_cycles'])
+		# Filter metadata
+		filtered_metadata = self.full_metadata[mask]
+
+		return filtered_metadata
+
+	def _add_train_val_test_split_to_metadata(self, filtered_metadata):
+
+		# create df containing the mapobject_id_cell and its set
+		set_df = pd.DataFrame(columns=['mapobject_id_cell', 'set'])
+
+		# create train, val and test partitions keeping the proportion of perturbation and cell_cycle
+		for per in self.tfds_param['perturbations']:
+		    for cc in self.tfds_param['cell_cycles']:
+		        # Create mask that contains the cells with the corresponding perturbation and cell_cycle
+		        mask = (filtered_metadata.perturbation == per) & (filtered_metadata.cell_cycle == cc)
+		        # get mapobject_id_cell and the size of the train, val and test partitions
+		        cell_ids = filtered_metadata[mask].mapobject_id_cell.values
+		        n_train = int(len(cell_ids) * self.tfds_param['train_frac'])
+		        n_val = int(len(cell_ids) * self.tfds_param['val_frac'])
+		        n_test = len(cell_ids) - n_train - n_val
+		        print('For partition (perturbation, cell_cycle)=({}, {}):'.format(per, cc))
+		        print('\tNumber of cells in train set: {}, val set: {}, test_set: {}\n\tTotal number of cells: {}\n'.format(n_train, n_val, n_test, n_train+n_val+n_test))
+
+		        # get the mapobject_id_cell belonging to the train, val and test partitions
+		        np.random.seed(self.tfds_param['seed'])
+		        np.random.shuffle(cell_ids)
+		        train_cell_ids = cell_ids[0:n_train]
+		        val_cell_ids = cell_ids[n_train:n_train+n_val]
+		        test_cell_ids = cell_ids[n_train+n_val:n_train+n_val+n_test]
+
+		        # Save cell id with its corresponding set
+		        temp_df = pd.DataFrame(train_cell_ids, columns=['mapobject_id_cell'])
+		        temp_df['set'] = 'train'
+		        set_df = pd.concat((set_df, temp_df), ignore_index=True)
+		        temp_df = pd.DataFrame(val_cell_ids, columns=['mapobject_id_cell'])
+		        temp_df['set'] = 'val'
+		        set_df = pd.concat((set_df, temp_df), ignore_index=True)
+		        temp_df = pd.DataFrame(test_cell_ids, columns=['mapobject_id_cell'])
+		        temp_df['set'] = 'test'
+		        set_df = pd.concat((set_df, temp_df), ignore_index=True)
+		# merge the filtered_metadata with the df containing the set
+		filtered_metadata = filtered_metadata.merge(set_df,
+		                        left_on='mapobject_id_cell',
+		                        right_on='mapobject_id_cell',
+		                        how='left')
+
+		n_train = np.sum(filtered_metadata.set == 'train')
+		n_val = np.sum(filtered_metadata.set == 'val')
+		n_test = np.sum(filtered_metadata.set == 'test')
+		print('Number of cells in train set: {}, val set: {}, test_set: {}\nTotal number of cells: {}\n'.format(n_train, n_val, n_test, n_train+n_val+n_test))
+
+		return filtered_metadata
+
+	def _get_IO_channel_ids(self):
+
+		# Input ids
+		input_channels = self.tfds_param['input_channels']
+		input_ids = self.channels.set_index('name').loc[input_channels]['channel_id'].values
+
+		# Output id
+		output_channel = self.tfds_param['output_channels']
+		output_id = self.channels.set_index('name').loc[output_channel]['channel_id'].values[0]
+
+		return input_ids, output_id
+
 	def _save_tfds_metadata(self):
 
+		# Get the path where the script is executed
+		script_dir = os.path.realpath(__file__)
+		script_dir = os.path.dirname(script_dir)
+		# Path to save output of this script (params, full_metadata, etc. NO tfds!)
+		script_output_path = os.path.join(script_dir, 'Output')
+
+		# Add info to the description
+		global _DESCRIPTION
+		_DESCRIPTION += '\ninput_channels:\n{}'.format(self.tfds_param['input_channels'])
+		_DESCRIPTION += '\n\noutput_channel:\n{}'.format(self.tfds_param['output_channels'])
+		_DESCRIPTION += '\n\nTFDS metadata path:\n{}'.format(script_output_path)
+
 		# save original metadata:
-		with open(os.path.join(self.script_output_path, 'metadata.csv'), 'w') as file:
+		with open(os.path.join(script_output_path, 'metadata.csv'), 'w') as file:
 			self.full_metadata.to_csv(file, index=False, sep=',')
+
 		# Save filtered metadata
-		with open(os.path.join(self.script_output_path, 'filtered_metadata.csv'), 'w') as file:
+		with open(os.path.join(script_output_path, 'filtered_metadata.csv'), 'w') as file:
 			self.filtered_metadata.to_csv(file, index=False, sep=',')
+
+		# Save channel file:
+		with open(os.path.join(script_output_path, 'channels.csv'), 'w') as file:
+			self.channels.to_csv(file, index=False, sep=',')
+
 		# save tfds creation parameters
-		with open(os.path.join(self.script_output_path, 'tfds_parameters.json'), 'w') as file:
+		with open(os.path.join(script_output_path, 'tfds_parameters.json'), 'w') as file:
 			json.dump(self.tfds_param, file, indent=4)
+
 		# save data preprocessing parameters
-		with open(os.path.join(self.script_output_path, 'data_pp_parameters.json'), 'w') as file:
+		with open(os.path.join(script_output_path, 'data_pp_parameters.json'), 'w') as file:
 			json.dump(self.pp_param, file, indent=4)
