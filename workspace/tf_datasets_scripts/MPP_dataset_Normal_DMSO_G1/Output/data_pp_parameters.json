@@ -76,7 +76,7 @@
         "NaN"
     ],
     "convert_into_image": 1,
-    "images_dtype": "float32",
+    "images_dtype": "uint16",
     "remove_original_data": 1,
     "data_dirs": [
         "/home/hhughes/Documents/Master_Thesis/Project/datasets/raw/184A1_hannah_unperturbed/I09",

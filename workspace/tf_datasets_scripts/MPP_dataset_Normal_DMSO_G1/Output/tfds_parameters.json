@@ -10,6 +10,7 @@
     ],
     "train_frac": 0.8,
     "val_frac": 0.1,
+    "percentile": 99.0,
     "seed": 123,
     "input_channels": [
         "00_DAPI",

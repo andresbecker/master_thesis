@@ -10,6 +10,8 @@
     "_comment": "data fractions for spliting (n_test=total-n_train-n_val)-----",
     "train_frac": 0.8,
     "val_frac": 0.1,
+    "_comment": "Percentile used to normalize data----------------------------",
+    "percentile": 99.0,
     "_comment": "random seed to generate split partition----------------------",
     "seed": 123,
 
