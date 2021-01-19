@@ -3,7 +3,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 
-def zoom_image(tensor_img, img_size):
+def zoom_image(tensor_img, img_size, mode):
 
     def get_min_space(x):
         t_x = tf.cast(tf.math.not_equal(tf.math.reduce_sum(x, axis=(1,2)), 0),
@@ -36,8 +36,11 @@ def zoom_image(tensor_img, img_size):
     tensor_img = tf.image.central_crop(tensor_img, frac2crop)
     #print('Size after cropping: ', tensor_img.shape)
 
-    # Select uniformly random the cell size (between 40% and 100% of the image)
-    cell_img_frac = tf.random.uniform(shape=[1], minval=0.4, maxval=1, dtype=tf.float32)
+    if mode == 'random_uniform':
+        # Select uniformly random the cell size (between 40% and 100% of the image)
+        cell_img_frac = tf.random.uniform(shape=[1], minval=0.4, maxval=1, dtype=tf.float32)
+    elif mode == 'equal':
+        cell_img_frac = 1
     #print('Target cell img fraction: ', cell_img_frac)
 
     # Create temp image with cell size specified by cell_img_frac (random)
@@ -100,11 +103,11 @@ def augment(image, target, p, input_ids, metadata):
         image = tf.image.rot90(image, k=k)
 
     # ZoomIn and ZoomOut
-    if p['random_CenterZoom']:
+    if p['CenterZoom']:
         if len(image.shape) == 4:
-            image = tf.map_fn(lambda image: zoom_image(image, img_size))
+            image = tf.map_fn(lambda image: zoom_image(image, img_size, p['CenterZoom_mode']))
         else:
-            image = zoom_image(image, img_size)
+            image = zoom_image(image, img_size, p['CenterZoom_mode'])
 
     return image, target
 
