@@ -115,7 +115,7 @@ class MPP_dataset_test2(tfds.core.GeneratorBasedBuilder):
 		# correspond to the desired subset (train, val, test)
 		mask = (self.filtered_metadata.set == subset)
 		filtered_cells = self.filtered_metadata.mapobject_id_cell[mask].values.astype(str)
-		file_names = [fn for fn in file_names if fn[:-4] in filtered_cells]
+		file_names = [cell_id+'.npz' for cell_id in filtered_cells if cell_id+'.npz' in file_names]
 		file_names = np.array(file_names)
 
 		self.normalization_vals = self.normalization_vals.astype(np.float32)
@@ -252,7 +252,7 @@ class MPP_dataset_test2(tfds.core.GeneratorBasedBuilder):
 		# correspond to the train subset
 		mask = (self.filtered_metadata.set == 'train')
 		filtered_cells = self.filtered_metadata.mapobject_id_cell[mask].values.astype(str)
-		file_names = [fn for fn in file_names if fn[:-4] in filtered_cells]
+		file_names = [cell_id+'.npz' for cell_id in filtered_cells if cell_id+'.npz' in file_names]
 		file_names = np.array(file_names)
 
 	    # The percentile per channel need to be taken accordingly to the mask. Since there is no way to concatenate np arrays in place (without creating a copy), we first create an array that will be filled with the values necessary to calculate the percentile per channel. Note that the size of this array is the same for every channel.
