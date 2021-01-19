@@ -426,36 +426,33 @@ class evaluate_model():
 
         self.metrics_df = self.metrics_df.round(4)
 
-    def plot_error_dist(self, figsize=(20,7), hue='perturbation', sets=['train','val', 'test']):
+    def plot_error_dist(self, figsize=(20,7), sets=['train', 'val', 'test']):
 
         col_names = ['set', 'perturbation', 'cell_cycle', 'y - y_hat']
         temp_df = self.targets_df[col_names].copy()
         temp_df= temp_df.set_index(['set', 'perturbation', 'cell_cycle'])
         temp_df = temp_df.stack().reset_index()
         temp_df.columns = ['set', 'perturbation', 'cell_cycle'] + ['diff_name', 'value']
+        hues = ['cell_cycle', 'perturbation']
 
-        for set in sets:
-            plt.figure(figsize=figsize)
-            sns.kdeplot(x='value',
-                        data=temp_df[temp_df.set == set],
-                        hue=hue,
-                        #color=colors,
-                        shade=True,
-                        bw_method=0.2)
+        n_plots = len(sets) + len(hues)
+        plt.figure(figsize=(n_plots*figsize[0], figsize[1]))
+        plot_count = 0
+        for hue in hues:
+            for s in sets:
+                plot_count += 1
+                plt.subplot(1,n_plots,plot_count)
+                sns.kdeplot(x='value',
+                            data=temp_df[temp_df.set == s],
+                            hue=hue,
+                            #color=colors,
+                            shade=True,
+                            bw_method=0.2)
 
-            plt.xlabel('y - y_hat')
-            plt.title(set+' Set Error KDE')
+                plt.xlabel('y - y_hat')
+                plt.title('Error distribution, set={}, hue={}'.format(s, hue))
 
-            #plt.figure(figsize=(len(y_models)*7,7))
-            #sns.boxplot(y='value',
-            #            x='diff_name',
-            #            hue='perturbation',
-            #            data=temp_df)
-            #plt.xlabel('Diff Name')
-            #plt.ylabel('y - y_hat')
-            #plt.title('Error Distribution per set')
-
-    def plot_y_dist(self, figsize=(15,7), x='perturbation', sets=['train','val', 'test']):
+    def plot_y_dist(self, figsize=(15,7), sets=['train','val', 'test']):
         temp_df = self.targets_df.copy()
         columns = ['y', 'y_hat', 'mapobject_id_cell', 'set', 'cell_cycle', 'perturbation']
         temp_df = temp_df[columns]
@@ -463,15 +460,22 @@ class evaluate_model():
         temp_df = temp_df.set_index(['mapobject_id_cell', 'set', 'cell_cycle', 'perturbation']).stack().reset_index()
         temp_df.columns = ['mapobject_id_cell', 'set', 'cell_cycle', 'perturbation', 'var', 'value']
 
-        for set in sets:
-            plt.figure(figsize=figsize)
-            sns.boxplot(y='value',
-                        x=x,
-                        hue='var',
-                        data=temp_df[temp_df.set == set])
-            plt.title('Transcription Rate (TR) values distribution for '+set+' set')
+        xs = ['cell_cycle', 'perturbation']
+        n_plots = len(sets) + len(xs)
+        plt.figure(figsize=(n_plots*figsize[0], figsize[1]))
 
-    def plot_residuals(self, figsize=(10,7), hue='perturbation'):
+        plot_count = 0
+        for x in xs:
+            for s in sets:
+                plot_count += 1
+                plt.subplot(1,n_plots,plot_count)
+                sns.boxplot(y='value',
+                            x=x,
+                            hue='var',
+                            data=temp_df[temp_df.set == s])
+                plt.title('Transcription Rate (TR) distribution, set={}, x={}'.format(s, x))
+
+    def plot_residuals(self, figsize=(10,7), sets=['train','val', 'test']):
 
         min_val = int(self.targets_df['y'].min()) - 50
         max_val = int(self.targets_df['y'].max()) + 50
@@ -480,39 +484,55 @@ class evaluate_model():
         std = temp_df['y - y_hat'].std()
         temp_df['std_residuals'] = temp_df['y - y_hat'] / std
 
-        plt.figure(figsize=figsize)
-        sns.scatterplot(
-            data=temp_df,
-            x = 'y',
-            y = 'std_residuals',
-            hue = hue,
-        )
-        plt.hlines(y=2, xmin=min_val, xmax=max_val, color='red', ls='dashed')
-        plt.hlines(y=-2, xmin=min_val, xmax=max_val, color='red', ls='dashed')
-        plt.xlim([min_val, max_val])
-        plt.ylim([-7, 7])
-        plt.title('(y-y_hat)/std(y-y_hat)')
+        hues = ['cell_cycle', 'perturbation']
+        n_plots = len(sets) + len(hues)
+        plt.figure(figsize=(n_plots*figsize[0], figsize[1]))
+        plot_count = 0
+        for hue in hues:
+            for s in sets:
+                plot_count += 1
+                plt.subplot(1,n_plots,plot_count)
 
-    def plot_y_vs_y_hat(self, figsize=(7,7), hue='perturbation'):
+                sns.scatterplot(
+                    data=temp_df[temp_df.set == s],
+                    x = 'y',
+                    y = 'std_residuals',
+                    hue = hue,
+                )
+                plt.hlines(y=2, xmin=min_val, xmax=max_val, color='red', ls='dashed')
+                plt.hlines(y=-2, xmin=min_val, xmax=max_val, color='red', ls='dashed')
+                plt.xlim([min_val, max_val])
+                plt.ylim([-7, 7])
+                plt.title('(y-y_hat)/std(y-y_hat), set={}, hue={}'.format(s, hue))
+
+    def plot_y_vs_y_hat(self, figsize=(7.6,7), sets=['train','val', 'test']):
 
         min_val = 0
         max_val = int(self.targets_df.y.max()) + 100
 
-        plt.figure(figsize=figsize)
-        plt.axis('equal')
-        sns.scatterplot(data=self.targets_df,
-                        x='y',
-                        y='y_hat',
-                        hue=hue,
-                        #s=15,
-                        alpha=0.5)
+        hues = ['cell_cycle', 'perturbation']
+        n_plots = len(sets) + len(hues)
+        plt.figure(figsize=(n_plots*figsize[0], figsize[1]))
+        plot_count = 0
+        for hue in hues:
+            for s in sets:
+                plot_count += 1
+                plt.subplot(1,n_plots,plot_count)
+                plt.axis('equal')
 
-        x_line = [min_val, max_val]
-        y_line = x_line
-        plt.plot(x_line, y_line, linestyle='dashed', color='red')
-        plt.xlim([min_val, max_val])
-        plt.ylim([min_val, max_val])
-        plt.title('y vs y_hat')
+                sns.scatterplot(data=self.targets_df[self.targets_df.set == s],
+                                x='y',
+                                y='y_hat',
+                                hue=hue,
+                                #s=15,
+                                alpha=0.5)
+
+                x_line = [min_val, max_val]
+                y_line = x_line
+                plt.plot(x_line, y_line, linestyle='dashed', color='red')
+                plt.xlim([min_val, max_val])
+                plt.ylim([min_val, max_val])
+                plt.title('y vs y_hat, set={}, hue={}'.format(s, hue))
 
     def save_model_evaluation_data(self, base_path, eval_name='test'):
 
