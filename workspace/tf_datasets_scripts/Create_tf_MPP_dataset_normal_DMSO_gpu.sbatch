@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH -o ./SLURM_output/Create_tf_MPP_dataset_normal_DMSO.log
-#SBATCH -e ./SLURM_output/Create_tf_MPP_dataset_normal_DMSO.error.log
+#SBATCH -o ./SLURM_output/Create_tf_MPP_dataset_normal_DMSO_gpu.log
+#SBATCH -e ./SLURM_output/Create_tf_MPP_dataset_normal_DMSO_gpu.error.log
 #SBATCH -J Create_tf_dataset
 #SBATCH -p gpu_p
 #SBATCH -c 4
