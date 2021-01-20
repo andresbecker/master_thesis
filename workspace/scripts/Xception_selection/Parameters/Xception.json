@@ -12,7 +12,7 @@
 
 		"_comment": "Tensorflow datasets parameters-------------------------------",
 		"local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets",
-		"tf_ds_name": "Mpp_dataset_no_perturbations",
+		"tf_ds_name": "mpp_dataset_normal_dmso",
     "shuffle_files": 1,
 
 		"_comment": "Augment dataset flags----------------------------------------",
