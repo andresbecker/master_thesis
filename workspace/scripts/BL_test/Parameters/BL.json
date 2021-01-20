@@ -16,8 +16,8 @@
     "shuffle_files": 1,
 
     "_comment": "Augment dataset flags----------------------------------------",
-    "random_horizontal_flipping": 1,
-    "random_90deg_rotations": 1,
+    "random_horizontal_flipping": 0,
+    "random_90deg_rotations": 0,
     "CenterZoom": 0,
     "_comment": "available: random_uniform (cell size randomly selected from uniform dist), equal (all cells with same size)---------------------------",
     "CenterZoom_mode": "random_uniform",
