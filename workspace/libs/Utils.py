@@ -342,7 +342,7 @@ class evaluate_model():
             for cells in ds:
                 cell_ids = [cell_id.decode() for cell_id in cells['mapobject_id_cell'].numpy()]
                 cell_ids = np.asarray(cell_ids).reshape(-1,1)
-                cell_imgs, Y = Data_augmentation.filter_channels(cells['image'], cells['target'], self.input_ids, self.metadata)
+                cell_imgs, Y = Data_augmentation.data_preprocessing(cells['image'], cells['target'], self.p, self.input_ids, self.metadata, training=False)
                 Y = Y.numpy()
                 Y_hat = self.model.predict(cell_imgs)
                 temp_df = pd.DataFrame(np.concatenate((Y, Y_hat), axis=1), columns=['y', 'y_hat'])
@@ -562,16 +562,17 @@ def plot_train_metrics(history=None, CMA_history=None, CMA_metric=None, metrics=
 
         plt.subplot(3,1,i)
         # Plot Train loss
-        plt.plot(history[metric], alpha=0.5, label=metric, c='darkorange')
+        x = range(1, len(history[metric])+1)
+        plt.plot(x, history[metric], alpha=0.5, label=metric, c='darkorange')
         # Plot Validation loss
-        plt.plot(history['val_'+metric], alpha=0.5, label='val_'+metric, c='darkblue')
+        plt.plot(x, history['val_'+metric], alpha=0.5, label='val_'+metric, c='darkblue')
         # Plot CMA loss
         if (CMA_history is not None) and (metric == CMA_metric):
             plt.plot(CMA_history[:,0], CMA_history[:,1], label='avg val_'+metric, c='blue')
 
         # Plot a red point in the epoch with the best val metric
         val_min = np.asarray(history['val_'+metric]).min()
-        val_min_idx = np.argmin(history['val_'+metric])
+        val_min_idx = np.argmin(history['val_'+metric]) + 1
         label='Bets singel val\nEpoch={}\n{}={}'.format(val_min_idx,metric,round(val_min,2))
         plt.scatter(x=val_min_idx, y=val_min, c='brown', linewidths=4, label=label)
 
@@ -580,7 +581,7 @@ def plot_train_metrics(history=None, CMA_history=None, CMA_metric=None, metrics=
             temp_idx = np.argmin(CMA_history[:,1])
             val_min_idx = int(CMA_history[temp_idx,0])
             val_min_CMA = CMA_history[temp_idx,1]
-            val_min = history['val_'+metric][val_min_idx]
+            val_min = history['val_'+metric][val_min_idx-1]
 
             label='Bets CMA val\nEpoch={}\nCMA={}'.format(val_min_idx,round(val_min,2))
             plt.scatter(x=val_min_idx, y=val_min_CMA, c='green', linewidths=4, label=label)

@@ -84,28 +84,29 @@ def filter_channels(image, target, input_ids, metadata):
 
     return tf.reshape(tf.reshape(image, (-1,n_channels)) @ projection_tensor, (new_shape)), target
 
-def augment(image, target, p, input_ids, metadata):
-    """Function to augment dataset. After channel filtering, it flips
-    (horizontally) and rotates (0, 90, 180, 270 degrees) randomly the images.
+def data_preprocessing(image, target, p, input_ids, metadata, training=True):
+    """
+    Function to preprocess cell images and do data augmentation (if selected)
     """
 
+    # Remove unselected channels
     image, target = filter_channels(image, target, input_ids, metadata)
     img_size = metadata.features['image'].shape[:-1]
 
     # random Left and right flip
-    if p['random_horizontal_flipping']:
+    if p['random_horizontal_flipping'] and training:
         image = tf.image.random_flip_left_right(image)
 
     # random rotations
     # Number of 90deg rotation
-    if p['random_90deg_rotations']:
+    if p['random_90deg_rotations'] and training:
         k=tf.random.uniform(shape=[], minval=0, maxval=4, dtype=tf.int32)
         image = tf.image.rot90(image, k=k)
 
     # ZoomIn and ZoomOut
-    if p['CenterZoom']:
+    if p['CenterZoom'] and (training or (p['CenterZoom_mode'] == 'equal')):
         if len(image.shape) == 4:
-            image = tf.map_fn(lambda image: zoom_image(image, img_size, p['CenterZoom_mode']))
+            image = tf.map_fn(fn=lambda img: zoom_image(img, img_size, p['CenterZoom_mode']), elems=image)
         else:
             image = zoom_image(image, img_size, p['CenterZoom_mode'])
 
