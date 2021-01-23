@@ -44,8 +44,8 @@ class Predef_models():
         if self.model_name == 'baseline_CNN':
             self.model = self._get_baseline_CNN()
 
-        elif self.model_name == 'baseline_CNN_test1':
-            self.model = self._get_baseline_CNN_test1()
+        elif self.model_name == 'Small_baseline_CNN':
+            self.model = self._get_Small_baseline_CNN()
 
         elif self.model_name == 'ResNet50V2':
             self.model = self._get_ResNet50V2()
@@ -127,7 +127,7 @@ class Predef_models():
 
         return model
 
-    def _get_baseline_CNN_test1(self):
+    def _get_Small_baseline_CNN(self):
         """
         Baseline Model test 1 (simpler than Baseline)
         Architecture:
