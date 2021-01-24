@@ -39,7 +39,7 @@
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)---------------------",
     "learning_rate": 0.001,
-    "BATCH_SIZE": 256,
+    "BATCH_SIZE": 128,
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR-------",
     "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Small_BL.log",
