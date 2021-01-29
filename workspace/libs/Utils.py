@@ -12,6 +12,7 @@ sns.set_theme(style="darkgrid")
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 import copy
+import socket
 
 class Tee_Logger(object):
     """
@@ -83,7 +84,7 @@ class save_best_model_Callback(tf.keras.callbacks.Callback):
     """
     Save model checkpoint (only weights)
     """
-    #https://www.tensorflow.org/guide/keras/custom_callback
+    # https://www.tensorflow.org/guide/keras/custom_callback
     def __init__(self, monitor='val_loss', avg_sizes=[], path=None):
         super(save_best_model_Callback, self).__init__()
 
@@ -266,13 +267,14 @@ def lr_schedule(epoch, current_lr, MAE, LR_SCHEDULE):
 
     return current_lr
 
+def print_stdout_and_log(msg):
+    log = logging.getLogger()
+    log.info(msg)
+    print(msg)
+
 def create_model_dirs(parameters: dict):
 
-    # clean_model_dir not given, then set as defaul
-    if not 'clean_model_dir' in parameters.keys():
-        parameters['clean_model_dir'] = True
-
-    # Check if path where model instances are saved exist
+    # Check if the path where model instances are saved exist
     temp_path = os.path.join(parameters['model_path'], parameters['model_name'])
     try:
         os.makedirs(temp_path, exist_ok=True)
@@ -281,13 +283,7 @@ def create_model_dirs(parameters: dict):
         raise Exception(msg)
 
     # Create directory where this execution will be saved
-    try:
-        tag = parameters['model_dir']
-    except:
-        # tagged with the date and time
-        tag = datetime.now().strftime("%d%m%y_%H%M")
-
-    base_path = os.path.join(temp_path, tag)
+    base_path = parameters['base_path']
     if os.path.exists(base_path) & parameters['clean_model_dir']:
         msg = 'Warning! Directory {} already exist! Deleting...\n'.format(base_path)
         print(msg)
@@ -388,9 +384,8 @@ class evaluate_model():
         huber_loss = tf.keras.losses.Huber()
 
         # Create df to store metrics to compare models
-        column_names = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'PreTrained', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'Parameters_file_path']
-
-        self.metrics_df = pd.DataFrame(columns=column_names)
+        columns = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'Bias_l2_reg', 'PreTrained', 'Aug_rand_h_flip', 'Aug_rand_90deg_r', 'Aug_Zoom', 'Aug_Zoom_mode', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'Parameters_file_path']
+        self.metrics_df = pd.DataFrame(columns=columns)
 
         for ss in np.unique(self.targets_df['set']):
             mask = (self.targets_df['set'] == ss)
@@ -409,7 +404,12 @@ class evaluate_model():
                         'Conv_L2_reg':self.p['conv_reg'][1],
                         'Dense_L1_reg':self.p['dense_reg'][0],
                         'Dense_L2_reg':self.p['dense_reg'][1],
+                        'Bias_l2_reg':self.p['bias_l2_reg'],
                         'PreTrained':self.p['pre_training'],
+                        'Aug_rand_h_flip':self.p['random_horizontal_flipping'],
+                        'Aug_rand_90deg_r':self.p['random_90deg_rotations'],
+                        'Aug_Zoom':self.p['CenterZoom'],
+                        'Aug_Zoom_mode':self.p['CenterZoom_mode'],
                         'Set':ss,
                         'Bias':self.targets_df['y - y_hat'][mask].mean(),
                         'Std':self.targets_df['y - y_hat'][mask].std(),
@@ -594,3 +594,290 @@ def plot_train_metrics(history=None, CMA_history=None, CMA_metric=None, metrics=
         plt.ylabel(metric)
         plt.legend()
         plt.title(metric+', '+title)
+
+def set_model_default_parameters(p_old=None):
+    """
+    This function check that all necessary input parameters are given, and if not, it set default values depending on the host name (execution in local machine or server)
+    """
+    p_new = {}
+    p_new['parameters_file_path'] = p_old['parameters_file_path']
+    p_new['external_libs_path'] = p_old['external_libs_path']
+
+    hostname = socket.gethostname()
+    local_hn = 'hughes-machine'
+
+    info = '\nInput parameters:\n'
+
+    # Model selection----------------------------------------------------------
+    info += '\n  Model parameters:'
+    key = 'model_name'
+    if key not in p_old.keys():
+        p_new[key] = 'ResNet50V2'
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Selected model: ' + p_new[key]
+
+    key = 'pre_training'
+    if key not in p_old.keys():
+        p_new[key] = False
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Pretraining: '+str(p_new[key])
+
+    # Regularization: conv_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]
+    key = 'dense_reg'
+    if key not in p_old.keys():
+        p_new[key] = [0, 0]
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Dense layers regularization (l1, l2): '+str(p_new[key])
+    key = 'conv_reg'
+    if key not in p_old.keys():
+        p_new[key] = [0, 0]
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Conv layers regularization (l1, l2): '+str(p_new[key])
+    key = 'bias_l2_reg'
+    if key not in p_old.keys():
+        p_new[key] = 0
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Bias L2 reg (for dense and conv layers): '+str(p_new[key])
+
+    key = 'number_of_epochs'
+    if key not in p_old.keys():
+        p_new[key] = 450
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Number of epochs: '+str(p_new[key])
+
+    # Losses: mse, huber, mean_absolute_error
+    key = 'loss'
+    if key not in p_old.keys():
+        p_new[key] = 'huber'
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Loss function: '+str(p_new[key])
+
+    key = 'learning_rate'
+    if key not in p_old.keys():
+        p_new[key] = 0.001
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Learning rate: '+str(p_new[key])
+
+    key = 'BATCH_SIZE'
+    if key not in p_old.keys():
+        p_new[key] = 64
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Batch size: '+str(p_new[key])
+
+    # verbose_level: 1=progress bar, 2=one line per epoch
+    key = 'verbose_level'
+    if key not in p_old.keys():
+        p_new[key] = 2
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Verbose level: '+str(p_new[key])
+
+    info += '\n'
+    # End of the model section--------------------------------------------------
+
+    # Output section------------------------------------------------------------
+    info += '\n  Output:'
+
+    # where to save the models and checkpoints
+    key = 'model_path'
+    if key not in p_old.keys():
+        if hostname == local_hn:
+            p_new[key] = '/home/hhughes/Documents/Master_Thesis/Project/workspace/models'
+        else:
+            p_new[key] = '/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models'
+    else:
+        p_new[key] = p_old[key]
+
+    # use parameters file name as base name for other files and dirs
+    key = 'basename'
+    p_new[key] = os.path.basename(p_new['parameters_file_path']).split(".")[0]
+    info += '\n    Base name for files: '+str(p_new[key])
+
+    # Create output path to save model
+    key = 'base_path'
+    temp = os.path.basename(p_new['parameters_file_path']).split(".")[0]
+    p_new[key] = os.path.join(p_new['model_path'], p_new['model_name'], temp)
+    info += '\n    Model output: '+str(p_new[key])
+
+    key = 'clean_model_dir'
+    if key not in p_old.keys():
+        p_new[key] = False
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Clean base_path? '+str(p_new[key])
+
+    info += '\n'
+    # End of the output section-------------------------------------------------
+
+    # Dataset section----------------------------------------------------------
+    info += '\n  Dataset:'
+
+    # Tensorflow dataset
+    key = 'tf_ds_name'
+    if key not in p_old.keys():
+        p_new[key] = 'mpp_dataset_normal_dmso'
+    else:
+        p_new[key] = p_old[key]
+    info += '\n     TFDS name: '+str(p_new[key])
+
+    # Hannah is not using: 00_BG488, 00_BG568, 09_SRRM2_ILASTIK, 15_SON_ILASTIK
+    key = 'input_channels'
+    if key not in p_old.keys():
+        p_new[key] = ['00_DAPI',
+                  '07_H2B',
+                  '01_CDK9_pT186',
+                  '03_CDK9',
+                  '05_GTF2B',
+                  '07_SETD1A',
+                  '08_H3K4me3',
+                  '09_SRRM2',
+                  '10_H3K27ac',
+                  '11_KPNA2_MAX',
+                  '12_RB1_pS807_S811',
+                  '13_PABPN1',
+                  '14_PCNA',
+                  '15_SON',
+                  '16_H3',
+                  '17_HDAC3',
+                  '19_KPNA1_MAX',
+                  '20_SP100',
+                  '21_NCL',
+                  '01_PABPC1',
+                  '02_CDK7',
+                  '03_RPS6',
+                  '05_Sm',
+                  '07_POLR2A',
+                  '09_CCNT1',
+                  '10_POL2RA_pS2',
+                  '11_PML',
+                  '12_YAP1',
+                  '13_POL2RA_pS5',
+                  '15_U2SNRNPB',
+                  '18_NONO',
+                  '20_ALYREF',
+                  '21_COIL']
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Selected input channels: '
+    info += '\n    '+str(p_new[key])
+
+    key = 'shuffle_files'
+    if key not in p_old.keys():
+        p_new[key] = True
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Shuffle TFDS elements in the first loading? '+str(p_new[key])
+
+    key = 'local_tf_datasets'
+    if key not in p_old.keys():
+        if hostname == local_hn:
+            p_new[key] = '/home/hhughes/Documents/Master_Thesis/Project/datasets/tensorflow_datasets'
+        else:
+            p_new[key] = '/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets'
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    TFDS path: '+str(p_new[key])
+
+    # Preprocessed data path
+    key = 'pp_path'
+    if key not in p_old.keys():
+        if hostname == local_hn:
+            p_new[key] = '/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test_32'
+        else:
+            p_new[key] = '/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_images_and_masks_all_wells'
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Preprocessed data path: '+str(p_new[key])
+
+    info += '\n'
+    # End of the Dataset section------------------------------------------------
+
+    # Data augmentation section-------------------------------------------------
+    info += '\n  Data augmentation:'
+    key = 'random_horizontal_flipping'
+    if key not in p_old.keys():
+        p_new[key] = True
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Random horizontal flipping: '+str(p_new[key])
+
+    key = 'random_90deg_rotations'
+    if key not in p_old.keys():
+        p_new[key] = True
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Random 90deg rotations: '+str(p_new[key])
+
+    key = 'CenterZoom'
+    if key not in p_old.keys():
+        p_new[key] = True
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    CenterZoom: '+str(p_new[key])
+
+    # available: random_uniform (cell size randomly selected from uniform dist) equal (all cells with same size)
+    key = 'CenterZoom_mode'
+    if key not in p_old.keys():
+        p_new[key] = 'random_uniform'
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Center zoom mode: '+str(p_new[key])
+
+    info += '\n'
+    # End of the Data augmentation section--------------------------------------
+
+
+    # Logging section-----------------------------------------------------------
+    info += '\n  Logging:'
+    key = 'log_file'
+    if 'log_path' not in p_old.keys():
+        p_new[key] = os.path.join('/tmp', p_new['basename']+'.log')
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Log file: '+str(p_new[key])
+
+    key = 'tensorboard'
+    if key not in p_old.keys():
+        p_new[key] = False
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Print tensorboard logs? '+str(p_new[key])
+
+    info += '\n'
+    # End of the Logging section------------------------------------------------
+
+    # other section------------------------------------------------------------
+    info += '\n  Cuda:'
+    # Cuda Config
+    key = 'disable_gpu'
+    if key not in p_old.keys():
+        if hostname == local_hn:
+            p_new[key] = True
+        else:
+            p_new[key] = False
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Ignore GPU? '+str(p_new[key])
+
+    key = 'set_memory_growth'
+    if key not in p_old.keys():
+        if hostname == local_hn:
+            p_new[key] = True
+        else:
+            p_new[key] = False
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Limit GPU memory allocation? '+str(p_new[key])
+
+    info += '\n\n'
+
+    return p_new, info
