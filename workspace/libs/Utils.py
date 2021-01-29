@@ -838,11 +838,14 @@ def set_model_default_parameters(p_old=None):
 
     # Logging section-----------------------------------------------------------
     info += '\n  Logging:'
-    key = 'log_file'
-    if 'log_path' not in p_old.keys():
-        p_new[key] = os.path.join('/tmp', p_new['basename']+'.log')
+    key = 'log_path'
+    if key not in p_old.keys():
+        p_new[key] = '/tmp'
     else:
         p_new[key] = p_old[key]
+
+    key = 'log_file'
+    p_new[key] = os.path.join(p_new['log_path'], p_new['basename']+'.log')
     info += '\n    Log file: '+str(p_new[key])
 
     key = 'tensorboard'
