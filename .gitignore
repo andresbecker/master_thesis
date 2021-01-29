@@ -7,12 +7,15 @@
 *.npz
 *.csv
 *.html
+*_no_git*
 **/.ipynb_checkpoints
 **/__pycache__
 **/Too_heavy_for_git
 
 # Avoid SLURM output
 **/SLURM_output
+**/Plots
+**/Plot
 
 # Avoid output notebooks
 **/NB_output
