@@ -21,11 +21,6 @@ class Predef_models():
 
         self.model_name = model_name
         self.pre_training = pre_training
-        self.conv_l1_reg = conv_reg[0]
-        self.conv_l2_reg = conv_reg[1]
-        self.dense_l1_reg = dense_reg[0]
-        self.dense_l2_reg = dense_reg[1]
-        self.bias_l2_reg = bias_l2_reg
 
         if input_shape is None:
             msg = 'Please specify the input shape! E.g.:\n'
@@ -35,10 +30,25 @@ class Predef_models():
         else:
             self.input_shape = input_shape
 
-        msg = '{} selected!'.format(self.model_name)
+        # Set regularization parameters
+        # regularization for dense layers
+        self.dense_reg = None
+        if sum(dense_reg) != 0:
+            self.dense_reg = tf.keras.regularizers.l1_l2(l1=dense_reg[0], l2=dense_reg[1])
+        # Reg for conv layers
+        self.conv_reg = None
+        if sum(conv_reg) != 0:
+            self.conv_reg = tf.keras.regularizers.l1_l2(l1=conv_reg[0], l2=conv_reg[1])
+        # reg for bias
+        self.bias_reg = None
+        if bias_l2_reg != 0:
+            self.bias_reg = tf.keras.regularizers.l2(bias_l2_reg)
+
+        msg = 'Model {} selected!'.format(self.model_name)
         msg += '\nRegularization:'
-        msg += '\nconv_l1_reg: {}, conv_l2_reg: {}'.format(self.conv_l1_reg, self.conv_l2_reg)
-        msg += '\ndense_l1_reg: {}, dense_l2_reg: {}'.format(self.dense_l1_reg, self.dense_l2_reg)
+        msg += '\nconv_l1_reg: {}, conv_l2_reg: {}'.format(conv_reg[0], conv_reg[1])
+        msg += '\ndense_l1_reg: {}, dense_l2_reg: {}'.format(dense_reg[0], dense_reg[1])
+        msg += '\nBias l2 reg: {}'.format(bias_l2_reg)
         self.log.info(msg)
         print(msg)
 
@@ -46,14 +56,8 @@ class Predef_models():
         if self.model_name == 'baseline_CNN':
             self.model = self._get_baseline_CNN()
 
-        elif self.model_name == 'Small_baseline_CNN':
-            self.model = self._get_Small_baseline_CNN()
-
         elif self.model_name == 'ResNet50V2':
             self.model = self._get_ResNet50V2()
-
-        elif self.model_name == 'ResNet50V2_test1':
-            self.model = self._get_ResNet50V2_test1()
 
         elif self.model_name == 'Xception':
             self.model = self._get_Xception()
@@ -83,8 +87,8 @@ class Predef_models():
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(64, (3,3),
                                    padding='same',
-                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
-                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg),
+                                   kernel_regularizer=self.conv_reg,
+                                   bias_regularizer=self.bias_reg,
                                    input_shape=self.input_shape),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
@@ -92,8 +96,9 @@ class Predef_models():
 
             tf.keras.layers.Conv2D(128, (3,3),
                                    padding='same',
-                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
-                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg)),
+                                   #kernel_regularizer=self.conv_reg,
+                                   #bias_regularizer=self.bias_reg
+                                   ),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
             tf.keras.layers.MaxPooling2D((2,2), strides=2),
@@ -103,8 +108,8 @@ class Predef_models():
 
             tf.keras.layers.Dense(
                 units=256,
-                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-                bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+                kernel_regularizer=self.dense_reg,
+                bias_regularizer=self.bias_reg,
                 #activity_regularizer=tf.keras.regularizers.l2(1e-5)
             ),
             tf.keras.layers.BatchNormalization(),
@@ -112,8 +117,8 @@ class Predef_models():
 
             tf.keras.layers.Dense(
                 units=128,
-                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-                bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+                kernel_regularizer=self.dense_reg,
+                bias_regularizer=self.bias_reg,
                 #activity_regularizer=tf.keras.regularizers.l2(1e-5)
             ),
             tf.keras.layers.BatchNormalization(),
@@ -121,62 +126,14 @@ class Predef_models():
 
             tf.keras.layers.Dense(
                 units=1,
-                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-                bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+                kernel_regularizer=self.dense_reg,
+                bias_regularizer=self.bias_reg,
                 #activity_regularizer=tf.keras.regularizers.l2(1e-5)
             ),
         ])
 
         return model
 
-    def _get_Small_baseline_CNN(self):
-        """
-        Baseline Model test 1 (simpler than Baseline)
-        Architecture:
-        Input -> Conv3x3_64 -> BN -> ReLu -> MaxPool2x2
-              -> Conv3x3_128 -> BN -> ReLu -> MaxPool2x2
-              -> GlobalAveragePooling (Flatten filters by taking the average)
-              -> Dense_64 -> BN -> ReLu
-              -> Dense_1 (Prediction)
-        """
-
-        model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(64, (3,3),
-                                   padding='same',
-                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
-                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg),
-                                   input_shape=self.input_shape),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
-
-            tf.keras.layers.Conv2D(128, (3,3),
-                                   padding='same',
-                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
-                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg)),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
-
-            tf.keras.layers.GlobalAveragePooling2D(),
-            tf.keras.layers.Dense(
-                units=64,
-                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-                bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
-                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-
-            tf.keras.layers.Dense(
-                units=1,
-                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-                bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
-                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-            ),
-        ])
-
-        return model
 
     def _get_Quick_test(self):
         """
@@ -191,8 +148,8 @@ class Predef_models():
         model = tf.keras.Sequential([
             tf.keras.layers.Conv2D(64, (3,3),
                                    padding='same',
-                                   kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg),
-                                   bias_regularizer=tf.keras.regularizers.l2(self.conv_l2_reg),
+                                   kernel_regularizer=self.conv_reg,
+                                   bias_regularizer=self.bias_reg,
                                    input_shape=self.input_shape),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.ReLU(),
@@ -201,8 +158,8 @@ class Predef_models():
             tf.keras.layers.GlobalAveragePooling2D(),
             tf.keras.layers.Dense(
                 units=32,
-                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-                bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+                kernel_regularizer=self.dense_reg,
+                bias_regularizer=self.bias_reg,
                 #activity_regularizer=tf.keras.regularizers.l2(1e-5)
             ),
             tf.keras.layers.BatchNormalization(),
@@ -210,8 +167,8 @@ class Predef_models():
 
             tf.keras.layers.Dense(
                 units=1,
-                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-                bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+                kernel_regularizer=self.dense_reg,
+                bias_regularizer=self.bias_reg,
                 #activity_regularizer=tf.keras.regularizers.l2(1e-5)
             ),
         ])
@@ -245,46 +202,12 @@ class Predef_models():
             classifier_activation=None
         )
 
-        # Set regularization parameters
-        # regularization for dense layers
-        if (self.dense_l1_reg != 0) or (self.dense_l2_reg != 0):
-            dense_reg = tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg)
-        else:
-            dense_reg = None
-        # Reg for conv layers
-        if (self.conv_l1_reg != 0) or (self.conv_l2_reg != 0):
-            conv_reg = tf.keras.regularizers.l1_l2(l1=self.conv_l1_reg, l2=self.conv_l2_reg)
-        else:
-            conv_reg = None
-        # reg for bias
-        if self.bias_l2_reg != 0:
-            bias_reg = tf.keras.regularizers.l2(self.bias_l2_reg)
-        else:
-            bias_reg = None
-
-        # For testing----------------------------------------------------------
-        #https://towardsdatascience.com/how-to-add-regularization-to-keras-pre-trained-models-the-right-way-743776451091
-        # Add regularization for the first conv layer of the ResNet50V2
-        first_conv_layer = base_model.layers[2]
-        # add kernel reg
-        if hasattr(first_conv_layer, 'kernel_regularizer'):
-            setattr(first_conv_layer, 'kernel_regularizer', conv_reg)
-        # add bias reg
-        if hasattr(first_conv_layer, 'bias_regularizer'):
-            setattr(first_conv_layer, 'bias_regularizer', bias_reg)
-        # When we change the layers attributes, the change only happens in the model config file
-        model_json = base_model.to_json()
-        # Save the weights before reloading the model.
-        model_w_and_b = copy.deepcopy(base_model.get_weights())
-        # load the model from the config
-        base_model = tf.keras.models.model_from_json(model_json)
-        # Reload the model weights
-        base_model.set_weights(model_w_and_b)
-        # end testing----------------------------------------------------------
-
         # load pretrained weights and biases
         if self.pre_training:
             base_model = self._set_ResNet50V2_pretrained_w_and_b(base_model)
+
+        # For testing
+        base_model = self._apply_regularization_to_prebuilt_model(base_model, 2)
 
         # Add some dense layers to predict the TR:
         x = base_model.output
@@ -292,8 +215,8 @@ class Predef_models():
 
         x = tf.keras.layers.Dense(
             units=256,
-            kernel_regularizer=dense_reg,
-            bias_regularizer=bias_reg,
+            kernel_regularizer=self.dense_reg,
+            bias_regularizer=self.bias_reg,
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
         x = tf.keras.layers.BatchNormalization()(x)
@@ -301,8 +224,8 @@ class Predef_models():
 
         x = tf.keras.layers.Dense(
             units=128,
-            kernel_regularizer=dense_reg,
-            bias_regularizer=bias_reg,
+            kernel_regularizer=self.dense_reg,
+            bias_regularizer=self.bias_reg,
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
         x = tf.keras.layers.BatchNormalization()(x)
@@ -310,8 +233,8 @@ class Predef_models():
 
         prediction = tf.keras.layers.Dense(
             units=1,
-            kernel_regularizer=dense_reg,
-            bias_regularizer=bias_reg,
+            kernel_regularizer=self.dense_reg,
+            bias_regularizer=self.bias_reg,
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
@@ -319,57 +242,6 @@ class Predef_models():
 
         return model
 
-    def _get_ResNet50V2_test1(self):
-        """
-        ResNet50V2 + Dense layers on the top. The difference with _get_ResNet50V2 is that this only have one dense layer at the end.
-        Architecture:
-        Input -> ResNet50V2 without top layers (Dense prediction layers)
-              -> GlobalAveragePooling (Flatten, output vector of size 2048)
-              -> Dense_256 -> BN -> ReLu
-              -> Dense_1 (Prediction)
-        """
-
-        # First, we need to load the RestNet50V2 arch. However, sine our input
-        # shape is different from the original one, it is not possible to load
-        # the arch. and the pretrained weights at the same time. Moreover, we
-        # need to creat first a separate input layer with the shape of our data:
-        input_layer = tf.keras.Input(shape=self.input_shape, name='InputLayer')
-
-        # Now we load the base ResNet50V2 arch. using our input layer:
-        base_model = tf.keras.applications.ResNet50V2(
-            include_top=False,
-            weights=None,
-            input_tensor=input_layer,
-            pooling=None,
-            classifier_activation=None
-        )
-
-        if self.pre_training:
-            base_model = self._set_ResNet50V2_pretrained_w_and_b(base_model)
-
-        # Add some dense layers to predict the TR:
-        x = base_model.output
-        x = tf.keras.layers.GlobalAveragePooling2D()(x)
-
-        x = tf.keras.layers.Dense(
-            units=256,
-            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-            bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
-            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-        )(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tf.keras.layers.ReLU()(x)
-
-        prediction = tf.keras.layers.Dense(
-            units=1,
-            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-            bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
-            #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-        )(x)
-
-        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
-
-        return model
 
     def _get_Xception(self):
         """
@@ -400,14 +272,17 @@ class Predef_models():
         if self.pre_training:
             base_model = self._set_Xception_pretrained_w_and_b(base_model)
 
+        # For testing
+        base_model = self._apply_regularization_to_prebuilt_model(base_model, 1)
+
         # Finally add some dense layers to predict the TR:
         x = base_model.output
         x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
         x = tf.keras.layers.Dense(
             units=256,
-            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-            bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+            kernel_regularizer=self.dense_reg,
+            bias_regularizer=self.bias_reg,
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
         x = tf.keras.layers.BatchNormalization()(x)
@@ -415,8 +290,8 @@ class Predef_models():
 
         x = tf.keras.layers.Dense(
             units=128,
-            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-            bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+            kernel_regularizer=self.dense_reg,
+            bias_regularizer=self.bias_reg,
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
         x = tf.keras.layers.BatchNormalization()(x)
@@ -424,8 +299,8 @@ class Predef_models():
 
         prediction = tf.keras.layers.Dense(
             units=1,
-            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=self.dense_l1_reg, l2=self.dense_l2_reg),
-            bias_regularizer=tf.keras.regularizers.l2(self.bias_l2_reg),
+            kernel_regularizer=self.dense_reg,
+            bias_regularizer=self.bias_reg,
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
@@ -525,5 +400,27 @@ class Predef_models():
             l_name = layer.name
             if l_name in pretrain_weights_and_biases.keys():
                 layer.set_weights(pretrain_weights_and_biases[l_name])
+
+        return base_model
+
+    def _apply_regularization_to_prebuilt_model(self, base_model, layer_number):
+
+        #https://towardsdatascience.com/how-to-add-regularization-to-keras-pre-trained-models-the-right-way-743776451091
+        # Add regularization to a given layer (layer_number) of a prebuilt model
+        prebuilt_layer = base_model.layers[layer_number]
+        # add kernel reg
+        if hasattr(prebuilt_layer, 'kernel_regularizer'):
+            setattr(prebuilt_layer, 'kernel_regularizer', self.conv_reg)
+        # add bias reg
+        if hasattr(prebuilt_layer, 'bias_regularizer'):
+            setattr(prebuilt_layer, 'bias_regularizer', self.bias_reg)
+        # When we change the layers attributes, the change only happens in the model config file
+        model_json = base_model.to_json()
+        # Save the weights before reloading the model.
+        model_w_and_b = copy.deepcopy(base_model.get_weights())
+        # load the model from the config
+        base_model = tf.keras.models.model_from_json(model_json)
+        # Reload the model weights
+        base_model.set_weights(model_w_and_b)
 
         return base_model
