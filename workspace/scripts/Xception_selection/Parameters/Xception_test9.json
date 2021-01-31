@@ -1,0 +1,41 @@
+{
+    "_comment": "where to save the models and checkpoints---------------------",
+    "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models",
+    "clean_model_dir": 1,
+
+    "_comment": "Preprocessed data path---------------------------------------",
+    "pp_path": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_images_and_masks_all_wells",
+
+		"_comment": "Tensorflow datasets parameters-------------------------------",
+		"local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets",
+		"tf_ds_name": "mpp_dataset_normal_dmso",
+    "shuffle_files": 1,
+
+		"_comment": "Augment dataset flags----------------------------------------",
+    "random_horizontal_flipping": 1,
+		"random_90deg_rotations": 1,
+    "CenterZoom": 1,
+    "_comment": "available: random_uniform (cell size randomly selected from uniform dist), equal (all cells with same size)---------------------------",
+    "CenterZoom_mode": "random_uniform",
+
+		"_comment": "Model selection----------------------------------------------",
+    "model_name": "Xception",
+    "pre_training": 1,
+    "_comment": "Regularization: conv_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]-------",
+    "conv_reg": [0.1, 0],
+    "dense_reg": [5e-4, 5e-3],
+    "bias_l2_reg": 0,
+    "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
+    "verbose_level": 2,
+    "number_of_epochs": 1350,
+    "_comment": "Losses: mse, huber-------------------------------------------",
+    "loss": "huber",
+    "_comment": "Learning rate (lr default=0.001)-----------------------------",
+    "learning_rate": 0.001,
+    "BATCH_SIZE": 64,
+
+    "_comment": "log configuration. ------------------------------------------",
+    "log_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs",
+    "_comment": "if tensorboard=1, then tb_logs_path=log_file_name+tensorboard",
+    "tensorboard": 0
+}
