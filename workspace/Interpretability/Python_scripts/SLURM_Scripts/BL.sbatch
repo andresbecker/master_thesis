@@ -11,4 +11,4 @@
 #SBATCH -t 24:00:00
 #SBATCH --nice=10000
 
-../Run_pyhton_script.sh -e icb_mt -s ../get_VarGradIG.py -p ../Parameters/local/BL_local.json
+../Run_pyhton_script.sh -e icb_mt -s ../get_VarGradIG.py -p ../Parameters/BL.json
