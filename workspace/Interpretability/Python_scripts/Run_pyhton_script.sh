@@ -67,6 +67,6 @@ else
 fi
 
 # Execute python script
-python $PYTHON_SCRIPT -i $PARM_FILE --cell_id "321021"
+python $PYTHON_SCRIPT -i $PARM_FILE #--cell_id "321021"
 
 echo "Execution of "$0" finished."
