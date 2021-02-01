@@ -68,8 +68,19 @@ import Data_augmentation as data_aug
 # Make tf to ignore GPU
 if p['disable_gpu']:
     msg = "Cuda devices (GPUs) disabled"
-    logging.info(msg)
+    print_stdout_and_log(msg)
     os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+#restrict GPU mem
+if p['set_memory_growth']:
+    try:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        msg = 'GPU Memory limited!'
+    except:
+        msg = 'It was not possible to limit GPU memory'
+
+    print_stdout_and_log(msg)
+
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 msg = 'Physical GPU devises:\n{}'.format(physical_devices)
 print_stdout_and_log(msg)
