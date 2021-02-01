@@ -12,7 +12,7 @@ import logging
 def print_stdout_and_log(msg):
     logging.info(msg)
     print(msg)
-    
+
 
 parser_grn = argparse.ArgumentParser(description='Compute the score map (VarGrad IG) of a cell or group of cells')
 
@@ -34,8 +34,8 @@ if not os.path.exists(PARAMETERS_FILE):
     raise Exception('Parameter file {} does not exist!'.format(PARAMETERS_FILE))
 else:
     print('Input parameters file: ', PARAMETERS_FILE)
-    
-# Load parameters 
+
+# Load parameters
 with open(PARAMETERS_FILE, 'r') as file:
     p = json.load(file)
 print(p.keys())
@@ -44,7 +44,7 @@ print(p.keys())
 log_file_path = p['log_file_name']
 logging.basicConfig(
     filename=log_file_path,
-    filemode='w', 
+    filemode='w',
     level=getattr(logging, 'INFO')
 )
 msg = 'Parameters loaded from file:\n{}'.format(PARAMETERS_FILE)
@@ -77,6 +77,7 @@ print_stdout_and_log(msg)
 # Set script vars
 output_path = os.path.join(p['output_data_dir'], p['output_dir_name'])
 os.makedirs(output_path, exist_ok=True)
+os.makedirs(os.path.join(output_path, 'data'), exist_ok=True)
 print('\nOutput path:\n{}'.format(output_path))
 
 # Load Channels
@@ -96,7 +97,7 @@ msg = '\nModel loaded successfully:\n'
 print_stdout_and_log(msg)
 model.summary(print_fn=print_stdout_and_log)
 
-# Load cell, compute its Score map and save it
+# check if cell ids given individually or in a file
 if args.cell_id is not None:
     msg = 'Cell id {} given as argument, ignoring file {}'.format(args.cell_id, p['cell_ids_file'])
     cell_ids = [args.cell_id]
@@ -108,9 +109,15 @@ else:
 msg += '\n\t mapobject_id_cell to be processed:\n\t {}\n\n'.format(cell_ids)
 print_stdout_and_log(msg)
 
+# DF to store the stddev per channel (sum of pixels) and for the whole cell
+channel_names = list(channels_df.set_index('channel_id').iloc[input_ids].name.values)
+col_name = channel_names + ['Total_cell_stddev']
+score_map_stddev_df = pd.DataFrame(columns=col_name+['Model', 'mapobject_id_cell'])
+
+# Load cell, compute its Score map and save it
 n_cells = len(cell_ids)
-for cell in cell_ids:
-    print_stdout_and_log('Processing cell: {}'.format(cell))
+for i, cell in enumerate(cell_ids, 1):
+    print_stdout_and_log('Processing cell: {}, {}/{}'.format(cell, i, n_cells))
     print_stdout_and_log('\t Loading cell image...')
     temp_path = os.path.join(p['input_data_dir'], cell+'.npz')
     temp_cell = np.load(temp_path)
@@ -126,7 +133,7 @@ for cell in cell_ids:
     else:
         temp_mask = None
         p['output_name_prefix'] = 'no_mask_' + p['output_name_prefix']
-    
+
     print_stdout_and_log('\t Computing Cell Score map...')
     tic = time.time()
     temp_score_map = nn_inter.get_VarGrad(img=temp_img,
@@ -136,12 +143,30 @@ for cell in cell_ids:
                                           model=model,
                                           n_images=p['VarGrad_n_samples']
                                          )
+
+    # Compute sum of stddevs per channel and save it
+    score_channel_std = []
+    total_var = 0
+    for c in input_ids:
+        score_channel_std.append(np.sum(temp_score_map[:,:,c]))
+    total_var = np.sum(score_channel_std)
+    # regularize values before saving
+    score_channel_std = np.array(score_channel_std) / total_var
+    temp_data = np.concatenate((score_channel_std, [total_var]), axis=0).reshape((1,-1))
+    temp_df = pd.DataFrame(temp_data, columns=col_name)
+    temp_df['Model'] = p['output_dir_name']
+    temp_df['mapobject_id_cell'] = cell
+    score_map_stddev_df = pd.concat([score_map_stddev_df, temp_df], ignore_index=True)
+
     tac = time.time()
     msg = '\t Score map computed in {} seconds'.format(round(tac-tic,2))
     print_stdout_and_log(msg)
     msg = '\t Saving score map...'
     print_stdout_and_log(msg)
-    file_path = os.path.join(output_path, p['output_name_prefix']+cell+'.npy')
+    file_path = os.path.join(output_path, 'data', p['output_name_prefix']+cell+'.npy')
     np.save(file_path, temp_score_map.numpy())
 
-                         
+# Save DF with comulative stddevs
+temp_path = os.path.join(output_path, 'score_map_stddev.csv')
+with open(temp_path, 'w') as file:
+    score_map_stddev_df.to_csv(file, index=False)
