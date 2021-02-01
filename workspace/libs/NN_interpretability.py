@@ -76,7 +76,7 @@ def get_integrated_gradients(baseline, image, model, m_steps=50, batch_size=32):
 
     return integrated_gradients
 
-@tf.function
+#@tf.function
 def get_VarGrad(img=None, img_mask=None, baseline='black', model=None, n_images=15, IG_m_steps=30):
 
     if baseline == 'black':
