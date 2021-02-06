@@ -100,16 +100,34 @@ def apply_CenterZoom(image, target, zoom_mode):
     return image, target
 
 @tf.function
-def apply_RandomIntencity(image, target, scale_interval):
+def apply_RandomIntencity(image, target, dist, mean, stddev):
     """
     Function to apply random intencity scale to each channel. For each channel, it samples a scale factor between min_scale and max_scale from a uniform distribution.
     image: Tensor of shape (batch_size, img_size, img_size, n_channels)
     target: number
-    min_scale: float, minimum sclae factor
-    max_scale: float, maximum sclae factor
+    dist: distribution name
+    mean: float, distribution mean
+    stddev: float, distribution mean
     """
     n_channels = image.shape[-1]
-    channel_scales = tf.random.uniform(shape=[n_channels], minval=scale_interval[0], maxval=scale_interval[1])
+    lower_bound = tf.cast(0.1, dtype=tf.float32)
+    upper_bound = tf.cast(1.9, dtype=tf.float32)
+
+    if dist == 'uniform':
+        channel_scales = tf.random.uniform(shape=[n_channels], minval=mean-stddev, maxval=mean+stddev)
+
+    if dist == 'normal':
+        channel_scales = tf.random.normal(shape=[n_channels], mean=mean, stddev=stddev)
+
+    # contrain the sclae factor for each channel
+    # Lower bound
+    mask_tensor = (channel_scales > lower_bound)
+    channel_scales = tf.where(mask_tensor, channel_scales, lower_bound)
+    # Upper bound
+    mask_tensor = (channel_scales < upper_bound)
+    channel_scales = tf.where(mask_tensor, channel_scales, upper_bound)
+
+    # Create diagonal matrix to scale channels
     channel_scales_tensor = tf.linalg.diag(channel_scales)
 
     return image @ channel_scales_tensor, target
@@ -172,7 +190,7 @@ def prepare_train_and_val_TFDS(train_data, val_data, input_shape, projection_ten
         train_data = train_data.map(lambda image, target: apply_CenterZoom(image, target, p['CenterZoom_mode']), num_parallel_calls=AUTOTUNE)
     # Random channel intensity
     if p['Random_channel_intencity']:
-        train_data = train_data.map(lambda image, target: apply_RandomIntencity(image, target, p['RCI_scale_interval']), num_parallel_calls=AUTOTUNE)
+        train_data = train_data.map(lambda image, target: apply_RandomIntencity(image, target, p['RCI_dist'], p['RCI_mean'], p['RCI_stddev']), num_parallel_calls=AUTOTUNE)
 
     return train_data.prefetch(AUTOTUNE), val_data.prefetch(AUTOTUNE)
 
@@ -208,7 +226,7 @@ def visualize_data_augmentation(tensor_image, p):
 
             # Random channel intensity
             if p['Random_channel_intencity']:
-                tensor_image, _ = apply_RandomIntencity(tensor_image, 0, p['RCI_scale_interval'])
+                tensor_image, _ = apply_RandomIntencity(tensor_image, 0, p['RCI_dist'], p['RCI_mean'], p['RCI_stddev'])
 
             plt.subplot(1,4,i+1)
             visualize_tensor_cell_image(tensor_image[0], 'Augmented Cell')
