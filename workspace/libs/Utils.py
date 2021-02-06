@@ -315,20 +315,18 @@ def create_model_dirs(parameters: dict):
 
 class evaluate_model():
 
-    def __init__(self, p, model, input_ids):
+    def __init__(self, p, model, projection_tensor):
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('evaluate_model class initialed')
 
         # model parameters
         self.p = p
         self.model = model
-        # List containing the ids of the channels to be used in the prediction
-        self.input_ids = input_ids
 
         self._load_dataset()
-        self._calculate_predictions()
+        self._calculate_predictions(projection_tensor)
 
-    def _calculate_predictions(self):
+    def _calculate_predictions(self, projection_tensor):
         columns = ['y', 'y_hat', 'mapobject_id_cell', 'set']
         self.targets_df = pd.DataFrame(columns=columns)
 
@@ -338,7 +336,7 @@ class evaluate_model():
             for cells in ds:
                 cell_ids = [cell_id.decode() for cell_id in cells['mapobject_id_cell'].numpy()]
                 cell_ids = np.asarray(cell_ids).reshape(-1,1)
-                cell_imgs, Y = Data_augmentation.data_preprocessing(cells['image'], cells['target'], self.p, self.input_ids, self.metadata, training=False)
+                cell_imgs, Y = Data_augmentation.apply_data_preprocessing(cells['image'], cells['target'], projection_tensor)
                 Y = Y.numpy()
                 Y_hat = self.model.predict(cell_imgs)
                 temp_df = pd.DataFrame(np.concatenate((Y, Y_hat), axis=1), columns=['y', 'y_hat'])
@@ -371,6 +369,7 @@ class evaluate_model():
             with_info=True)
 
         self.train_data, self.val_data, self.test_data = dataset['train'], dataset['validation'], dataset['test']
+        del(dataset)
 
         BATCH_SIZE = self.p['BATCH_SIZE']
         AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -830,7 +829,21 @@ def set_model_default_parameters(p_old=None):
         p_new[key] = 'random_uniform'
     else:
         p_new[key] = p_old[key]
-    info += '\n    Center zoom mode: '+str(p_new[key])
+    info += '\n      Center zoom mode: '+str(p_new[key])
+
+    key = 'Random_channel_intencity'
+    if key not in p_old.keys():
+        p_new[key] = True
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Random_channel_intencity: '+str(p_new[key])
+
+    key = 'RCI_scale_interval'
+    if key not in p_old.keys():
+        p_new[key] = [0.5, 2.0]
+    else:
+        p_new[key] = p_old[key]
+    info += '\n      RCH scale interval: ' + str(p_new[key])
 
     info += '\n'
     # End of the Data augmentation section--------------------------------------
@@ -858,7 +871,16 @@ def set_model_default_parameters(p_old=None):
     info += '\n'
     # End of the Logging section------------------------------------------------
 
-    # other section------------------------------------------------------------
+    # other section-------------------------------------------------------------
+    info += '\n  Reproducibility:'
+    # seed
+    key = 'seed'
+    if key not in p_old.keys():
+        p_new[key] = 123
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Random Seed: '+str(p_new[key])
+
     info += '\n  Cuda:'
     # Cuda Config
     key = 'disable_gpu'
