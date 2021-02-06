@@ -6,6 +6,8 @@
 *.npy
 *.npz
 *.csv
+*.jpg
+*.png
 *.html
 *_no_git*
 **/.ipynb_checkpoints
