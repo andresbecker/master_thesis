@@ -3,14 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 
-def plot_cell(img, cmap='PiYG', title='', vmin=0, vmax=1, colorbar=False, alpha=1):
+def plot_cell(img, cmap='PiYG', title='', vmin=0, vmax=1, colorbar=False, alpha=1, title_fontsize=15):
     fig = plt.imshow(img,
                cmap=getattr(plt.cm, cmap),
                vmin=vmin, vmax=vmax,
                aspect='equal',
                alpha=alpha
                )
-    plt.title(title, fontsize=20)
+    plt.grid(False)
+    plt.title(title, fontsize=title_fontsize)
 
     if colorbar:
         plt.colorbar(fig, orientation="vertical", pad=0.05)
@@ -318,7 +319,7 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2,
 
         # Plot original image
         plt.subplot(n_plot_rows, n_plot_columns, i)
-        plot_cell(img=img[:,:,c], cmap='Blues', colorbar=plot_colorbar, title=channel_name)
+        plot_cell(img=img[:,:,c], cmap='Blues', colorbar=plot_colorbar, title=channel_name, title_fontsize=35)
 
     # plot score maps
     row_count = 1
@@ -360,13 +361,15 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2,
 
             # Get the variance (in the score map) corrsponding to this channel
             channel_stddev_percen = round(100*score_channel_std[c]/total_var,3)
-            title=channel_name+', '+key+', ' + str(channel_stddev_percen) + '%'
+            #title=channel_name+', '+key+', ' + str(channel_stddev_percen) + '%'
+            title=key+', ' + str(round(channel_stddev_percen, 2)) + '%'
             # plot
             plt.subplot(n_plot_rows, n_plot_columns, row_count*n_plot_columns + i)
             plot_cell(img=temp_map[:,:,c],
                       cmap='Oranges',
                       colorbar=plot_colorbar,
                       title=title,
+                      title_fontsize=25,
                       vmin=vmin, vmax=vmax)
         row_count += 1
 
@@ -380,8 +383,9 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2,
                           cmap='Oranges',
                           vmin=vmin, vmax=vmax,
                           colorbar=False)
-                title = channel_name+' and '+key+' Score Map'
-                plot_cell(img=img[:,:,c], cmap='Blues', title=title, alpha=0.4)
+                #title = channel_name+' and '+key+' Score Map'
+                title = channel_name
+                plot_cell(img=img[:,:,c], cmap='Blues', title=title, title_fontsize=35, alpha=0.4)
             row_count += 1
     if plot_name is not None:
         fig.savefig(plot_name)
