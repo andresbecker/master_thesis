@@ -19,9 +19,9 @@
     "CenterZoom_mode": "random_uniform",
     "_comment": "Scale each channel intencity uniformly-----------------------",
     "Random_channel_intencity": 1,
-    "RCI_dist": "normal",
+    "RCI_dist": "uniform",
     "RCI_mean": 1,
-    "RCI_stddev": 0.4,
+    "RCI_stddev": 0.5,
 
     "_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN",
