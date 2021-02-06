@@ -837,13 +837,25 @@ def set_model_default_parameters(p_old=None):
     else:
         p_new[key] = p_old[key]
     info += '\n    Random_channel_intencity: '+str(p_new[key])
-
-    key = 'RCI_scale_interval'
+    # available distributions (dist) are uniform and normal
+    key = 'RCI_dist'
     if key not in p_old.keys():
-        p_new[key] = [0.5, 2.0]
+        p_new[key] = 'uniform'
     else:
         p_new[key] = p_old[key]
-    info += '\n      RCH scale interval: ' + str(p_new[key])
+    info += '\n      RCH distribution: ' + str(p_new[key])
+    key = 'RCI_mean'
+    if key not in p_old.keys():
+        p_new[key] = 1
+    else:
+        p_new[key] = p_old[key]
+    info += '\n      RCH dist mean: ' + str(p_new[key])
+    key = 'RCI_stddev'
+    if key not in p_old.keys():
+        p_new[key] = 0.5
+    else:
+        p_new[key] = p_old[key]
+    info += '\n      RCH dist stddev: ' + str(p_new[key])
 
     info += '\n'
     # End of the Data augmentation section--------------------------------------
