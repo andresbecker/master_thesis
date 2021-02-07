@@ -95,7 +95,10 @@ def apply_CenterZoom(image, target, zoom_mode):
     zoom_mode: string indicating the zoom mode
     """
 
-    image = tf.map_fn(fn=lambda img: zoom_image(img, zoom_mode), elems=image)
+    if len(image.shape) == 4:
+        image = tf.map_fn(fn=lambda img: zoom_image(img, zoom_mode), elems=image)
+    else:
+        image = zoom_image(image, zoom_mode)
 
     return image, target
 
@@ -160,6 +163,49 @@ def get_projection_tensor(input_shape, input_ids):
             projection_matrix[row,col] = 1
 
     return tf.constant(projection_matrix, dtype=tf.float32)
+
+@tf.function
+def apply_data_pp_and_aug(images, targets, p, projection_tensor):
+
+    # Preprocess data (filter channels)
+    images, targets = apply_data_preprocessing(images, targets, projection_tensor)
+
+    # Data Agmentation processes (only for train_data)
+    # random Left and right flip
+    if p['random_horizontal_flipping']:
+        images, targets = apply_random_flip(images, targets)
+
+    # Number of 90deg rotation
+    if p['random_90deg_rotations']:
+        images, targets = apply_random_90deg_rotations(images, targets)
+
+    # ZoomIn and ZoomOut
+    if p['CenterZoom']:
+        images, targets = apply_CenterZoom(images, targets, p['CenterZoom_mode'])
+
+    # Random channel intensity
+    if p['Random_channel_intencity']:
+        images, targets = apply_RandomIntencity(images, targets, p['RCI_dist'], p['RCI_mean'], p['RCI_stddev'])
+
+    return images, targets
+
+def prepare_train_and_val_TFDS_2(train_data, val_data, projection_tensor, p):
+
+    buffer_size = 512
+    BATCH_SIZE = p['BATCH_SIZE']
+    AUTOTUNE = tf.data.experimental.AUTOTUNE
+
+    train_data = train_data.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
+
+    # the lambda function is to be able to pass more arguments to the map function
+    # Train data
+    train_data = train_data.map(lambda image, target: apply_data_pp_and_aug(image, target, p, projection_tensor), num_parallel_calls=AUTOTUNE)
+    train_data = train_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    # Val data
+    val_data = val_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
+    val_data = val_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
+
+    return train_data, val_data
 
 def prepare_train_and_val_TFDS(train_data, val_data, input_shape, projection_tensor, p):
 
