@@ -207,7 +207,7 @@ def prepare_train_and_val_TFDS_2(train_data, val_data, projection_tensor, p):
 
     return train_data, val_data
 
-def prepare_train_and_val_TFDS(train_data, val_data, input_shape, projection_tensor, p):
+def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
 
     buffer_size = 512
     AUTOTUNE = tf.data.experimental.AUTOTUNE
