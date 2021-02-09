@@ -12,7 +12,7 @@
     "_comment": "Channels file (with names, ids and normalization params)-----",
     "channels_file": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/tf_datasets_scripts/MPP_dataset_normal_DMSO/Output/channels.csv",
 
-    "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models/baseline_CNN/RN_RI/model/CMA_0",
+    "model_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/models/ResNet50V2/RN_RI/model/CMA_0",
 
     "_comment": "Path where external libraries are:-------------------------",
     "external_libs_path": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/libs",
