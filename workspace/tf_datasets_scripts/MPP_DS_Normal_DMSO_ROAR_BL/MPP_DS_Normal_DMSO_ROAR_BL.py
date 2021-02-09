@@ -14,13 +14,14 @@ The elements of this data sets are multichannel images of singel cells alongside
 This Dataset was builded after a preprocessing using the python script Transform_MPPData_into_images_no_split_from_script.ipynb. During this preprocessing the original MPPData was:
 - Converted into images.
 - Cleaned. Border and mitotic cells were removed.
-- Normalized. Each channel was normalized using scale parameters obtained from the training set.
+- Removed the background
 - Target value (scalar) calculated. The transcription rate was approximated taking the average of the measured pixels of the channel 00_EU. It is important to mention that the the target value was calculated BEFORE the normalization process.
 
 This Dataset contains only the cells with no perturbations (i.e. cells such that perturbation in ['normal', 'DMSO']). Although perturbations 'TSA' seams not to have influence over the TR (00_EU avg), it seams to have an influence on the intensity of the channel 10_H3K27ac, and therefore it is not included. Only normal, DMSO (perturbations).
 
-Explain here about ROAR.
+During the generation of the TFDS, each image channel was normalized using the 99% percentile of the training dataset.
 
+This TFDS contains 30 different partitions (10 training partitions, 10 val partitions and 10 test partitions). Each one of the 10 partitions has a different level of degradations according to the used model score maps. For instances, val_30 contains validation cells where the top 30% of the most important pixels (acordingly to the cell's score map) were removed.
 """
 
 _CITATION = """
@@ -102,19 +103,54 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 		# (form 0% degradation to 90% degradation)
 		return {
 			# 0% degradation
-			'train_0': self._generate_examples(images_path, 'train', 0 / 100),
-			'val_0': self._generate_examples(images_path, 'val', 0 / 100),
-			'test_0': self._generate_examples(images_path, 'test', 0 / 100),
+			'train_0': self._generate_examples(images_path, 'train', 0),
+			'val_0': self._generate_examples(images_path, 'val', 0),
+			'test_0': self._generate_examples(images_path, 'test', 0),
 
 			# 10% degradation
-			'train_10': self._generate_examples(images_path, 'train', 10 / 100),
-			'val_10': self._generate_examples(images_path, 'val', 10 / 100),
-			'test_10': self._generate_examples(images_path, 'test', 10 / 100),
+			'train_10': self._generate_examples(images_path, 'train', 0.1),
+			'val_10': self._generate_examples(images_path, 'val', 0.1),
+			'test_10': self._generate_examples(images_path, 'test', 0.1),
 
 			# 20% degradation
-			'train_20': self._generate_examples(images_path, 'train', 20 / 100),
-			'val_20': self._generate_examples(images_path, 'val', 20 / 100),
-			'test_20': self._generate_examples(images_path, 'test', 20 / 100),
+			'train_20': self._generate_examples(images_path, 'train', 0.2),
+			'val_20': self._generate_examples(images_path, 'val', 0.2),
+			'test_20': self._generate_examples(images_path, 'test', 0.2),
+
+			# 30% degradation
+			'train_30': self._generate_examples(images_path, 'train', 0.3),
+			'val_30': self._generate_examples(images_path, 'val', 0.3),
+			'test_30': self._generate_examples(images_path, 'test', 0.3),
+
+			# 40% degradation
+			'train_40': self._generate_examples(images_path, 'train', 0.4),
+			'val_40': self._generate_examples(images_path, 'val', 0.4),
+			'test_40': self._generate_examples(images_path, 'test', 0.4),
+
+			# 50% degradation
+			'train_50': self._generate_examples(images_path, 'train', 0.5),
+			'val_50': self._generate_examples(images_path, 'val', 0.5),
+			'test_50': self._generate_examples(images_path, 'test', 0.5),
+
+			# 60% degradation
+			'train_60': self._generate_examples(images_path, 'train', 0.6),
+			'val_60': self._generate_examples(images_path, 'val', 0.6),
+			'test_60': self._generate_examples(images_path, 'test', 0.6),
+
+			# 70% degradation
+			'train_70': self._generate_examples(images_path, 'train', 0.7),
+			'val_70': self._generate_examples(images_path, 'val', 0.7),
+			'test_70': self._generate_examples(images_path, 'test', 0.7),
+
+			# 80% degradation
+			'train_80': self._generate_examples(images_path, 'train', 0.8),
+			'val_80': self._generate_examples(images_path, 'val', 0.8),
+			'test_80': self._generate_examples(images_path, 'test', 0.8),
+
+			# 90% degradation
+			'train_90': self._generate_examples(images_path, 'train', 0.9),
+			'val_90': self._generate_examples(images_path, 'val', 0.9),
+			'test_90': self._generate_examples(images_path, 'test', 0.9),
 		}
 
 	def _generate_examples(self, images_path, subset, percent):
@@ -185,7 +221,6 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 				#'image': temp_img,
 				'target': cell_target,
 				}
-	#def _get_top_score_map(self, score_map, cell_mask, percent):
 
 	def _load_files(self):
 		# Load tf dataset parameters
