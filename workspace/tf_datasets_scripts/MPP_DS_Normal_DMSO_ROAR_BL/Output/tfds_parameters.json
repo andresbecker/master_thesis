@@ -48,11 +48,7 @@
         "15_U2SNRNPB",
         "18_NONO",
         "20_ALYREF",
-        "21_COIL",
-        "00_BG488",
-        "00_BG568",
-        "09_SRRM2_ILASTIK",
-        "15_SON_ILASTIK"
+        "21_COIL"
     ],
     "output_channels": [
         "00_EU"

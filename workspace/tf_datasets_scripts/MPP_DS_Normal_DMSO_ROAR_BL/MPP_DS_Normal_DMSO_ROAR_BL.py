@@ -99,23 +99,22 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 		images_path = input_data_path / 'data'
 
 		# Create 10 sets where each one have a different degradation level
-		max_degradation = 30
-		deg_step = 10
-
-		#temp_dict = {}
-		#for percent in range(0, max_degradation, deg_step):
-		#	temp_dict['train_'+str(percent)]: self._generate_examples(images_path, 'train', percent / max_degradation)
-
-		#	temp_dict['validation_'+str(percent)]: self._generate_examples(images_path, 'val', percent / max_degradation)
-
-		#	temp_dict['test_'+str(percent)]: self._generate_examples(images_path, 'test', percent / max_degradation)
-		percent = 30
+		# (form 0% degradation to 90% degradation)
 		return {
-			'train': self._generate_examples(images_path, 'train', percent / max_degradation),
+			# 0% degradation
+			'train_0': self._generate_examples(images_path, 'train', 0 / 100),
+			'val_0': self._generate_examples(images_path, 'val', 0 / 100),
+			'test_0': self._generate_examples(images_path, 'test', 0 / 100),
 
-			'validation': self._generate_examples(images_path, 'val', percent / max_degradation),
+			# 10% degradation
+			'train_10': self._generate_examples(images_path, 'train', 10 / 100),
+			'val_10': self._generate_examples(images_path, 'val', 10 / 100),
+			'test_10': self._generate_examples(images_path, 'test', 10 / 100),
 
-			'test': self._generate_examples(images_path, 'test', percent / max_degradation),
+			# 20% degradation
+			'train_20': self._generate_examples(images_path, 'train', 20 / 100),
+			'val_20': self._generate_examples(images_path, 'val', 20 / 100),
+			'test_20': self._generate_examples(images_path, 'test', 20 / 100),
 		}
 
 	def _generate_examples(self, images_path, subset, percent):
@@ -136,10 +135,6 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 
 		n_channels = self.input_ids.shape[0]
 		n_pixels = n_channels * (self.pp_param['img_size']**2)
-
-		print('----------------------------------------------------')
-		print(n_channels)
-		print('----------------------------------------------------')
 
 		for fn in file_names:
 			cell_id = int(fn.split('.')[0])
@@ -175,17 +170,22 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 				boun_val = (-1 * np.sort(-1 * score_map, axis=None))[n_top_pixels]
 				mask_tops = (score_map > boun_val)
 
-				# el problema es que score map solo esta definido para los canales para los que se entreno (33) y el TFDS lo hace para todos. Revisar mañana que lo haga solo para los imput channels establecidos en los parametros del TFDS y no para los del pp.
-
 				# Replace top pixels with channel mean
+				#temp_img = np.zeros(cell_img.shape)
 				for c in range(0, n_channels):
+					#mask_slice = mask_tops[:,:,c]
+					#img_slice = copy.deepcopy(cell_img[:,:,c])
+					#img_slice[mask_slice] = channel_mean[c]
+					#temp_img[:,:,c] = copy.deepcopy(temp_slice)
 					cell_img[:,:,c][mask_tops[:,:,c]] = channel_mean[c]
 
 			yield cell_id, {
 				'mapobject_id_cell': str(cell_id),
 				'image': cell_img,
+				#'image': temp_img,
 				'target': cell_target,
 				}
+	#def _get_top_score_map(self, score_map, cell_mask, percent):
 
 	def _load_files(self):
 		# Load tf dataset parameters
