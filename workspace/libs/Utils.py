@@ -13,6 +13,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 import copy
 import socket
+import time
 
 class Tee_Logger(object):
     """
@@ -80,54 +81,64 @@ class early_stop_Callback(tf.keras.callbacks.Callback):
 
             self.model.stop_training = True
 
-class save_best_model_Callback(tf.keras.callbacks.Callback):
+class save_best_model_weights_in_memory_Callback(tf.keras.callbacks.Callback):
     """
     Save model checkpoint (only weights)
     """
     # https://www.tensorflow.org/guide/keras/custom_callback
-    def __init__(self, monitor='val_loss', avg_sizes=[], path=None):
-        super(save_best_model_Callback, self).__init__()
+    def __init__(self, monitor='val_loss'):
+        super(save_best_model_weights_in_memory_Callback, self).__init__()
 
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('Save_best_model callback class initialed')
 
         self.monitor = monitor
-        self.avg_sizes = avg_sizes
-        self.path = path
-
-        self.history = []
-        self.avg_history = {}
-        self.best_values = {}
-        self.best_values['all_epochs'] = np.Inf
-        for avg_size in self.avg_sizes:
-            self.avg_history[str(avg_size)] = []
-            self.best_values[str(avg_size)] = np.Inf
+        self.best_value = np.Inf
+        self.best_model_w_and_b = []
 
     def on_epoch_end(self, epoch, logs=None):
         # Epoch start on 0!
+        epoch += 1
 
-        self.history.append(logs[self.monitor])
+        if logs[self.monitor] < self.best_value:
 
-        best_val = np.min(self.history)
-        if best_val < self.best_values['all_epochs']:
-            self.best_values['all_epochs'] = best_val
-            msg = '\nBest value for {} found on epoch {}:\n{}'.format(self.monitor, epoch, round(best_val,4))
+            msg += '\nBest general model updated on epoch {}; New value = {} < {} = last value'.format(epoch, round(self.best_value, 2), round(logs[self.monitor], 2))
+
+            # Update value
+            self.best_value = logs[self.monitor]
+            # save weghts and biases in ram memory
+            self.best_model_w_and_b = copy.deepcopy(self.model.get_weights())
+
             self.log.info(msg)
             print(msg)
 
-            self.model.save_weights(self.path+'/all_epochs_best/ckpt', overwrite=True)
+class print_progress_to_log(tf.keras.callbacks.Callback):
+    """
+    This class (tf callback) is ment to print the training progress into a log fail in case the training is made in a Jupyter notebook.
+    """
+    # https://www.tensorflow.org/guide/keras/custom_callback
+    def __init__(self, N_Epochs):
+        super(print_progress_to_log, self).__init__()
 
-        for avg_size in self.avg_sizes:
-            avg = np.mean(self.history[-avg_size:])
-            self.avg_history[str(avg_size)].append(avg)
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.log.info('print_progress_to_log class initialed')
 
-            if avg < self.best_values[str(avg_size)]:
-                self.best_values[str(avg_size)] = avg
-                msg = '\nBest value for {} and average size {} found on epoch {}:\n{}'.format(self.monitor, avg_size, epoch, round(avg,4))
-                self.log.info(msg)
-                print(msg)
+        self.N_Epochs = N_Epochs
 
-                self.model.save_weights(self.path+'/avg_'+str(avg_size)+'_best/ckpt', overwrite=True)
+    def on_epoch_begin(self, epoch, logs=None):
+        # Epoch start on 0!
+        msg = 'Epoch {}/{}'.format(epoch+1, self.N_Epochs)
+        self.log.info(msg)
+        self.epoch_starting_time = time.time()
+
+    def on_epoch_end(self, epoch, logs=None):
+        # Epoch start on 0!
+        epoch += 1
+        # Print metrics
+        msg = '{}s'.format(round(time.time()-self.epoch_starting_time, 0))
+        for key in logs.keys():
+            msg += ' - {}: {}'.format(key, round(logs[key],2))
+        self.log.info(msg)
 
 class save_best_model_base_on_CMA_Callback(tf.keras.callbacks.Callback):
     """
@@ -271,6 +282,25 @@ def print_stdout_and_log(msg):
     log = logging.getLogger()
     log.info(msg)
     print(msg)
+
+def create_directory(dir_path=None, clean_if_exist=False):
+    log = logging.getLogger()
+
+    if os.path.exists(dir_path) and clean_if_exist:
+        msg = 'Warning! Directory {} already exist! Deleting...\n'.format(dir_path)
+        log.info(msg)
+        print(msg)
+        try:
+            shutil.rmtree(dir_path)
+        except OSError as e:
+            msg = 'Dir {} could not be deleted!\n\nOSError: {}'.format(outdir, e)
+            log.info(msg)
+            print(msg)
+
+    msg = 'Creating dir: {}'.format(dir_path)
+    log.info(msg)
+    print(msg)
+    os.makedirs(dir_path, exist_ok=True)
 
 def create_model_dirs(parameters: dict):
 
