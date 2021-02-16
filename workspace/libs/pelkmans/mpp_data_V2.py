@@ -243,7 +243,7 @@ class MPPData:
 
         return np.max([size_x, size_y])
 
-    def save_img_mask_and_target_into_fs(self, outdir=None, data='MPP', input_channels=None, output_channels=None, projection_method='avg', img_size=224, pad=0, img_saving_mode='original_img_and_fixed_size', img_interpolation_method='nearest', dtype=np.float32):
+    def save_img_mask_and_target_into_fs(self, outdir=None, data='MPP', input_channels=None, output_channels=None, projection_method='avg', img_size=224, pad=0, img_saving_mode='original_img_and_fixed_size', img_interpolation_method='nearest', dtype='float32'):
         """
         This function save into file system (fs) the extracted image cells, masks and targets from the current MPPData instance as individual files. Each file is named using the mapobject_id of the cell.
         """
@@ -321,7 +321,7 @@ class MPPData:
                 output_ids = self.channels.set_index('name').loc[output_channels].channel_id.values
 
             # Save img, mask and targets
-            img = img[:,:,input_ids].astype(dtype)
+            img = img[:,:,input_ids].astype(getattr(np, dtype))
             img_mask = img_mask.astype(np.bool).reshape(img.shape[:-1])
             targets = channel_sclara[output_ids]
             file_name = os.path.join(outdir, str(mapobject_id_cell)+'.npz')
