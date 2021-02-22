@@ -10,4 +10,4 @@
 #SBATCH -t 15:00:00
 #SBATCH --nice=10000
 
-./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/MPPData_into_images_no_split.ipynb -p ./Parameters/Convert_data_into_images_all_wells_no_split.json
+./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/MPPData_into_images_no_split.ipynb -p ./Parameters/MppData_to_imgs_no_split.json
