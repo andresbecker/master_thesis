@@ -30,6 +30,9 @@ tf_dataset_parameters.json
 **/Old_scripts
 *_local.json
 
+# TFDS
+**/*.tsv
+
 # Latex support files
 **/*.acr
 **/*.acn
