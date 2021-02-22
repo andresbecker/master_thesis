@@ -243,12 +243,34 @@ class MPPData:
 
         return np.max([size_x, size_y])
 
-    def save_img_mask_and_target_into_fs(self, outdir=None, data='MPP', input_channels=None, output_channels=None, projection_method='avg', img_size=224, pad=0, img_saving_mode='original_img_and_fixed_size', img_interpolation_method='nearest', dtype='float32'):
+    def _get_cell_size_ratio(self, img_mask):
+        """
+        This function approximate the cell_size-img_size ratio, i.e. the ratio between how much of the image is being occupied by the cell information (the measured pixels) and how much by the added black pixels.
+        """
+        x_proyection = (np.sum(img_mask, axis=1) > 0)
+        y_proyection = (np.sum(img_mask, axis=0) > 0)
+        img_size = img_mask.shape[0]
+
+        # min distance between the cell and the image border on the x axis
+        x_distance = np.min((np.argmax(x_proyection), np.argmax(np.flip(x_proyection))))
+        # min distance between the cell and the image border on the y axis
+        y_distance = np.min((np.argmax(y_proyection), np.argmax(np.flip(y_proyection))))
+        # min distance between the cell and the image border
+        min_space = np.min((x_distance, y_distance))
+
+        #cell-image ratio
+        return 1 - 2 * (min_space / img_size)
+
+    def save_img_mask_and_target_into_fs(self, outdir=None, data='MPP', input_channels=None, output_channels=None, projection_method='avg', img_size=224, pad=0, img_saving_mode='original_img_and_fixed_size', img_interpolation_method='nearest', dtype='float32', return_cell_size_ratio=False):
         """
         This function save into file system (fs) the extracted image cells, masks and targets from the current MPPData instance as individual files. Each file is named using the mapobject_id of the cell.
+        This function also returns the cell size ratio.
         """
 
         self.log.info('Starting imgs, masks and targets saving process')
+
+        if return_cell_size_ratio:
+            cell_size_ratio_df = pd.DataFrame(columns=['mapobject_id_cell', 'cell_size_ratio'])
 
         # Process and save only filtered cells
         cell_ids = self.metadata[['mapobject_id_cell', 'mapobject_id']].values
@@ -310,6 +332,10 @@ class MPPData:
                 img_mask = np.zeros(temp_mask.shape)
                 img_mask[temp_mask >= 0.5] = 1
 
+            if return_cell_size_ratio:
+                cell_size_ratio = self._get_cell_size_ratio(img_mask)
+                cell_size_ratio_df = cell_size_ratio_df.append({'mapobject_id_cell':mapobject_id_cell, 'cell_size_ratio':cell_size_ratio}, ignore_index=True)
+
             # Before saving, set I/O channel ids
             if input_channels is None:
                 input_ids = range(img.shape[-1])
@@ -326,6 +352,10 @@ class MPPData:
             targets = channel_sclara[output_ids]
             file_name = os.path.join(outdir, str(mapobject_id_cell)+'.npz')
             np.savez(file_name, img=img, mask=img_mask, targets=targets)
+
+        if return_cell_size_ratio:
+            cell_size_ratio_df['mapobject_id_cell'] = cell_size_ratio_df.mapobject_id_cell.astype('int64')
+            return cell_size_ratio_df
 
     def add_scalar_projection(self, method='avg'):
         """
