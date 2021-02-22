@@ -1,14 +1,15 @@
 import tensorflow as tf
+from tensorflow.keras.optimizers import Adam
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_theme(style="darkgrid")
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-import tensorflow as tf
 import pandas as pd
 import copy
-from Utils import save_best_model_weights_in_memory_Callback as save_w_and_b
+import os
+import time
 
 class Predef_models():
     """
@@ -433,21 +434,18 @@ class Individual_Model_Training():
     def __init__(self):
 
         self.log = logging.getLogger(self.__class__.__name__)
-        self._print_stdout_and_log('Individual_Model_Training class initialed')
+        self._print_stdout_and_log("Individual_Model_Training class initialed")
 
         self.model = Predef_models()
+        self.metrics = ['mse', 'mean_absolute_error']
         self.callbacks = []
-
-    def _print_stdout_and_log(msg):
-        self.log.info(msg)
-        print(msg)
 
     def init_model(self, arch_name='baseline_CNN', input_shape=(224, 224, 33), conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, pre_training=False):
 
         self.model = self.model.select_model(model_name=arch_name,
                                              input_shape=input_shape,
                                              conv_reg=conv_reg,
-                                             ense_reg=ense_reg,
+                                             dense_reg=dense_reg,
                                              bias_l2_reg=bias_l2_reg,
                                              pre_training=pre_training
                                              )
@@ -455,7 +453,7 @@ class Individual_Model_Training():
         self.model.summary(print_fn=self._print_stdout_and_log)
 
         # Sanity check: print model losses (one for each layer regularized (1 for bias reg and 1 for kernel reg))
-        self._print_stdout_and_log(self.model.losses)
+        self._print_stdout_and_log('Losses:\n{}'.format(self.model.losses))
 
     def build_model(self, loss_name='huber', learning_rate=0.001):
 
@@ -469,36 +467,31 @@ class Individual_Model_Training():
         elif loss_name == 'mean_absolute_error':
             loss = tf.keras.losses.MeanAbsoluteError()
 
-        msg = '{} loss function selected. Building the model...'.format(p['loss'])
-        self._print_stdout_and_log(msg)
+        self._print_stdout_and_log('{} loss function selected. Building the model...'.format(loss_name))
 
-        metrics = ['mse', 'mean_absolute_error']
-        model.compile(optimizer=Adam(learning_rate=learning_rate),
-                      loss=loss,
-                      metrics=metrics
-                     )
+        self.model.compile(optimizer=Adam(learning_rate=learning_rate),
+                           loss=loss,
+                           metrics=self.metrics
+                           )
         self._print_stdout_and_log('Model compiled!')
 
-    def set_tensorboard(self, log_path='/tmp', log_dir_name='test'):
+    def fit_model(self, train_data, val_data, n_epochs, verbose_level):
 
-        tb_dir_path = os.path.join(log_path, log_dir_name+'_tensorboard')
-        if os.path.exists(tb_dir_path):
-            try:
-                shutil.rmtree(tb_dir_path)
-            except OSError as e:
-                msg  = 'Tensorboard log dir {} could not be deleted!\n\nOSError: {}'.format(tb_dir_path, e)
-                self._print_stdout_and_log(msg)
+        self._print_stdout_and_log('Starting model training...')
 
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=tb_dir_path, histogram_freq=1)
-        self.callbacks.append(tensorboard_callback)
+        # Save time before training
+        tic = time.time()
 
-        msg = 'Tensorboard file: {}'.format(tb_dir_path)
-        self._print_stdout_and_log(msg)
+        # Fit model
+        self.history = self.model.fit(train_data,
+                                      validation_data=val_data,
+                                      epochs=n_epochs,
+                                      callbacks=self.callbacks,
+                                      verbose=verbose_level
+                                      )
+        toc = time.time()
+        self._print_stdout_and_log('Training time (in mins): {}'.format((toc-tic)/60))
 
-    def save_best_model_in_memory(monitor='val_loss'):
-
-        best_model = save_w_and_b(monitor)
-        self.callbacks.append(best_model)
-
-        msg = 'Callback to save best model in memory loaded'
-        self._print_stdout_and_log(msg)
+    def _print_stdout_and_log(self, msg):
+        self.log.info(msg)
+        print(msg)
