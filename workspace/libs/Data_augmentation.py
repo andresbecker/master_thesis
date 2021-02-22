@@ -1,26 +1,72 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import copy
 
 @tf.function
-def zoom_image(tensor_img, mode):
+def get_random_cell_size_ratio(mode='random_uniform', mean=0.6, stddev=0.1, lower_bound=0.4):
+    """
+    sample a cell size ratio at random from a given distribution. The idea is to change the size of the cell inside the image as a data augmentation technique.
+    """
 
-    def get_min_space(x):
-        t_x = tf.cast(tf.math.not_equal(tf.math.reduce_sum(x, axis=(1,2)), 0), dtype=tf.float32)
-        t_x_low = tf.math.argmax(t_x)
-        t_x_top = tf.math.argmax(tf.reverse(t_x, axis=[0]))
-        t_x_min = tf.math.minimum(t_x_low, t_x_top)
-        t_y = tf.cast(tf.math.not_equal(tf.math.reduce_sum(x, axis=(0,2)), 0), dtype=tf.float32)
-        t_y_low = tf.math.argmax(t_y)
-        t_y_top = tf.math.argmax(tf.reverse(t_y, axis=[0]))
-        t_y_min = tf.math.minimum(t_y_low, t_y_top)
+    if mode == 'random_uniform':
+        # Select uniformly random the cell size (between 40% and 100% of the image)
+        cell_img_frac = tf.random.uniform(shape=[1], minval=lower_bound, maxval=1, dtype=tf.float32)
+    elif mode == 'random_normal':
+        # Select uniformly random the cell size (between 40% and 100% of the image)
+        cell_img_frac = tf.random.normal(shape=[1], mean=mean, stddev=stddev, dtype=tf.float32)
 
-        return tf.cast(tf.math.minimum(t_x_min, t_y_min), dtype=tf.float32)
+        # since cell_img_frac is sampled from a normal, contrain its value
+        # Lower bound
+        mask_tensor = (cell_img_frac > lower_bound)
+        cell_img_frac = tf.where(mask_tensor, cell_img_frac, lower_bound)
+        # Upper bound
+        mask_tensor = (cell_img_frac < 1)
+        cell_img_frac = tf.where(mask_tensor, cell_img_frac, 1)
+    else:
+        raise NotImplementedError()
+    #print('Target cell img fraction: ', cell_img_frac)
+
+    return cell_img_frac
+
+@tf.function
+def get_batch_masks(tensor_img):
+    """
+    This function extract the cell_masks of a batch stored in the last channel.
+    """
+    c_filter = tf.zeros(shape=[tensor_img.shape[-1]-1,1])
+    c_filter = tf.concat((c_filter, tf.ones(shape=[1,1])), axis=0)
+
+    return tensor_img @ c_filter
+
+@tf.function
+def get_min_space(x):
+    """
+    this function returns the min space between the cell border and the image border.
+    """
+    # first extract the cell mask from the last channel of the img
+    cell_mask = get_batch_masks(x)
+
+    t_x = tf.cast(tf.math.not_equal(tf.math.reduce_sum(cell_mask, axis=(1,2)), 0), dtype=tf.float32)
+    t_x_low = tf.math.argmax(t_x)
+    t_x_top = tf.math.argmax(tf.reverse(t_x, axis=[0]))
+    t_x_min = tf.math.minimum(t_x_low, t_x_top)
+
+    t_y = tf.cast(tf.math.not_equal(tf.math.reduce_sum(cell_mask, axis=(0,2)), 0), dtype=tf.float32)
+    t_y_low = tf.math.argmax(t_y)
+    t_y_top = tf.math.argmax(tf.reverse(t_y, axis=[0]))
+    t_y_min = tf.math.minimum(t_y_low, t_y_top)
+
+    return tf.cast(tf.math.minimum(t_x_min, t_y_min), dtype=tf.float32)
+
+@tf.function
+def zoom_image(tensor_img, **kwargs):
 
     # get min space between the cell border and the image border
     min_space = get_min_space(tensor_img)
     # get image size
     img_size = tensor_img.shape[1]
+    #print(min_space)
 
     # Get the fraction of the origin image to crop without losing cell information
     img_size = tf.cast(img_size, dtype=tf.float32)
@@ -37,12 +83,9 @@ def zoom_image(tensor_img, mode):
     tensor_img = tf.image.central_crop(tensor_img, frac2crop)
     #print('Size after cropping: ', tensor_img.shape)
 
-    if mode == 'random_uniform':
-        # Select uniformly random the cell size (between 40% and 100% of the image)
-        cell_img_frac = tf.random.uniform(shape=[1], minval=0.4, maxval=1, dtype=tf.float32)
-    elif mode == 'equal':
-        cell_img_frac = tf.cast(1, dtype=tf.float32)
-    #print('Target cell img fraction: ', cell_img_frac)
+    # get a random cell size ratio
+    cell_img_frac = get_random_cell_size_ratio(**kwargs)
+    #print(cell_img_frac)
 
     # Create temp image with cell size specified by cell_img_frac (random)
     img_size = tf.cast(img_size, dtype=tf.float32)
@@ -87,7 +130,7 @@ def apply_random_90deg_rotations(image, target):
     return tf.image.rot90(image, k=k), target
 
 @tf.function
-def apply_CenterZoom(image, target, zoom_mode):
+def apply_CenterZoom(image, target, **kwargs):
     """
     Function to apply random center zoom or set all cells to same size
     image: Tensor of shape (batch_size, img_size, img_size, n_channels)
@@ -96,50 +139,44 @@ def apply_CenterZoom(image, target, zoom_mode):
     """
 
     if len(image.shape) == 4:
-        image = tf.map_fn(fn=lambda img: zoom_image(img, zoom_mode), elems=image)
+        image = tf.map_fn(fn=lambda img: zoom_image(img, **kwargs), elems=image)
     else:
-        image = zoom_image(image, zoom_mode)
+        image = zoom_image(image, **kwargs)
 
     return image, target
 
 @tf.function
-def apply_RandomIntencity(image, target, dist, mean, stddev):
+def apply_RandomIntencity(images, targets, mean, stddev):
     """
-    Function to apply random intencity scale to each channel. For each channel, it samples a scale factor between min_scale and max_scale from a uniform distribution.
+    Function to apply random color intencity shift to each channel (only over the measured pixels). For each channel, it samples a shift factor from a normal distribution.
     image: Tensor of shape (batch_size, img_size, img_size, n_channels)
     target: number
-    dist: distribution name
     mean: float, distribution mean
     stddev: float, distribution mean
     """
-    n_channels = image.shape[-1]
-    lower_bound = tf.cast(0.1, dtype=tf.float32)
-    upper_bound = tf.cast(1.9, dtype=tf.float32)
+    # Step 1. Get the mask of each cell in the batch
+    images_mask = get_batch_masks(images)
 
-    if dist == 'uniform':
-        channel_scales = tf.random.uniform(shape=[n_channels], minval=mean-stddev, maxval=mean+stddev)
+    # Step 2. Sample the per-channel shift
+    n_channels = images.shape[-1]
+    # random shift only for the input channels
+    channel_shifts = tf.random.normal(shape=[n_channels-1], mean=mean, stddev=stddev)
+    # for the cell mask we add 0 to avoid modifying it
+    channel_shifts = tf.concat((channel_shifts, tf.zeros(shape=[1,])), axis=0)
+    channel_shifts_tensor = tf.linalg.diag(channel_shifts)
 
-    if dist == 'normal':
-        channel_scales = tf.random.normal(shape=[n_channels], mean=mean, stddev=stddev)
+    # Step 3. Create batch containing per-channel and masked shifts
+    batch_channel_shifts = tf.repeat(images_mask, repeats=n_channels, axis=-1)
+    # replace the 'ones' in the masks for the random shifts
+    batch_channel_shifts = batch_channel_shifts @ channel_shifts_tensor
 
-    # contrain the sclae factor for each channel
-    # Lower bound
-    mask_tensor = (channel_scales > lower_bound)
-    channel_scales = tf.where(mask_tensor, channel_scales, lower_bound)
-    # Upper bound
-    mask_tensor = (channel_scales < upper_bound)
-    channel_scales = tf.where(mask_tensor, channel_scales, upper_bound)
-
-    # Create diagonal matrix to scale channels
-    channel_scales_tensor = tf.linalg.diag(channel_scales)
-
-    return image @ channel_scales_tensor, target
+    return images + batch_channel_shifts, targets
 
 @tf.function
 def apply_data_preprocessing(image, target, projection_tensor):
     """
     Function to preprocess cell images
-    image: Tensor of shape (batch_size, img_size, img_size, n_channels)
+    image: Tensor of shape (bath_size, img_size, img_size, n_channels)
     target: number
     projection_tensor: Tensor of shape (n_total_channels, n_selected_channels), where values for selected channels are 1 in the diagonal an 0 otherwise.
     """
@@ -160,7 +197,7 @@ def get_projection_tensor(input_shape, input_ids):
     n_selected_channels = input_ids.shape[-1]
     projection_matrix = np.zeros(shape=(n_channels, n_selected_channels))
     for col, row in enumerate(input_ids):
-            projection_matrix[row,col] = 1
+        projection_matrix[row,col] = 1
 
     return tf.constant(projection_matrix, dtype=tf.float32)
 
@@ -181,11 +218,18 @@ def apply_data_pp_and_aug(images, targets, p, projection_tensor):
 
     # ZoomIn and ZoomOut
     if p['CenterZoom']:
-        images, targets = apply_CenterZoom(images, targets, p['CenterZoom_mode'])
+        images, targets = apply_CenterZoom(
+                image=images,
+                target=targets,
+                mode=p['CenterZoom_mode'],
+                mean=p['cell_size_ratio_mean'],
+                stddev=p['cell_size_ratio_stddev'],
+                lower_bound=p['cell_size_ratio_low_bound']
+                )
 
     # Random channel intensity
     if p['Random_channel_intencity']:
-        images, targets = apply_RandomIntencity(images, targets, p['RCI_dist'], p['RCI_mean'], p['RCI_stddev'])
+        images, targets = apply_RandomIntencity(images, targets, p['RCI_mean'], p['RCI_stddev'])
 
     return images, targets
 
@@ -216,13 +260,27 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
     # Shuffle train data
     train_data = train_data.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
 
+	# devide by batches
+    train_data = train_data.batch(p['BATCH_SIZE'])
+    val_data = val_data.batch(p['BATCH_SIZE'])
+
+    # CenterZoom most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
+    # ZoomIn and ZoomOut
+    if p['CenterZoom']:
+        train_data = train_data.map(lambda image, target: apply_CenterZoom(image, target,
+                         mode=p['CenterZoom_mode'],
+                         mean=p['cell_size_ratio_mean'],
+                         stddev=p['cell_size_ratio_stddev'],
+                         lower_bound=p['cell_size_ratio_low_bound']
+                         ), num_parallel_calls=AUTOTUNE)
+
+	# Random channel intensity (random per-channel shift) most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
+    if p['Random_channel_intencity']:
+        train_data = train_data.map(lambda image, target: apply_RandomIntencity(image, target, p['RCI_mean'], p['RCI_stddev']), num_parallel_calls=AUTOTUNE)
+
     # Preprocess data (filter channels)
     train_data = train_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
     val_data = val_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
-
-    # devide by batches
-    train_data = train_data.batch(p['BATCH_SIZE'])
-    val_data = val_data.batch(p['BATCH_SIZE'])
 
     # Data Agmentation processes (only for train_data)
     # random Left and right flip
@@ -231,12 +289,6 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
     # Number of 90deg rotation
     if p['random_90deg_rotations']:
         train_data = train_data.map(lambda image, target: apply_random_90deg_rotations(image, target), num_parallel_calls=AUTOTUNE)
-    # ZoomIn and ZoomOut
-    if p['CenterZoom']:
-        train_data = train_data.map(lambda image, target: apply_CenterZoom(image, target, p['CenterZoom_mode']), num_parallel_calls=AUTOTUNE)
-    # Random channel intensity
-    if p['Random_channel_intencity']:
-        train_data = train_data.map(lambda image, target: apply_RandomIntencity(image, target, p['RCI_dist'], p['RCI_mean'], p['RCI_stddev']), num_parallel_calls=AUTOTUNE)
 
     return train_data.prefetch(AUTOTUNE), val_data.prefetch(AUTOTUNE)
 
@@ -258,21 +310,27 @@ def visualize_data_augmentation(tensor_image, p):
     if p['random_horizontal_flipping'] | p['random_90deg_rotations'] | p['CenterZoom']:
         plt.figure(figsize=(4*plt_size[0],plt_size[1]))
         for i in range(4):
+            temp_tensor = copy.deepcopy(tensor_image)
             # random Left and right flip
             if p['random_horizontal_flipping']:
-                tensor_image, _ = apply_random_flip(tensor_image, 0)
+                temp_tensor, _ = apply_random_flip(temp_tensor, 0)
 
             # Number of 90deg rotation
             if p['random_90deg_rotations']:
-                tensor_image, _ = apply_random_90deg_rotations(tensor_image, 0)
+                temp_tensor, _ = apply_random_90deg_rotations(temp_tensor, 0)
 
             # ZoomIn and ZoomOut
             if p['CenterZoom']:
-                tensor_image, _ = apply_CenterZoom(tensor_image, 0, p['CenterZoom_mode'])
+                temp_tensor, _ = apply_CenterZoom(temp_tensor, 0,
+                                    mode=p['CenterZoom_mode'],
+                                    mean=p['cell_size_ratio_mean'],
+                                    stddev=p['cell_size_ratio_stddev'],
+                                    lower_bound=p['cell_size_ratio_low_bound']
+                                    )
 
             # Random channel intensity
             if p['Random_channel_intencity']:
-                tensor_image, _ = apply_RandomIntencity(tensor_image, 0, p['RCI_dist'], p['RCI_mean'], p['RCI_stddev'])
+                temp_tensor, _ = apply_RandomIntencity(temp_tensor, 0, p['RCI_mean'], p['RCI_stddev'])
 
             plt.subplot(1,4,i+1)
-            visualize_tensor_cell_image(tensor_image[0], 'Augmented Cell')
+            visualize_tensor_cell_image(temp_tensor[0], 'Augmented Cell')
