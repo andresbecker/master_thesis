@@ -23,7 +23,7 @@ TFDS_DATA_DIR=""
 PARM_FILE=""
 ENVI=""
 #TF_DATASET_NAME="MPP_dataset"
-#TFDS_DATA_DIR="/home/hhughes/Documents/Master_Thesis/Project/datasets/tensorflow_datasets"
+#TFDS_DATA_DIR="/data/Master_Thesis_data/datasets/tensorflow_datasets"
 
 
 # Read parameters and values
@@ -85,6 +85,7 @@ else
   echo -e "\Error while loading environment "$ENVI"!!!!\n"
   exit 1
 fi
+#source ~/venv/bin/activate
 
 # Export variable to change default tf dataset output
 export TFDS_DATA_DIR
