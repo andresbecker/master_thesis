@@ -260,9 +260,7 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
     # Shuffle train data
     train_data = train_data.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
 
-	# devide by batches
-    train_data = train_data.batch(p['BATCH_SIZE'])
-    val_data = val_data.batch(p['BATCH_SIZE'])
+    # Data Agmentation processes
 
     # CenterZoom most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
     # ZoomIn and ZoomOut
@@ -278,17 +276,21 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
     if p['Random_channel_intencity']:
         train_data = train_data.map(lambda image, target: apply_RandomIntencity(image, target, p['RCI_mean'], p['RCI_stddev']), num_parallel_calls=AUTOTUNE)
 
-    # Preprocess data (filter channels)
-    train_data = train_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
-    val_data = val_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
-
-    # Data Agmentation processes (only for train_data)
     # random Left and right flip
     if p['random_horizontal_flipping']:
         train_data = train_data.map(lambda image, target: apply_random_flip(image, target), num_parallel_calls=AUTOTUNE)
+
     # Number of 90deg rotation
     if p['random_90deg_rotations']:
         train_data = train_data.map(lambda image, target: apply_random_90deg_rotations(image, target), num_parallel_calls=AUTOTUNE)
+
+    # Remove unwanted channels
+    train_data = train_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
+    val_data = val_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
+
+    # devide by batches
+    train_data = train_data.batch(p['BATCH_SIZE'])
+    val_data = val_data.batch(p['BATCH_SIZE'])
 
     return train_data.prefetch(AUTOTUNE), val_data.prefetch(AUTOTUNE)
 
