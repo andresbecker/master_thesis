@@ -1,4 +1,6 @@
 import tensorflow as tf
+from tensorflow.image import rot90 as img_rot90
+from tensorflow.image import flip_left_right as img_flip
 from tensorflow.keras.optimizers import Adam
 import logging
 import numpy as np
@@ -10,6 +12,71 @@ import pandas as pd
 import copy
 import os
 import time
+#from tensorflow.python.keras.engine import data_adapter
+
+class CustomModel(tf.keras.Model):
+    """
+    The logic for one evaluation step.
+    This sub-calss of tf.keras.Model is ment to apply fixed augmentation techniques to the validation set, so the val dataset will be a better representation of the cell images population. This is done by overwritting the Model method test_step. More info on:
+    - https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit#providing_your_own_evaluation_step
+
+    This function contains the mathemetical logic for one step of evaluation.
+    This includes the forward pass, loss calculation, and metrics updates.
+
+    Arguments:
+      data: A nested structure of `Tensor`s.
+
+    Returns:
+      A `dict` containing values that will be passed to
+      `tf.keras.callbacks.CallbackList.on_train_batch_end`. Typically, the
+      values of the `Model`'s metrics are returned.
+    """
+    def _predict_targets_with_augmentation(self, x, y):
+        """
+        This function is ment to evaluate (predict) the validation test using fixed data augmentation (DA) techniques. Currently the val_dataset is evaluated 8 times (no DA, 90, 180, 270, deg rotations, flip, flip+90, flip+180, flip+270 deg rotations).
+        """
+        # Compute predictions without augmentation
+        y_pred = self(x, training=False)
+
+        n_repeats = 1
+        # Compute predictions over imgs with k*90 deg (k=1,2,3) rotations
+        for k in range(1,4):
+            n_repeats += 1
+            temp_pred = self(img_rot90(x, k=k), training=False)
+            y_pred = tf.concat((y_pred, temp_pred), axis=0)
+
+        # Compute predictions over imgs with k*90 deg (k=0,1,2,3) rotations+flip
+        for k in range(0,4):
+            n_repeats += 1
+            temp_pred = self(img_rot90(img_flip(x), k=k), training=False)
+            y_pred = tf.concat((y_pred, temp_pred), axis=0)
+
+        # stack true values as many times as needed
+        y = tf.repeat(y, repeats=n_repeats, axis=0)
+
+        return y, y_pred
+
+    def test_step(self, data):
+        #data = data_adapter.expand_1d(data)
+        # Unpack the data
+        #x, y, sample_weight = data_adapter.unpack_x_y_sample_weight(data)
+        x, y = data
+
+        # predict targets with and without data augmentation
+        y, y_pred = self._predict_targets_with_augmentation(x, y)
+
+        # Updates the metrics tracking the loss
+        #self.compiled_loss(
+        #    y, y_pred, sample_weight, regularization_losses=self.losses)
+        self.compiled_loss(y, y_pred, regularization_losses=self.losses)
+
+        # Update the metrics.
+        #self.compiled_metrics.update_state(y, y_pred, sample_weight)
+        self.compiled_metrics.update_state(y, y_pred)
+
+        # Return a dict mapping metric names to current value.
+        # Note that it will include the loss (tracked in self.metrics).
+        return {m.name: m.result() for m in self.metrics}
 
 class Predef_models():
     """
@@ -19,10 +86,11 @@ class Predef_models():
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('Predef_models_and_utils class initialed')
 
-    def select_model(self, model_name=None, input_shape=None, pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0):
+    def select_model(self, model_name=None, input_shape=None, pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, return_custom_model=True):
 
         self.model_name = model_name
         self.pre_training = pre_training
+        self.return_custom_model = return_custom_model
 
         if input_shape is None:
             msg = 'Please specify the input shape! E.g.:\n'
@@ -86,55 +154,51 @@ class Predef_models():
               -> Dense_1 (Prediction)
         """
 
-        model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(64, (3,3),
+        input_layer = tf.keras.Input(shape=self.input_shape, name='InputLayer')
+        x = tf.keras.layers.Conv2D(64, (3,3),
                                    padding='same',
                                    kernel_regularizer=self.conv_reg,
                                    bias_regularizer=self.bias_reg,
-                                   input_shape=self.input_shape),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+                                   input_shape=self.input_shape
+                                   )(input_layer)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+        x = tf.keras.layers.MaxPooling2D((2,2), strides=2)(x)
 
-            tf.keras.layers.Conv2D(128, (3,3),
+        x = tf.keras.layers.Conv2D(128, (3,3),
                                    padding='same',
                                    #kernel_regularizer=self.conv_reg,
                                    #bias_regularizer=self.bias_reg
-                                   ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+                                   )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+        x = tf.keras.layers.MaxPooling2D((2,2), strides=2)(x)
 
-            #tf.keras.layers.Flatten(),
-            tf.keras.layers.GlobalAveragePooling2D(),
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
-            tf.keras.layers.Dense(
-                units=256,
-                kernel_regularizer=self.dense_reg,
-                bias_regularizer=self.bias_reg,
-                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
+        x = tf.keras.layers.Dense(units=256,
+                                  kernel_regularizer=self.dense_reg,
+                                  bias_regularizer=self.bias_reg
+                                  )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
 
-            tf.keras.layers.Dense(
-                units=128,
-                kernel_regularizer=self.dense_reg,
-                bias_regularizer=self.bias_reg,
-                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
+        x = tf.keras.layers.Dense(units=128,
+                                  kernel_regularizer=self.dense_reg,
+                                  bias_regularizer=self.bias_reg
+                                  )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
 
-            tf.keras.layers.Dense(
-                units=1,
-                kernel_regularizer=self.dense_reg,
-                bias_regularizer=self.bias_reg,
-                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-            ),
-        ])
-
-        return model
+        prediction = tf.keras.layers.Dense(units=1,
+                                           kernel_regularizer=self.dense_reg,
+                                           bias_regularizer=self.bias_reg,
+                                           )(x)
+        # return model
+        if self.return_custom_model:
+            return CustomModel(inputs=input_layer, outputs=prediction)
+        else:
+            return tf.keras.models.Model(inputs=input_layer, outputs=prediction)
 
 
     def _get_Quick_test(self):
