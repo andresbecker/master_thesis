@@ -4,6 +4,7 @@
 #SBATCH -e ./SLURM_output/BL_RI_2.error.log
 #SBATCH -J BL_RI_2
 #SBATCH -p gpu_p
+#SBATCH --qos=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5]
 #SBATCH -c 4
