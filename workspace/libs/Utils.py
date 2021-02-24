@@ -388,10 +388,10 @@ def plot_train_metrics(history=None, CMA_history=None, CMA_metric=None, metrics=
         # set limits for plots
         if metric == 'mse':
             min_val = 900
-            max_val = 7000
+            max_val = 9000
         elif metric == 'mean_absolute_error':
             min_val = 25
-            max_val = 70
+            max_val = 80
         else:
             warm_stage = int(p['number_of_epochs']*0.20)
             min_val = np.asarray(history[metric]+history['val_'+metric]).min()
