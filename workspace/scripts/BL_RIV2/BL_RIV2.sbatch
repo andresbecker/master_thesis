@@ -11,4 +11,4 @@
 #SBATCH -t 2-00:00:00
 #SBATCH --nice=10000
 
-../Run_Jupyter_Notebook_from_Terminal.sh -i ../../notebooks/Model_training_class.ipynb -p ./Parameters/BL_RIV2.json
+../Run_Jupyter_Notebook_from_Terminal.sh -i ../../notebooks/Model_training_class.ipynb -p ./Parameters/$PARAMS.json
