@@ -216,7 +216,7 @@ class evaluate_model():
         huber_loss = tf.keras.losses.Huber()
 
         # Create df to store metrics to compare models
-        columns = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'Bias_l2_reg', 'PreTrained', 'Aug_rand_h_flip', 'Aug_rand_90deg_r', 'Aug_Zoom', 'Aug_Zoom_mode', 'Aug_rand_int', 'Aug_RI_mean', 'Aug_RI_stddev', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'Parameters_file_path']
+        columns = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'Bias_l2_reg', 'PreTrained', 'Aug_rand_h_flip', 'Aug_rand_90deg_r', 'Aug_Zoom', 'Aug_Zoom_mode', 'Aug_rand_int', 'Aug_RI_mean', 'Aug_RI_stddev', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'DS_name', 'custom_model_class', 'Parameters_file_path']
         self.metrics_df = pd.DataFrame(columns=columns)
 
         for ss in np.unique(self.targets_df['set']):
@@ -256,6 +256,8 @@ class evaluate_model():
                         'CMA':CMA,
                         'CMA_Std':CMA_Std,
                         'Epoch':Epoch,
+                        'DS_name': self.p['tf_ds_name'],
+                        'custom_model_class': self.p['custom_model_class'],
                         'Parameters_file_path':self.p['parameters_file_path']}
             self.metrics_df = self.metrics_df.append(temp_dict, ignore_index=True)
 
@@ -385,11 +387,11 @@ def plot_train_metrics(history=None, CMA_history=None, CMA_metric=None, metrics=
 
         # set limits for plots
         if metric == 'mse':
-            min_val = 700
-            max_val = 5000
+            min_val = 900
+            max_val = 7000
         elif metric == 'mean_absolute_error':
-            min_val = 15
-            max_val = 50
+            min_val = 25
+            max_val = 70
         else:
             warm_stage = int(p['number_of_epochs']*0.20)
             min_val = np.asarray(history[metric]+history['val_'+metric]).min()
@@ -452,6 +454,13 @@ def set_model_default_parameters(p_old=None):
         p_new[key] = p_old[key]
     info += '\n    Selected model: ' + p_new[key]
 
+    key = 'custom_model_class'
+    if key not in p_old.keys():
+        p_new[key] = True
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Instantiate custom model class: '+str(p_new[key])
+
     key = 'pre_training'
     if key not in p_old.keys():
         p_new[key] = False
@@ -485,6 +494,13 @@ def set_model_default_parameters(p_old=None):
     else:
         p_new[key] = p_old[key]
     info += '\n    Number of epochs: '+str(p_new[key])
+
+    key = 'early_stop_patience'
+    if key not in p_old.keys():
+        p_new[key] = 100
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Early stop patience: '+str(p_new[key])
 
     # Losses: mse, huber, mean_absolute_error
     key = 'loss'
@@ -622,17 +638,6 @@ def set_model_default_parameters(p_old=None):
         p_new[key] = p_old[key]
     info += '\n    TFDS path: '+str(p_new[key])
 
-    # Preprocessed data path
-    key = 'pp_path'
-    if key not in p_old.keys():
-        if hostname == local_hn:
-            p_new[key] = '/home/hhughes/Documents/Master_Thesis/Project/datasets/184A1_hannah_imgs_scalars_test_32'
-        else:
-            p_new[key] = '/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_images_and_masks_all_wells'
-    else:
-        p_new[key] = p_old[key]
-    info += '\n    Preprocessed data path: '+str(p_new[key])
-
     info += '\n'
     # End of the Dataset section------------------------------------------------
 
@@ -662,7 +667,7 @@ def set_model_default_parameters(p_old=None):
     # available: random_uniform (cell size randomly selected from uniform dist) equal (all cells with same size)
     key = 'CenterZoom_mode'
     if key not in p_old.keys():
-        p_new[key] = 'random_uniform'
+        p_new[key] = 'random_normal'
     else:
         p_new[key] = p_old[key]
     info += '\n      Center zoom mode: '+str(p_new[key])
@@ -673,22 +678,15 @@ def set_model_default_parameters(p_old=None):
     else:
         p_new[key] = p_old[key]
     info += '\n    Random_channel_intencity: '+str(p_new[key])
-    # available distributions (dist) are uniform and normal
-    key = 'RCI_dist'
-    if key not in p_old.keys():
-        p_new[key] = 'uniform'
-    else:
-        p_new[key] = p_old[key]
-    info += '\n      RCH distribution: ' + str(p_new[key])
     key = 'RCI_mean'
     if key not in p_old.keys():
-        p_new[key] = 1
+        p_new[key] = 0
     else:
         p_new[key] = p_old[key]
     info += '\n      RCH dist mean: ' + str(p_new[key])
     key = 'RCI_stddev'
     if key not in p_old.keys():
-        p_new[key] = 0.5
+        p_new[key] = 0.1667
     else:
         p_new[key] = p_old[key]
     info += '\n      RCH dist stddev: ' + str(p_new[key])
