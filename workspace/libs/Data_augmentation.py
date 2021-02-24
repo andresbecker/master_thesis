@@ -260,6 +260,10 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
     # Shuffle train data
     train_data = train_data.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
 
+    # devide by batches
+    train_data = train_data.batch(p['BATCH_SIZE'])
+    val_data = val_data.batch(p['BATCH_SIZE'])
+
     # Data Agmentation processes
 
     # CenterZoom most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
@@ -287,10 +291,6 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
     # Remove unwanted channels
     train_data = train_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
     val_data = val_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
-
-    # devide by batches
-    train_data = train_data.batch(p['BATCH_SIZE'])
-    val_data = val_data.batch(p['BATCH_SIZE'])
 
     return train_data.prefetch(AUTOTUNE), val_data.prefetch(AUTOTUNE)
 
