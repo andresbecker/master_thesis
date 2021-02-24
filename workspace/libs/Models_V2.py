@@ -211,36 +211,35 @@ class Predef_models():
               -> Dense_1 (Prediction)
         """
 
-        model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(64, (3,3),
+        input_layer = tf.keras.Input(shape=self.input_shape, name='InputLayer')
+        x = tf.keras.layers.Conv2D(64, (3,3),
                                    padding='same',
                                    kernel_regularizer=self.conv_reg,
                                    bias_regularizer=self.bias_reg,
-                                   input_shape=self.input_shape),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
-            tf.keras.layers.MaxPooling2D((2,2), strides=2),
+                                   input_shape=self.input_shape
+                                   )(input_layer)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
+        x = tf.keras.layers.MaxPooling2D((2,2), strides=2)(x)
 
-            tf.keras.layers.GlobalAveragePooling2D(),
-            tf.keras.layers.Dense(
-                units=32,
-                kernel_regularizer=self.dense_reg,
-                bias_regularizer=self.bias_reg,
-                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.ReLU(),
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
 
-            tf.keras.layers.Dense(
-                units=1,
-                kernel_regularizer=self.dense_reg,
-                bias_regularizer=self.bias_reg,
-                #activity_regularizer=tf.keras.regularizers.l2(1e-5)
-            ),
-        ])
+        x = tf.keras.layers.Dense(units=32,
+                                  kernel_regularizer=self.dense_reg,
+                                  bias_regularizer=self.bias_reg
+                                  )(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.ReLU()(x)
 
-        return model
-
+        prediction = tf.keras.layers.Dense(units=1,
+                                           kernel_regularizer=self.dense_reg,
+                                           bias_regularizer=self.bias_reg,
+                                           )(x)
+        # return model
+        if self.return_custom_model:
+            return CustomModel(inputs=input_layer, outputs=prediction)
+        else:
+            return tf.keras.models.Model(inputs=input_layer, outputs=prediction)
 
     def _get_ResNet50V2(self):
         """
@@ -304,10 +303,11 @@ class Predef_models():
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
-        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
-
-        return model
-
+        # return model
+        if self.return_custom_model:
+            return CustomModel(inputs=base_model.inputs, outputs=prediction)
+        else:
+            return tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
 
     def _get_Xception(self):
         """
@@ -370,9 +370,11 @@ class Predef_models():
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
-        model = tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
-
-        return model
+        # return model
+        if self.return_custom_model:
+            return CustomModel(inputs=base_model.inputs, outputs=prediction)
+        else:
+            return tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
 
     def _set_Xception_pretrained_w_and_b(self, base_model):
         """
@@ -504,14 +506,15 @@ class Individual_Model_Training():
         self.metrics = ['mse', 'mean_absolute_error']
         self.callbacks = []
 
-    def init_model(self, arch_name='baseline_CNN', input_shape=(224, 224, 33), conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, pre_training=False):
+    def init_model(self, arch_name='baseline_CNN', input_shape=(224, 224, 33), conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, pre_training=False, return_custom_model=True):
 
         self.model = self.model.select_model(model_name=arch_name,
                                              input_shape=input_shape,
                                              conv_reg=conv_reg,
                                              dense_reg=dense_reg,
                                              bias_l2_reg=bias_l2_reg,
-                                             pre_training=pre_training
+                                             pre_training=pre_training,
+                                             return_custom_model=return_custom_model
                                              )
         # Print model summary
         self.model.summary(print_fn=self._print_stdout_and_log)
