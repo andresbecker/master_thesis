@@ -21,6 +21,8 @@
 
     "_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN",
+    "_comment": "to evaluate validation set using fixed data augm. tech. set custom_model_class to 1---------------------------------------------------",
+    "custom_model_class": 1,
     "pre_training": 0,
     "_comment": "Regularization: conv_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]-------",
     "conv_reg": [0, 0],
@@ -29,6 +31,7 @@
     "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
     "verbose_level": 2,
     "number_of_epochs": 800,
+    "early_stop_patience": 100,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)-----------------------------",

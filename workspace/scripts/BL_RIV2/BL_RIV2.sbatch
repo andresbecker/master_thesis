@@ -1,8 +1,7 @@
 #!/bin/bash
 
-#SBATCH -o ./SLURM_output/BL_RI_2.log
-#SBATCH -e ./SLURM_output/BL_RI_2.error.log
-#SBATCH -J BL_RI_2
+#SBATCH -o ./SLURM_output/%x.log
+#SBATCH -e ./SLURM_output/%x.error.log
 #SBATCH -p gpu_p
 #SBATCH --qos=gpu
 #SBATCH --gres=gpu:1
@@ -12,4 +11,4 @@
 #SBATCH -t 2-00:00:00
 #SBATCH --nice=10000
 
-../Run_Jupyter_Notebook_from_Terminal.sh -i ../../notebooks/Model_training_class.ipynb -p ./Parameters/BL_RI_2.json
+../Run_Jupyter_Notebook_from_Terminal.sh -i ../../notebooks/Model_training_class.ipynb -p ./Parameters/BL_RIV2.json
