@@ -1,0 +1,1 @@
+PARAMS_NAME='XC_RIV2'; sbatch --job-name $PARAMS_NAME --export=ALL,PARAMS=$PARAMS_NAME sbatch_script_template.sbatch
