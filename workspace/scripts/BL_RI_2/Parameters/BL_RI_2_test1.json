@@ -28,7 +28,7 @@
     "bias_l2_reg": 0,
     "_comment": "verbose_level: 1=progress bar, 2=one line per epoch----------",
     "verbose_level": 2,
-    "number_of_epochs": 400,
+    "number_of_epochs": 800,
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)-----------------------------",
