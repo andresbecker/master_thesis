@@ -269,7 +269,7 @@ class evaluate_model():
 
         self.metrics_df = self.metrics_df.round(4)
 
-    def plot_error_dist(self, figsize=(20,7), sets=['train', 'val', 'test']):
+    def plot_error_dist(self, figsize=(20,7), sets=['train', 'val', 'test'], title=''):
 
         col_names = ['set', 'perturbation', 'cell_cycle', 'y - y_hat']
         temp_df = self.targets_df[col_names].copy()
@@ -293,9 +293,9 @@ class evaluate_model():
                             bw_method=0.2)
 
                 plt.xlabel('y - y_hat')
-                plt.title('Error distribution, set={}, hue={}'.format(s, hue))
+                plt.title(title+', Error distribution, set={}, hue={}'.format(s, hue))
 
-    def plot_y_dist(self, figsize=(15,7), sets=['train','val', 'test']):
+    def plot_y_dist(self, figsize=(15,7), sets=['train','val', 'test'], title=''):
         temp_df = self.targets_df.copy()
         columns = ['y', 'y_hat', 'mapobject_id_cell', 'set', 'cell_cycle', 'perturbation']
         temp_df = temp_df[columns]
@@ -316,9 +316,9 @@ class evaluate_model():
                             x=x,
                             hue='var',
                             data=temp_df[temp_df.set == s])
-                plt.title('Transcription Rate (TR) distribution, set={}, x={}'.format(s, x))
+                plt.title(title+', Transcription Rate (TR) distribution, set={}, x={}'.format(s, x))
 
-    def plot_residuals(self, figsize=(10,7), sets=['train','val', 'test']):
+    def plot_residuals(self, figsize=(10,7), sets=['train','val', 'test'], title=''):
 
         min_val = int(self.targets_df['y'].min()) - 50
         max_val = int(self.targets_df['y'].max()) + 50
@@ -346,9 +346,9 @@ class evaluate_model():
                 plt.hlines(y=-2, xmin=min_val, xmax=max_val, color='red', ls='dashed')
                 plt.xlim([min_val, max_val])
                 plt.ylim([-7, 7])
-                plt.title('(y-y_hat)/std(y-y_hat), set={}, hue={}'.format(s, hue))
+                plt.title(title+', (y-y_hat)/std(y-y_hat), set={}, hue={}'.format(s, hue))
 
-    def plot_y_vs_y_hat(self, figsize=(7.6,7), sets=['train','val', 'test']):
+    def plot_y_vs_y_hat(self, figsize=(7.6,7), sets=['train','val', 'test'], title=''):
 
         min_val = 0
         max_val = int(self.targets_df.y.max()) + 100
@@ -375,7 +375,7 @@ class evaluate_model():
                 plt.plot(x_line, y_line, linestyle='dashed', color='red')
                 plt.xlim([min_val, max_val])
                 plt.ylim([min_val, max_val])
-                plt.title('y vs y_hat, set={}, hue={}'.format(s, hue))
+                plt.title(title+', y vs y_hat, set={}, hue={}'.format(s, hue))
 
     def save_model_evaluation_data(self, base_path, eval_name='test'):
 
