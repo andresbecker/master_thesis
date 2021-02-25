@@ -15,50 +15,6 @@ import copy
 import socket
 import time
 
-class Tee_Logger(object):
-    """
-    Duplicates sys.stdout to a log file
-    To use it in a Jupyter notebook, in the cell you want to duplicate the output call:
-    TeeLog = Tee_Logger(log_file_path)
-    command_you_want_to_duplicate_stdoutput
-
-    Then in the NEXT cell call:
-    TeeLog.close()
-
-    source: https://stackoverflow.com/q/616645
-    """
-    def __init__(self, filename="model.log", mode="a"):
-        self.stdout = sys.stdout
-        self.file = open(filename, mode)
-        sys.stdout = self
-
-    def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, *args):
-        self.close()
-
-    def write(self, message):
-        self.stdout.write(message)
-        self.file.write(message)
-
-    def flush(self):
-        self.stdout.flush()
-        self.file.flush()
-        os.fsync(self.file.fileno())
-
-    def close(self):
-        if self.stdout != None:
-            sys.stdout = self.stdout
-            self.stdout = None
-
-        if self.file != None:
-            self.file.close()
-            self.file = None
-
 def print_stdout_and_log(msg):
     log = logging.getLogger()
     log.info(msg)
@@ -148,19 +104,23 @@ def create_model_dirs(parameters: dict):
 
 class evaluate_model():
 
-    def __init__(self, p, model, projection_tensor, metadata_df):
+    def __init__(self, p, model, projection_tensor, metadata_df, metrics):
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('evaluate_model class initialed')
 
         # model parameters
         self.p = p
         self.model = model
+        self.metrics = metrics
         self.metadata_df = metadata_df
+        self.projection_tensor = projection_tensor
 
+        self._get_predictions()
+
+    def _get_predictions(self):
+        # First load TFDS
         self._load_dataset()
-        self._calculate_predictions(projection_tensor)
 
-    def _calculate_predictions(self, projection_tensor):
         columns = ['y', 'y_hat', 'mapobject_id_cell', 'set']
         self.targets_df = pd.DataFrame(columns=columns)
 
@@ -170,7 +130,7 @@ class evaluate_model():
             for cells in ds:
                 cell_ids = [cell_id.decode() for cell_id in cells['mapobject_id_cell'].numpy()]
                 cell_ids = np.asarray(cell_ids).reshape(-1,1)
-                cell_imgs, Y = Data_augmentation.apply_data_preprocessing(cells['image'], cells['target'], projection_tensor)
+                cell_imgs, Y = Data_augmentation.apply_data_preprocessing(cells['image'], cells['target'], self.projection_tensor)
                 Y = Y.numpy()
                 Y_hat = self.model.predict(cell_imgs)
                 temp_df = pd.DataFrame(np.concatenate((Y, Y_hat), axis=1), columns=['y', 'y_hat'])
@@ -190,15 +150,15 @@ class evaluate_model():
                 how='left',
         )
 
-    def _load_dataset(self):
+    def _load_dataset(self, as_supervised=False):
 
-        dataset, self.metadata = tfds.load(
+        dataset = tfds.load(
             name=self.p['tf_ds_name'],
             data_dir=self.p['local_tf_datasets'],
             # If False, returns a dictionary with all the features
-            as_supervised=False,
+            as_supervised=as_supervised,
             shuffle_files=False,
-            with_info=True)
+            with_info=False)
 
         self.train_data, self.val_data, self.test_data = dataset['train'], dataset['validation'], dataset['test']
         del(dataset)
@@ -206,9 +166,49 @@ class evaluate_model():
         BATCH_SIZE = self.p['BATCH_SIZE']
         AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-        self.train_data = self.train_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
-        self.val_data = self.val_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
-        self.test_data = self.test_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
+        self.train_data = self.train_data.batch(BATCH_SIZE)
+        self.val_data = self.val_data.batch(BATCH_SIZE)
+        self.test_data = self.test_data.batch(BATCH_SIZE)
+
+        if as_supervised:
+            self.train_data = self.train_data.map(lambda image, target: Data_augmentation.apply_data_preprocessing(image, target, self.projection_tensor), num_parallel_calls=AUTOTUNE)
+            self.val_data = self.val_data.map(lambda image, target: Data_augmentation.apply_data_preprocessing(image, target, self.projection_tensor), num_parallel_calls=AUTOTUNE)
+            self.test_data = self.test_data.map(lambda image, target: Data_augmentation.apply_data_preprocessing(image, target, self.projection_tensor), num_parallel_calls=AUTOTUNE)
+
+        self.train_data = self.train_data.prefetch(AUTOTUNE)
+        self.val_data = self.val_data.prefetch(AUTOTUNE)
+        self.test_data = self.test_data.prefetch(AUTOTUNE)
+
+    def _get_metrics_with_DA(self):
+        """
+        This method evaluate the model using the model's method evaluate. this means that if the model was instantiated using the custom model class, the valuation will be done over the fixed augmentation data techniques see class CustomModel, method test_step and _predict_targets_with_augmentation.
+        """
+        # first load the dataset with the supervised flag on
+        self._load_dataset(as_supervised=True)
+
+        # array containing the metrics name
+        temp_metrics = ['Aug_'+m for m in self.metrics]
+
+        Aug_metrics_df = pd.DataFrame(columns=temp_metrics+['Set'])
+
+        dss = [self.train_data, self.val_data, self.test_data]
+        ds_names = ['train', 'val', 'test']
+        for ds, dsn in zip(dss, ds_names):
+            temp_data = self.model.evaluate(ds, verbose=0)
+            temp_dict = {}
+            # save metrics names and eval values together
+            for met, m_eval in zip(temp_metrics, temp_data):
+                temp_dict[met] = m_eval
+            temp_dict['Set'] = dsn
+            # add to dataframe
+            Aug_metrics_df = Aug_metrics_df.append(temp_dict, ignore_index=True)
+
+        # merge Aug_metrics_df and metrics_df
+        self.metrics_df = self.metrics_df.merge(Aug_metrics_df,
+                                                left_on='Set',
+                                                right_on='Set',
+                                                how='left'
+                                                )
 
     def get_metrics(self, CMA_size=0, CMA=0, CMA_Std=0, Epoch=0):
 
@@ -216,6 +216,7 @@ class evaluate_model():
 
         # Create df to store metrics to compare models
         columns = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'Bias_l2_reg', 'PreTrained', 'Aug_rand_h_flip', 'Aug_rand_90deg_r', 'Aug_Zoom', 'Aug_Zoom_mode', 'Aug_rand_int', 'Aug_RI_mean', 'Aug_RI_stddev', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'DS_name', 'custom_model_class', 'Early_stop_patience', 'Parameters_file_path']
+
         self.metrics_df = pd.DataFrame(columns=columns)
 
         for ss in np.unique(self.targets_df['set']):
@@ -259,7 +260,12 @@ class evaluate_model():
                         'custom_model_class': self.p['custom_model_class'],
                         'Early_stop_patience': self.p['early_stop_patience'],
                         'Parameters_file_path':self.p['parameters_file_path']}
+
             self.metrics_df = self.metrics_df.append(temp_dict, ignore_index=True)
+
+        # if custom model calss selected, evaluate the dataset using the fixed data augm. techn
+        if self.p['custom_model_class']:
+            self._get_metrics_with_DA()
 
         self.metrics_df = self.metrics_df.round(4)
 
