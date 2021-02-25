@@ -24,7 +24,6 @@
     "pre_training": 0,
     "_comment": "to evaluate validation set using fixed data augm. tech. set custom_model_class to 1---------------------------------------------------",
     "custom_model_class": 1,
-    "pre_training": 0,
     "_comment": "Regularization: conv_reg=[l1_reg, l2_reg]=[1e-5, 1e-4]-------",
     "conv_reg": [0, 0],
     "dense_reg": [0, 0],
