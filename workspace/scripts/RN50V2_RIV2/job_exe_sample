@@ -1,1 +1,9 @@
+# execute only one job
 PARAMS_NAME='RN_RIV2'; sbatch --job-name $PARAMS_NAME --export=ALL,PARAMS=$PARAMS_NAME sbatch_script_template.sbatch
+
+# create slurm jobs for all the files in Parameters dir
+PARAMS_FILES=$(ls Parameters | awk 'BEGIN{FS="."}{print $1}')
+for PARAMS_NAME in $PARAMS_FILES; do echo $PARAMS_NAME; sbatch --job-name $PARAMS_NAME --export=ALL,PARAMS=$PARAMS_NAME sbatch_script_template.sbatch; done
+
+# replace values in parameters files
+for FILE in $(ls); do echo $FILE; awk '{if($0~/learning_rate/){gsub("0.001", "0.0005")}; print $0}' $FILE > temp.json; mv temp.json $FILE;done
