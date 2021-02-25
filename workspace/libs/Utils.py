@@ -148,13 +148,14 @@ def create_model_dirs(parameters: dict):
 
 class evaluate_model():
 
-    def __init__(self, p, model, projection_tensor):
+    def __init__(self, p, model, projection_tensor, metadata_df):
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('evaluate_model class initialed')
 
         # model parameters
         self.p = p
         self.model = model
+        self.metadata_df = metadata_df
 
         self._load_dataset()
         self._calculate_predictions(projection_tensor)
@@ -180,10 +181,8 @@ class evaluate_model():
         self.targets_df['y - y_hat'] = self.targets_df.y - self.targets_df.y_hat
 
         # Add perturbation info to the targets df
-        with open(os.path.join(self.p['pp_path'], 'metadata.csv'), 'r') as file:
-            row_data_metadata = pd.read_csv(file)
-            row_data_metadata.mapobject_id_cell = row_data_metadata.mapobject_id_cell.astype(str)
-        temp_df = row_data_metadata[['mapobject_id_cell', 'perturbation', 'cell_cycle']]
+        self.metadata_df.mapobject_id_cell = self.metadata_df.mapobject_id_cell.astype(str)
+        temp_df = self.metadata_df[['mapobject_id_cell', 'perturbation', 'cell_cycle']]
         self.targets_df = self.targets_df.merge(
                 temp_df,
                 left_on='mapobject_id_cell',
@@ -216,7 +215,7 @@ class evaluate_model():
         huber_loss = tf.keras.losses.Huber()
 
         # Create df to store metrics to compare models
-        columns = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'Bias_l2_reg', 'PreTrained', 'Aug_rand_h_flip', 'Aug_rand_90deg_r', 'Aug_Zoom', 'Aug_Zoom_mode', 'Aug_rand_int', 'Aug_RI_mean', 'Aug_RI_stddev', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'DS_name', 'custom_model_class', 'Parameters_file_path']
+        columns = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'Bias_l2_reg', 'PreTrained', 'Aug_rand_h_flip', 'Aug_rand_90deg_r', 'Aug_Zoom', 'Aug_Zoom_mode', 'Aug_rand_int', 'Aug_RI_mean', 'Aug_RI_stddev', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'DS_name', 'custom_model_class', 'Early_stop_patience', 'Parameters_file_path']
         self.metrics_df = pd.DataFrame(columns=columns)
 
         for ss in np.unique(self.targets_df['set']):
@@ -258,6 +257,7 @@ class evaluate_model():
                         'Epoch':Epoch,
                         'DS_name': self.p['tf_ds_name'],
                         'custom_model_class': self.p['custom_model_class'],
+                        'Early_stop_patience': self.p['early_stop_patience'],
                         'Parameters_file_path':self.p['parameters_file_path']}
             self.metrics_df = self.metrics_df.append(temp_dict, ignore_index=True)
 
@@ -388,12 +388,12 @@ def plot_train_metrics(history=None, CMA_history=None, CMA_metric=None, metrics=
         # set limits for plots
         if metric == 'mse':
             min_val = 900
-            max_val = 9000
+            max_val = 11000
         elif metric == 'mean_absolute_error':
             min_val = 25
-            max_val = 80
+            max_val = 100
         else:
-            warm_stage = int(p['number_of_epochs']*0.20)
+            warm_stage = int(len(history['loss'])*0.20)
             min_val = np.asarray(history[metric]+history['val_'+metric]).min()
             max_val = np.asarray(history[metric][warm_stage:]+history['val_'+metric][warm_stage:]).max()
 
