@@ -101,17 +101,24 @@ class save_best_model_base_on_CMA_Callback(tf.keras.callbacks.Callback):
     Save model checkpoint (only weights) accordingly to the Central Moving Average CMA
     """
     #https://www.tensorflow.org/guide/keras/custom_callback
-    def __init__(self, monitor='val_loss', avg_sizes=[11, 21, 31]):
+    def __init__(self, monitor='val_loss', avg_sizes=[11, 21, 31], early_stop=False, patience=50):
         super(save_best_model_base_on_CMA_Callback, self).__init__()
 
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('\nSave_best_model callback class initialed')
+
+        # CMA_0 (i.e. best model without moving avg) is saved by default, but it use other means to save it, therefore remove it from avg_sizes array if it is given
+        avg_sizes = [s for s in avg_sizes if s > 0]
 
         for s in avg_sizes:
             if (s < 3) or (s % 2 != 1):
                 msg = '\nNumbers on avg_sizes most be odd numbers and bigger than 3'
                 self.log.error(msg)
                 raise Exception(msg)
+
+        self.early_stop = early_stop
+        self.patience = patience
+        self.stopped_epoch = 0
 
         self.monitor = monitor
         self.history = []
@@ -128,10 +135,11 @@ class save_best_model_base_on_CMA_Callback(tf.keras.callbacks.Callback):
         for avg_size in self.avg_sizes:
             # Each self.best_models entry contains:
             # [CMA_epoch, CMA_value, CMA_std, model_weights]
-            self.best_models['CMA_'+str(avg_size)] = [0, np.Inf, 0, None]
+            self.best_models['CMA_'+str(avg_size)] = [None, np.Inf, 0, None]
             self.CMA_history['CMA_'+str(avg_size)] = []
 
-        self.best_models['CMA_0'] = [0, np.Inf, 0, None]
+        self.best_models['CMA_0'] = [None, np.Inf, 0, None]
+        self.CMA_history['CMA_0'] = None
 
     def on_epoch_end(self, epoch, logs=None):
         # Clean callback message
@@ -182,6 +190,31 @@ class save_best_model_base_on_CMA_Callback(tf.keras.callbacks.Callback):
         if msg != '':
             self.log.info(msg)
             print(msg)
+
+        # Eraly stop
+        if self.early_stop:
+            self._triger_early_stop(epoch)
+
+    def _triger_early_stop(self, epoch):
+        """
+        Check if the patience value have being exceeded for all CMA's
+        """
+        # if there is a moving average that have not exceeded the patience, then early_stop_triger will be turned into False
+        early_stop_triger = True
+        for key in self.best_models.keys():
+            last_epoch = self.best_models[key][0]
+            if last_epoch is not None:
+                # is patience exceeded for this moving avg?
+                early_stop_triger &= ((epoch - last_epoch) >= self.patience)
+
+        if early_stop_triger:
+            self.model.stop_training = True
+            self.stopped_epoch = epoch
+
+    def on_train_end(self, logs=None):
+        if self.stopped_epoch > 0:
+            print('Epoch %05d: early stopping' % self.stopped_epoch)
+
 
 
 class lr_schedule_Callback(tf.keras.callbacks.Callback):
