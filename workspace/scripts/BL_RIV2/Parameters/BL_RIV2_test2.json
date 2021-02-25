@@ -35,7 +35,7 @@
     "_comment": "Losses: mse, huber-------------------------------------------",
     "loss": "huber",
     "_comment": "Learning rate (lr default=0.001)-----------------------------",
-    "learning_rate": 0.001,
+    "learning_rate": 0.0005,
     "BATCH_SIZE": 64,
 
     "_comment": "log configuration.-------------------------------------------",
