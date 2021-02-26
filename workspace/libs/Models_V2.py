@@ -135,6 +135,9 @@ class Predef_models():
         elif self.model_name == 'Quick_test':
             self.model = self._get_Quick_test()
 
+        elif self.model_name == 'Linear_Regression':
+            self.model = self._get_Linear_Regression()
+
         else:
             msg = 'Specified model {} not implemented!'.format(self.model_name)
             self.log.error(msg)
@@ -230,6 +233,27 @@ class Predef_models():
                                   )(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
+
+        prediction = tf.keras.layers.Dense(units=1,
+                                           kernel_regularizer=self.dense_reg,
+                                           bias_regularizer=self.bias_reg,
+                                           )(x)
+        # return model
+        if self.return_custom_model:
+            return CustomModel(inputs=input_layer, outputs=prediction)
+        else:
+            return tf.keras.models.Model(inputs=input_layer, outputs=prediction)
+
+    def _get_Linear_Regression(self):
+        """
+        Linear regresion model:
+        Input -> GlobalAveragePooling (Per-Channel average)
+              -> Dense_1 (Prediction)
+        """
+
+        input_layer = tf.keras.Input(shape=self.input_shape, name='InputLayer')
+
+        x = tf.keras.layers.GlobalAveragePooling2D()(input_layer)
 
         prediction = tf.keras.layers.Dense(units=1,
                                            kernel_regularizer=self.dense_reg,
