@@ -37,24 +37,23 @@ class CustomModel(tf.keras.Model):
         """
         # Compute predictions without augmentation
         y_pred = self(x, training=False)
+        # create vector with targets values that contemplates the aumentation
+        y_new = tf.identity(y)
 
-        n_repeats = 1
         # Compute predictions over imgs with k*90 deg (k=1,2,3) rotations
         for k in range(1,4):
-            n_repeats += 1
             temp_pred = self(img_rot90(x, k=k), training=False)
             y_pred = tf.concat((y_pred, temp_pred), axis=0)
+            y_new = tf.concat((y_new, y), axis=0)
+
 
         # Compute predictions over imgs with k*90 deg (k=0,1,2,3) rotations+flip
         for k in range(0,4):
-            n_repeats += 1
             temp_pred = self(img_rot90(img_flip(x), k=k), training=False)
             y_pred = tf.concat((y_pred, temp_pred), axis=0)
+            y_new = tf.concat((y_new, y), axis=0)
 
-        # stack true values as many times as needed
-        y = tf.repeat(y, repeats=n_repeats, axis=0)
-
-        return y, y_pred
+        return y_new, y_pred
 
     def test_step(self, data):
         #data = data_adapter.expand_1d(data)
