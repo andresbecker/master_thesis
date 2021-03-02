@@ -5,7 +5,6 @@
 #SBATCH -p gpu_p
 #SBATCH --qos=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03
 #SBATCH -c 4
 #SBATCH --mem-per-cpu 12G
 #SBATCH -t 2-00:00:00
