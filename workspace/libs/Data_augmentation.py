@@ -146,7 +146,7 @@ def apply_CenterZoom(image, target, **kwargs):
     return image, target
 
 @tf.function
-def apply_RandomIntencity(images, targets, mean, stddev):
+def apply_RandomIntencity(images, targets, dist, mean, stddev, rescale_cte):
     """
     Function to apply random color intencity shift to each channel (only over the measured pixels). For each channel, it samples a shift factor from a normal distribution.
     image: Tensor of shape (batch_size, img_size, img_size, n_channels)
@@ -159,8 +159,15 @@ def apply_RandomIntencity(images, targets, mean, stddev):
 
     # Step 2. Sample the per-channel shift
     n_channels = images.shape[-1]
+
     # random shift only for the input channels
-    channel_shifts = tf.random.normal(shape=[n_channels-1], mean=mean, stddev=stddev)
+    if dist == 'normal':
+        channel_shifts = tf.random.normal(shape=[n_channels-1], mean=mean, stddev=stddev)
+    elif dist == 'uniform':
+        minval = mean - 3 * stddev
+        maxval = mean + 3 * stddev
+        channel_shifts = tf.random.uniform(shape=[n_channels-1], minval=minval, maxval=maxval)
+
     # for the cell mask we add 0 to avoid modifying it
     channel_shifts = tf.concat((channel_shifts, tf.zeros(shape=[1,])), axis=0)
     channel_shifts_tensor = tf.linalg.diag(channel_shifts)
@@ -170,7 +177,7 @@ def apply_RandomIntencity(images, targets, mean, stddev):
     # replace the 'ones' in the masks for the random shifts
     batch_channel_shifts = batch_channel_shifts @ channel_shifts_tensor
 
-    return images + batch_channel_shifts, targets
+    return (images + batch_channel_shifts) / rescale_cte, targets
 
 @tf.function
 def apply_data_preprocessing(image, target, projection_tensor):
@@ -201,57 +208,6 @@ def get_projection_tensor(input_shape, input_ids):
 
     return tf.constant(projection_matrix, dtype=tf.float32)
 
-@tf.function
-def apply_data_pp_and_aug(images, targets, p, projection_tensor):
-
-    # CenterZoom most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
-    # ZoomIn and ZoomOut
-    if p['CenterZoom']:
-        images, targets = apply_CenterZoom(images, targets,
-                                           mode=p['CenterZoom_mode'],
-                                           mean=p['cell_size_ratio_mean'],
-                                           stddev=p['cell_size_ratio_stddev'],
-                                           lower_bound=p['cell_size_ratio_low_bound']
-                                           )
-
-	# Random channel intensity (random per-channel shift) most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
-    if p['Random_channel_intencity']:
-        images, targets = apply_RandomIntencity(images, targets, p['RCI_mean'], p['RCI_stddev'])
-
-    # random Left and right flip
-    if p['random_horizontal_flipping']:
-        images, targets = apply_random_flip(images, targets)
-
-    # Number of 90deg rotation
-    if p['random_90deg_rotations']:
-        images, targets = apply_random_90deg_rotations(images, targets)
-
-    # Preprocess data (filter channels)
-    images, targets = apply_data_preprocessing(images, targets, projection_tensor)
-
-    return images, targets
-
-def prepare_train_and_val_TFDS_2(train_data, val_data, projection_tensor, p):
-
-    buffer_size = 512
-    BATCH_SIZE = p['BATCH_SIZE']
-    AUTOTUNE = tf.data.experimental.AUTOTUNE
-
-    train_data = train_data.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
-
-    # devide data set by batches
-    train_data = train_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
-    val_data = val_data.batch(BATCH_SIZE).prefetch(AUTOTUNE)
-
-    # the lambda function is to be able to pass more arguments to the map function
-    # Train data
-    train_data = train_data.map(lambda image, target: apply_data_pp_and_aug(image, target, p, projection_tensor), num_parallel_calls=AUTOTUNE)
-
-    # Val data
-    val_data = val_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
-
-    return train_data, val_data
-
 def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
 
     buffer_size = 512
@@ -279,7 +235,12 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
 
 	# Random channel intensity (random per-channel shift) most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
     if p['Random_channel_intencity']:
-        train_data = train_data.map(lambda image, target: apply_RandomIntencity(image, target, p['RCI_mean'], p['RCI_stddev']), num_parallel_calls=AUTOTUNE)
+        train_data = train_data.map(lambda image, target: apply_RandomIntencity(image, target,
+                              p['RCI_dist'],
+                              p['RCI_mean'],
+                              p['RCI_stddev'], 
+                              p['RCI_rescale_cte']
+                              ), num_parallel_calls=AUTOTUNE)
 
     # random Left and right flip
     if p['random_horizontal_flipping']:
@@ -333,7 +294,12 @@ def visualize_data_augmentation(tensor_image, p):
 
             # Random channel intensity
             if p['Random_channel_intencity']:
-                temp_tensor, _ = apply_RandomIntencity(temp_tensor, 0, p['RCI_mean'], p['RCI_stddev'])
+                temp_tensor, _ = apply_RandomIntencity(temp_tensor, 0,
+                                        p['RCI_dist'],
+                                        p['RCI_mean'],
+                                        p['RCI_stddev'],
+                                        p['RCI_rescale_cte']
+                                        )
 
             plt.subplot(1,4,i+1)
             visualize_tensor_cell_image(temp_tensor[0], 'Augmented Cell')
