@@ -170,10 +170,10 @@ def apply_RandomIntencity(images, targets, dist, mean, stddev, rescale_cte):
 
     # For testing:
     # Besides the shifting, multiply each channel by a uniformly random number
-    rescale_cte = 0.483
-    channel_scale = rescale_cte * tf.random.uniform(shape=[n_channels-1], minval=0.5, maxval=1.5)
-    channel_scale = tf.concat((channel_scale, tf.ones(shape=[1,])), axis=0)
-    channel_scale_tensor = tf.linalg.diag(channel_scale)
+    #rescale_cte = 0.483
+    #channel_scale = rescale_cte * tf.random.uniform(shape=[n_channels-1], minval=0.5, maxval=1.5)
+    #channel_scale = tf.concat((channel_scale, tf.ones(shape=[1,])), axis=0)
+    #channel_scale_tensor = tf.linalg.diag(channel_scale)
     # Didn't work!
     ##################################################################
 
@@ -192,8 +192,8 @@ def apply_RandomIntencity(images, targets, dist, mean, stddev, rescale_cte):
     rescale_tensor = tf.concat((rescale_tensor, tf.ones(shape=[1,])), axis=0)
     rescale_tensor = tf.linalg.diag(rescale_tensor)
 
-    #return (images + batch_channel_shifts) @ rescale_tensor, targets
-    return (images + batch_channel_shifts) @ channel_scale_tensor, targets
+    return (images + batch_channel_shifts) @ rescale_tensor, targets
+    #return (images + batch_channel_shifts) @ channel_scale_tensor, targets
 
 @tf.function
 def apply_data_preprocessing(image, target, projection_tensor):
