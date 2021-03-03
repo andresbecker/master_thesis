@@ -44,12 +44,13 @@
 % incorporate everything.
 \includeonly{%
 %titlepage,%
-%declaration,%
-%Sections/abstract,%
-%Sections/introduction,%
-% include own sections here (rule of thumb: one file per chapter)
-Sections/Motivation_and_Background,
-%Sections/conclusion,%
+Sections/Declaration,%
+Sections/Abstract,%
+Sections/Acknowledgments,
+Sections/Introduction,%
+Sections/Implementation,
+Sections/Results,
+Sections/conclusion,%
 %Sections/appendix%
 }%
 % ------------------------------------------------------------------------------
@@ -131,17 +132,24 @@ Sections/Motivation_and_Background,
 \selectlanguage{english}
 \maketitlepage%
 %\maketitlepageDissertation % a more elegant one, but for PHd dissertation
-\makedeclaration%
+%\makedeclaration%
 
-\include{Sections/abstract}
+\include{Sections/Declaration}
+
+\include{Sections/Abstract}
+
+\include{Sections/Acknowledgments}
+
 \tableofcontents%
 
 \mainmatter%
 \pagestyle{headings}
 
-\include{Sections/introduction}
+\include{Sections/Introduction}
 
-\include{Sections/Motivation_and_Background}
+\include{Sections/Implementation}
+
+\include{Sections/Results}
 
 \include{Sections/conclusion}
 
