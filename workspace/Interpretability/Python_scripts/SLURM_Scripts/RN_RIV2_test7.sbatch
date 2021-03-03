@@ -4,6 +4,7 @@
 #SBATCH -e ./SLURM_output/RN_RIV2_test7.error.log
 #SBATCH -J Score_RN_RIV2_test7
 #SBATCH -p gpu_p
+#SBATCH --qos=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --exclude=icb-gpusrv0[1-2],icb-gpusrv03,icb-gpusrv0[4-5]
 #SBATCH -c 4
