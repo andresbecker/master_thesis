@@ -338,7 +338,7 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2,
 
         # get indices corresponding to the top pixels
         temp_map = temp_map.reshape(-1)
-        top_idxs = temp_map.argsort()[-n_top_pixels:]
+        top_idxs = (-temp_map).argsort()[0:n_top_pixels]
         # get the the top_percent pixels (make the rest 0)
         mask = np.zeros(n_pixels)
         mask[top_idxs] = 1
