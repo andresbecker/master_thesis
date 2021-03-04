@@ -27,6 +27,7 @@ temp_parameters.json
 tf_dataset_parameters.json
 # Avoid old implementations
 **/Old_notebooks
+**/Old_Notebooks
 **/Old_scripts
 *_local.json
 
