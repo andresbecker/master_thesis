@@ -198,32 +198,16 @@ def apply_RandomIntencity(images, targets, **kwargs):
     return images + batch_channel_shifts, targets
 
 @tf.function
-def apply_data_preprocessing(image, target, projection_tensor):
+def apply_data_preprocessing(image, target):
     """
     Function to preprocess cell images
     image: Tensor of shape (bath_size, img_size, img_size, n_channels)
     target: number
-    projection_tensor: Tensor of shape (n_total_channels, n_selected_channels), where values for selected channels are 1 in the diagonal an 0 otherwise.
     """
 
-    # give the image the correct data type
-    image = tf.cast(image, dtype=tf.float32)
+    return tf.cast(image, dtype=tf.float32), tf.cast(target, dtype=tf.float32)
 
-    return image @ projection_tensor, target
-
-def get_projection_tensor(input_shape, input_ids):
-    """This function returns a tensor which will be used during data preprocessing to filter channels.
-    The reason why this function is not embeded in data_preprocessing function, is because tf.function does not allow iterations over tensors
-    """
-    n_channels = input_shape[-1]
-    n_selected_channels = input_ids.shape[-1]
-    projection_matrix = np.zeros(shape=(n_channels, n_selected_channels))
-    for col, row in enumerate(input_ids):
-        projection_matrix[row,col] = 1
-
-    return tf.constant(projection_matrix, dtype=tf.float32)
-
-def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
+def prepare_train_and_val_TFDS(train_data, val_data, p):
 
     buffer_size = 512
     AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -265,11 +249,9 @@ def prepare_train_and_val_TFDS(train_data, val_data, projection_tensor, p):
     if p['random_90deg_rotations']:
         train_data = train_data.map(lambda image, target: apply_random_90deg_rotations(image, target), num_parallel_calls=AUTOTUNE)
 
-    # Remove unwanted channels
-    train_data = train_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
-    # if custom_model_class, then fixed data aug will be applied to val set and cell mask will be needed
-    if not p['custom_model_class']:
-        val_data = val_data.map(lambda image, target: apply_data_preprocessing(image, target, projection_tensor), num_parallel_calls=AUTOTUNE)
+    # Set data type
+    train_data = train_data.map(apply_data_preprocessing, num_parallel_calls=AUTOTUNE)
+    val_data = val_data.map(apply_data_preprocessing, num_parallel_calls=AUTOTUNE)
 
     return train_data.prefetch(AUTOTUNE), val_data.prefetch(AUTOTUNE)
 
