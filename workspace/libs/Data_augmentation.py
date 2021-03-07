@@ -150,15 +150,19 @@ def get_random_tensor(shape=None, stateless=False, seed=123, dist='uniform', mea
     """
     Return a tensor containing random numbers. If stateless and dist=uniform, then a stateless version of tf.random.uniform is returned. This means that if run twice with the same seeds and shapes, it will produce the same pseudorandom numbers.
     """
+    t_seed = (seed, 49)
 
     # random shift only for the input channels
     if dist == 'normal':
-        return tf.random.normal(shape=shape, mean=mean, stddev=stddev)
+        if stateless:
+            return tf.random.stateless_normal(shape=shape, seed=t_seed, mean=mean, stddev=stddev)
+        else:
+            return tf.random.normal(shape=shape, mean=mean, stddev=stddev)
     elif dist == 'uniform':
         minval = mean - 3 * stddev
         maxval = mean + 3 * stddev
         if stateless:
-            return tf.random.stateless_uniform(shape=shape, seed=(seed, 49), minval=minval, maxval=maxval)
+            return tf.random.stateless_uniform(shape=shape, seed=t_seed, minval=minval, maxval=maxval)
         else:
             return tf.random.uniform(shape=shape, minval=minval, maxval=maxval)
 
