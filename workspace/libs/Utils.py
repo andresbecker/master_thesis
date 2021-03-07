@@ -743,7 +743,7 @@ def set_model_default_parameters(p_old=None):
 
     key = 'val_seeds'
     if key not in p_old.keys():
-        p_new[key] = [123, 321]
+        p_new[key] = [123, 321, 312]
     else:
         p_new[key] = p_old[key]
     info += '\n    Validation Seeds: '+str(p_new[key])
