@@ -29,9 +29,12 @@ class CustomModel(tf.keras.Model):
       `tf.keras.callbacks.CallbackList.on_train_batch_end`. Typically, the
       values of the `Model`'s metrics are returned.
     """
-    def __init__(self, eval_seed=[123], **kwargs):
+    def __init__(self, eval_seed=[123], RCI_dist='uniform', RCI_mean=0, RCI_stddev=0.1667,  **kwargs):
         # save seed to be used during validation evaluation to garantee that every time we evaluate the val set the same augmantation is performed
         self.eval_seed = eval_seed
+        self.RCI_dist = RCI_dist
+        self.RCI_mean = RCI_mean
+        self.RCI_stddev = RCI_stddev
 
         # Run original tf.keras.Model __init__ method
         super().__init__(**kwargs)
@@ -42,9 +45,23 @@ class CustomModel(tf.keras.Model):
         """
 
         if flip:
-            return img_flip(img_rot90(da_RI(x, None, stateless=True, seed=seed)[0], k=k))
+            return img_flip(img_rot90(da_RI(images=x,
+                                            targets=None,
+                                            stateless=True,
+                                            dist=self.RCI_dist,
+                                            mean=self.RCI_mean,
+                                            stddev=self.RCI_stddev,
+                                            seed=seed
+                                            )[0], k=k))
         else:
-            return img_rot90(da_RI(x, None, stateless=True, seed=seed)[0], k=k)
+            return img_rot90(da_RI(images=x,
+                                   targets=None,
+                                   stateless=True,
+                                   dist=self.RCI_dist,
+                                   mean=self.RCI_mean,
+                                   stddev=self.RCI_stddev,
+                                   seed=seed
+                                   )[0], k=k)
 
     def _predict_targets_with_augmentation(self, x, y):
         """
@@ -178,7 +195,7 @@ class Individual_Model_Training():
         self._print_stdout_and_log(msg)
 
 
-    def set_model(self, arch_name='baseline_CNN', pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, use_custom_model=True):
+    def set_model(self, arch_name='baseline_CNN', pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, use_custom_model=True, RCI_dist='uniform', RCI_mean=0, RCI_stddev=0.1667):
 
         msg = 'Model {} selected!'.format(arch_name)
         self._print_stdout_and_log(msg)
@@ -211,7 +228,7 @@ class Individual_Model_Training():
 
         # Instantiate tf model class
         if use_custom_model:
-            self.model = CustomModel(self.val_seeds, inputs=self.input_layer, outputs=prediction)
+            self.model = CustomModel(self.val_seeds, RCI_dist, RCI_mean, RCI_stddev, inputs=self.input_layer, outputs=prediction)
         else:
             self.model = tf.keras.models.Model(inputs=self.input_layer, outputs=prediction)
 
