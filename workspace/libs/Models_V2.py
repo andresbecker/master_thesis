@@ -13,6 +13,9 @@ import copy
 import os
 import time
 #from tensorflow.python.keras.engine import data_adapter
+from Data_augmentation import apply_RandomIntencity as da_RI
+from Data_augmentation import apply_data_preprocessing as da_cf
+
 
 class CustomModel(tf.keras.Model):
     """
@@ -31,6 +34,14 @@ class CustomModel(tf.keras.Model):
       `tf.keras.callbacks.CallbackList.on_train_batch_end`. Typically, the
       values of the `Model`'s metrics are returned.
     """
+    def __init__(self, eval_seed=123, projection_tensor=None, **kwargs):
+        # save seed to be used during validation evaluation to garantee that every time we evaluate the val set the same augmantation is performed
+        self.eval_seed = eval_seed
+        self.pt = projection_tensor
+
+        # Run original tf.keras.Model __init__ method
+        super().__init__(**kwargs)
+
     def _predict_targets_with_augmentation(self, x, y):
         """
         This function is ment to evaluate (predict) the validation test using fixed data augmentation (DA) techniques. Currently the val_dataset is evaluated 8 times (no DA, 90, 180, 270, deg rotations, flip, flip+90, flip+180, flip+270 deg rotations).
@@ -46,12 +57,39 @@ class CustomModel(tf.keras.Model):
             y_pred = tf.concat((y_pred, temp_pred), axis=0)
             y_new = tf.concat((y_new, y), axis=0)
 
-
         # Compute predictions over imgs with k*90 deg (k=0,1,2,3) rotations+flip
         for k in range(0,4):
             temp_pred = self(img_rot90(img_flip(x), k=k), training=False)
             y_pred = tf.concat((y_pred, temp_pred), axis=0)
             y_new = tf.concat((y_new, y), axis=0)
+
+        return y_new, y_pred
+
+    def _apply_aug(self, x=None, k=0, flip=False):
+        """
+        Apply data augmentation and channel filtering over val set (or any set given as argument to model.evaluate())
+        """
+
+        if flip:
+            return img_flip(img_rot90(da_cf(da_RI(x, None, stateless=True)[0], None, self.pt)[0], k=k))
+        else:
+            return img_rot90(da_cf(da_RI(x, None, stateless=True)[0], None, self.pt)[0], k=k)
+
+    def _predict_targets_with_augmentation_2(self, x, y):
+        """
+        -
+        """
+        # Compute predictions over imgs with k*90 deg (k=1,2,3) rotations
+        for flip in [True, False]:
+            for k in range(0,4):
+                # copy x to apply augmentation tech
+                temp_pred = self(self._apply_aug(x, k=k, flip=flip), training=False)
+                if k == 0:
+                    y_pred = tf.identity(temp_pred)
+                    y_new = tf.identity(y)
+                else:
+                    y_pred = tf.concat((y_pred, temp_pred), axis=0)
+                    y_new = tf.concat((y_new, y), axis=0)
 
         return y_new, y_pred
 
@@ -62,7 +100,8 @@ class CustomModel(tf.keras.Model):
         x, y = data
 
         # predict targets with and without data augmentation
-        y, y_pred = self._predict_targets_with_augmentation(x, y)
+        #y, y_pred = self._predict_targets_with_augmentation(x, y)
+        y, y_pred = self._predict_targets_with_augmentation_2(x, y)
 
         # Updates the metrics tracking the loss
         #self.compiled_loss(
@@ -85,11 +124,9 @@ class Predef_models():
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('Predef_models_and_utils class initialed')
 
-    def select_model(self, model_name=None, input_shape=None, pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, return_custom_model=True):
+    def select_model(self, model_name=None, input_shape=None, pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, return_custom_model=True, seed=123, projection_tensor=None):
 
-        self.model_name = model_name
         self.pre_training = pre_training
-        self.return_custom_model = return_custom_model
 
         if input_shape is None:
             msg = 'Please specify the input shape! E.g.:\n'
@@ -113,7 +150,7 @@ class Predef_models():
         if bias_l2_reg != 0:
             self.bias_reg = tf.keras.regularizers.l2(bias_l2_reg)
 
-        msg = 'Model {} selected!'.format(self.model_name)
+        msg = 'Model {} selected!'.format(model_name)
         msg += '\nRegularization:'
         msg += '\nconv_l1_reg: {}, conv_l2_reg: {}'.format(conv_reg[0], conv_reg[1])
         msg += '\ndense_l1_reg: {}, dense_l2_reg: {}'.format(dense_reg[0], dense_reg[1])
@@ -121,28 +158,33 @@ class Predef_models():
         self.log.info(msg)
         print(msg)
 
-        self.model = None
-        if self.model_name == 'baseline_CNN':
-            self.model = self._get_baseline_CNN()
+        if model_name == 'baseline_CNN':
+            model_input, model_output = self._get_baseline_CNN()
 
-        elif self.model_name == 'ResNet50V2':
-            self.model = self._get_ResNet50V2()
+        elif model_name == 'ResNet50V2':
+            model_input, model_output = self._get_ResNet50V2()
 
-        elif self.model_name == 'Xception':
-            self.model = self._get_Xception()
+        elif model_name == 'Xception':
+            model_input, model_output = self._get_Xception()
 
-        elif self.model_name == 'Quick_test':
-            self.model = self._get_Quick_test()
+        elif model_name == 'Quick_test':
+            model_input, model_output = self._get_Quick_test()
 
-        elif self.model_name == 'Linear_Regression':
-            self.model = self._get_Linear_Regression()
+        elif model_name == 'Linear_Regression':
+            model_input, model_output = self._get_Linear_Regression()
 
         else:
-            msg = 'Specified model {} not implemented!'.format(self.model_name)
+            msg = 'Specified model {} not implemented!'.format(model_name)
             self.log.error(msg)
-            raise NotImplementedError(self.model_name)
+            raise NotImplementedError(model_name)
 
-        return self.model
+        # Instantiate tf model class
+        if return_custom_model:
+            model = CustomModel(seed, projection_tensor, inputs=model_input, outputs=model_output)
+        else:
+            model = tf.keras.models.Model(inputs=model_input, outputs=model_output)
+
+        return model
 
     def _get_baseline_CNN(self):
         """
@@ -196,12 +238,8 @@ class Predef_models():
                                            kernel_regularizer=self.dense_reg,
                                            bias_regularizer=self.bias_reg,
                                            )(x)
-        # return model
-        if self.return_custom_model:
-            return CustomModel(inputs=input_layer, outputs=prediction)
-        else:
-            return tf.keras.models.Model(inputs=input_layer, outputs=prediction)
 
+        return input_layer, prediction
 
     def _get_Quick_test(self):
         """
@@ -237,11 +275,8 @@ class Predef_models():
                                            kernel_regularizer=self.dense_reg,
                                            bias_regularizer=self.bias_reg,
                                            )(x)
-        # return model
-        if self.return_custom_model:
-            return CustomModel(inputs=input_layer, outputs=prediction)
-        else:
-            return tf.keras.models.Model(inputs=input_layer, outputs=prediction)
+
+        return input_layer, prediction
 
     def _get_Linear_Regression(self):
         """
@@ -258,11 +293,8 @@ class Predef_models():
                                            kernel_regularizer=self.dense_reg,
                                            bias_regularizer=self.bias_reg,
                                            )(x)
-        # return model
-        if self.return_custom_model:
-            return CustomModel(inputs=input_layer, outputs=prediction)
-        else:
-            return tf.keras.models.Model(inputs=input_layer, outputs=prediction)
+
+        return input_layer, prediction
 
     def _get_ResNet50V2(self):
         """
@@ -326,11 +358,7 @@ class Predef_models():
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
-        # return model
-        if self.return_custom_model:
-            return CustomModel(inputs=base_model.inputs, outputs=prediction)
-        else:
-            return tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
+        return input_layer, prediction
 
     def _get_Xception(self):
         """
@@ -393,11 +421,7 @@ class Predef_models():
             #activity_regularizer=tf.keras.regularizers.l2(1e-5)
         )(x)
 
-        # return model
-        if self.return_custom_model:
-            return CustomModel(inputs=base_model.inputs, outputs=prediction)
-        else:
-            return tf.keras.models.Model(inputs=base_model.inputs, outputs=prediction)
+        return input_layer, prediction
 
     def _set_Xception_pretrained_w_and_b(self, base_model):
         """
@@ -529,7 +553,7 @@ class Individual_Model_Training():
         self.metrics = ['mse', 'mean_absolute_error']
         self.callbacks = []
 
-    def init_model(self, arch_name='baseline_CNN', input_shape=(224, 224, 33), conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, pre_training=False, return_custom_model=True):
+    def init_model(self, arch_name='baseline_CNN', input_shape=(224, 224, 33), conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, pre_training=False, return_custom_model=True, seed=123, projection_tensor=None):
 
         self.model = self.model.select_model(model_name=arch_name,
                                              input_shape=input_shape,
@@ -537,7 +561,9 @@ class Individual_Model_Training():
                                              dense_reg=dense_reg,
                                              bias_l2_reg=bias_l2_reg,
                                              pre_training=pre_training,
-                                             return_custom_model=return_custom_model
+                                             return_custom_model=return_custom_model,
+                                             seed=seed,
+                                             projection_tensor=projection_tensor
                                              )
         # Print model summary
         self.model.summary(print_fn=self._print_stdout_and_log)
