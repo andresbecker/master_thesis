@@ -53,6 +53,19 @@
         "20_SP100",
         "21_NCL",
         "01_PABPC1",
-        "11_PML"
+        "11_PML",
+        "16_H3",
+        "13_PABPN1",
+        "17_HDAC3",
+        "18_NONO",
+        "20_ALYREF",
+        "07_H2B",
+        "07_SETD1A",
+        "10_POL2RA_pS2",
+        "07_POLR2A",
+        "03_CDK9",
+        "02_CDK7",
+        "13_POL2RA_pS5",
+        "09_CCNT1"
     ]
 }
