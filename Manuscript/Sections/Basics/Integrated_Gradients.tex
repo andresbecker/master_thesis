@@ -1,0 +1,58 @@
+
+% what it IG
+%\glsresetall
+\glsfirst{ig} is an interpretability technique (attribution method) proposed by Sundararajan et al. \cite{sundararajan2017axiomatic}, aimed to assign an importance to the input features (in our case pixels from a cell image) with respect to the model prediction. The attribution problem have been studied before in other papers \cite{JMLR:v11:baehrens10a}, \cite{SimonyanVZ13}, \cite{ShrikumarGSK16}, \cite{BinderMBMS16} and \cite{Springenberg}.
+
+In our case, we seek to predict \gls{tr} given a cell image $x \in \mathbb{R}^{d \times d \times c}$, where $d$ is the height and width of the image and $c$ is the number of channels. Therefore, our \gls{dnn} would be a function $f:\mathbb{R}^{d \times d \times c} \rightarrow \mathbb{R}$ and an attribution method should be a function $\phi:\mathbb{R}^{d \times d \times c} \rightarrow \mathbb{R}^{d \times d \times c}$ having an input and output of the same shape as the model's input image.
+
+Early interpretability methods only use gradients to assign importance to each input feature
+
+\begin{equation}
+  \begin{split}
+    \phi(f,x) &:= \nabla f(x) \\
+    &= \frac{\partial f}{\partial x}
+  \end{split}
+\end{equation}
+
+Mathematically speaking, $\phi_i(f,x)$ assign an importance score to the pixel $i$ (out of the $d \times d \times c$ there are), representing how much it adds or subtract from the model output. However, this score maps have some drawback when they are used to interpret deep neural networks \cite{sturmfels2020visualizing}. Recall that the gradient with respect to the input indicate us the pixels that have the steepest local slope with respect to the model's output. This means that it only describes local changes in the input, and not the whole prediction model. Another mayor problem is saturation\footnote{In the context of artificial neural networks, a neuron is said to be saturated when the predominant output value of a neuron is close to the asymptotic ends of the bounded activation function. This behavior can potentially damage the learning capacity of a neural network.}.
+As the model learns the relationship between an input image and its \gls{tr}, the gradient of the most important pixels will approximate to 0, i.e. the pixel's gradient saturates.
+
+To overcome this problems, Sundararajan et al. proposed \gls{ig} as an attribution method, where the importance of the input feature $i$ is defined as follow
+\begin{equation}
+  \phi^{IG}_i(f, x, x') := (x_{i} - x'_{i})\int_{\alpha=0}^1\frac{\partial f(x'+\alpha (x - x'))}{\partial x_i}{d\alpha}
+  \label{eq:ig:definition}
+\end{equation}
+
+Intuitively speaking, \gls{ig} accumulates the input gradient when it goes from a baseline $x'$, which should represents \textit{absence} of information, to the actual input image $x$. With this, we avoid losing information about relevant pixels for the model's prediction in the importance map, even if they saturate eventually.
+
+For a better understanding, we can divide the \gls{ig} definition as follow
+\begin{equation}
+  \phi^{IG}_i(f, x, x') := \overbrace{(x_{i} - x'_{i})}^\text{Difference from baseline}
+  \underbrace{\int_{\alpha=0}^1}_\text{From baseline to input...}
+  \overbrace{\frac{\partial f(x'+\alpha (x - x'))}{\partial x_i}{d\alpha}}^\text{…accumulate local gradients}
+  \label{eq:ig:explanation}
+\end{equation}
+
+The integral in equation \ref{eq:ig:explanation} accumulate the gradients for the interpolated images $x'+\alpha (x - x'))$ between the baseline $x'$ and the image $x$. On the other hand, the difference $(x_i - x_i')$ outside the integral comes from the chain rule and the fact that we are interested in integrating over the path between the baseline and the image.
+
+%https://arxiv.org/pdf/1806.03000.pdf
+\gls{ig} is very simple and easy to implement, since it does not require any modification to the model and it only require some calls to the gradient operator.
+
+The \gls{ig} satisfy several properties and axioms that are addressed in detail in the paper. However, there is one axiom satisfied by \gls{ig} that is of special importance for us, \textit{completeness}. Completeness means that the value of the summed attributes will be equal to difference between the model's output when it is evaluated at the image and the model's output when it is evaluated at the baseline
+\begin{equation}
+  \sum_i \phi(f, x, x')^{IG} = f(x) - f(x')
+  \label{eq:ig_completeness}
+\end{equation}
+
+In practice, computing the analytic expression for the integral in equation \ref{eq:ig:definition} would be complicated, and in some cases unfeasible.
+However, luckily we can numerically approximate $\phi(f, x, x')^{IG}$ using a Riemann sum
+\begin{equation}
+  \phi^{Approx\ IG}_i(f, x, x', m) := (x_{i} - x'_{i})\sum_{k=1}^m\frac{\partial f(x'+\frac{k}{m} (x - x'))}{\partial x_i} \frac{1}{m}
+  \label{eq:ig:approx}
+\end{equation}
+
+\noindent where $m$ is number of steps for the Riemann sum approximation.
+
+This is when the completeness axiom comes into scene, which is a good value for the parameter $m$? 10, 100, 500? To answer this question, we can simply apply the completeness axiom as a sanity check for the election of $m$. If $m$ is good enough, then the value of $\sum_i \phi^{Approx\ IG}_i(f, x, x', m)$ should be close to $f(x)-f(x')$, or equivalently, the value of $|\sum_i \phi^{Approx\ IG}_i(f, x, x', m) - (f(x)-f(x'))|$ should be close to 0.
+
+Figures \ref{fig:vg:img_gradients} and \ref{fig:vg:img_IG} show a comparative between the gradient of a model output with respect to a cell image, and the \gls{ig}. One can see that either for score maps computed using \gls{ig} or vanilla gradients, the output is noisy and diffuse.

@@ -1,0 +1,53 @@
+% define where the images are
+\graphicspath{{./Sections/Basics/Resources/}}
+\glsresetall
+
+As we can see in figure \ref{fig:vg:img_IG}, \gls{ig} attribution maps can be noisy and diffuse. To improve their empirical quality, Smilkov et al. \cite{Smilkov_smoothgrad} proposed \gls{sg}, which tends to reduce noise in practice and can be combined with other attribution map algorithms (like \gls{ig}). The idea behind \gls{sg} is pretty simple, given an input image $x$, you create a sample of similar images by adding noise, then compute the attribution map for each one of them using the algorithm you prefer (in our case \gls{ig}), and take the average of the attribution maps.
+Although Smilkov et al. do not provide a mathematical proof of why \gls{sg} reduce noise in score maps, they provide a conjecture and empirical evidence.
+For this work we use a slightly difference version called \gls{vg}, proposed by Adebayo et al. \cite{adebayo2018local} but inspired by \gls{sg}, which takes the variance of the attribution maps instead of the mean. The reason for this choice is that Seo et al. \cite{Seo_noise} analyzed theoretically \gls{vg}, and concluded that it is independent to the gradient and capture higher order partial derivatives.
+
+In general, \gls{vg} is defined as follow
+
+\begin{equation}
+  \phi^{SG}(f, x) := Var(\phi(f, x + z_j))
+\end{equation}
+
+\noindent where $x \in \mathbb{R}^{d \times d \times c}$ is the input image, $f:\mathbb{R}^{d \times d \times c} \rightarrow \mathbb{R}$ a model, $\phi$ an attribution method to get preliminary score maps and $z_j \sim \mathcal{N}(0, \sigma^2)$, with $j\in\{1, \dots, n\}$, are i.i.d. noise images of same shape as the input image.
+
+Since we use \gls{ig} to get preliminary score maps, in our case \gls{vg} (in the subsequent defined as \gls{vgig}) looks as follow
+
+\begin{equation}
+  \phi^{SG}(f, x) := Var(\phi^{IG}(f, x + z_j, x'))
+\end{equation}
+
+\noindent where $x' \in \mathbb{R}^{d \times d \times c}$ is a given baseline needed to compute the \gls{ig} score maps.
+
+Figures \ref{fig:vg:img_IG} and \ref{fig:vg:img_VG_IG} show a comparative between \gls{ig} and \gls{vgig} score maps. One can see that \gls{vgig} produces less noisy score maps than vanilla \gls{ig}.
+
+% this plots were created using the notebook ~/Documents/Master_Thesis/Project/workspace/Interpretability/Integrated_Gradient_Sanity_check.ipynb
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{Cell_Image.jpg}
+    \caption{Original cell image.}
+    \label{fig:vg:cell_img}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{Image_Gradient.jpg}
+    \caption{Gradient wrt the input image.}
+    \label{fig:vg:img_gradients}
+  \end{subfigure}%
+  \vspace{3mm}
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{Integrated_Gradient.jpg}
+    \caption{Integrated Gradient.}
+    \label{fig:vg:img_IG}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{VarGrad_Integrated_Gradient.jpg}
+    \caption{VarGrad with Integrated Gradients.}
+    \label{fig:vg:img_VG_IG}
+  \end{subfigure}
+  \caption{Comparative between a cell image and the different attribution methods. All the figures show the same 3 channels taken from a cell image. In \subref{fig:vg:cell_img}), the cell image, no attribution method. In \subref{fig:vg:img_gradients}), the gradient of the model with respect to the input image. In \subref{fig:vg:img_IG}), the \gls{ig} with respect to the input image. In \subref{fig:vg:img_VG_IG}), the composition of \gls{vg} with \gls{ig} with respect to the input image.}
+  \label{fig:vg:comparative}
+\end{figure}

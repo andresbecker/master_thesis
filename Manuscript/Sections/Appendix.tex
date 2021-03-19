@@ -1,0 +1,36 @@
+%% appendix.tex
+%%
+
+%% ==============================
+%\chapter{Appendix}
+%\label{ch:Appendix}
+\chapter{Remarks on Implementation}
+\label{Appendix-Implementation}
+%% ==============================
+
+This appendix contains notes about how to execute all the scripts and notebooks used in this work. It also contains information about the parameters that need to be specified for each program.
+All the scripts and notebooks were written in \texttt{Python} and executed over \texttt{Anaconda}. You can find information about the environment setup, packages version, etc. \href{https://github.com/andresbecker/master_thesis}{here}.
+
+The logic to execute any \texttt{Python} script is always the same
+\begin{lstlisting}[language=Bash]
+python python_script_name.py -p ./Parameters_file_name.json
+\end{lstlisting}
+
+For the \texttt{Jupyter Notebooks} you just have to open it and set the variable \texttt{PARAMETERS\_FILE} with the absolute path and name of the input parameters file
+\begin{lstlisting}[language=Python]
+PARAMETERS_FILE = "/path_to_file_dir/Parameters_file_name.json"
+\end{lstlisting}
+
+For each script/notebook all the needed parameters have to be specified inside its parameter file only. The format for the parameters file is always \texttt{JSON} and the parameters values are specified in a python-dictionary format.
+
+\fxnote{If there is time, add a section containing common parameters}
+
+\section{VarGrad IG Implementation Notes}
+\label{sec:appendix:VarGrad_IG_Experimental_Setup}
+\input{Sections/Appendix/VarGrad_IG_Implementation_Notes}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "thesis"
+%%% End:

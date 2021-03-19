@@ -4,14 +4,20 @@
 \babel@toc {english}{}
 \babel@toc {english}{}
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: add here the ref for section where transcription process is explained}{1}{subsection.1.3.2}%
+\contentsline {fixme}{Note: add here the ref for section where transcription process is explained}{9}{section.3.1}%
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: should I add the reference to the papers where this is explained?? ref 22-24 and 30}{1}{subsection.1.3.2}%
+\contentsline {fixme}{Note: should I add the reference to the papers where this is explained?? ref 22-24 and 30}{9}{section.3.1}%
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: The last paragraph explain only in general the whole process to get a single cell image. However, should I add also the explanation of the \gls {4i} protocol? i.\tmspace +\thinmuskip {.1667em}e.\xspace the process of 21 cycles of staining-elution, image composition, etc.?}{2}{subsection.1.3.2}%
+\contentsline {fixme}{Note: The last paragraph explain only in general the whole process to get a single cell image. However, should I add also the explanation of the \gls {4i} protocol? i.\tmspace +\thinmuskip {.1667em}e.\xspace the process of 21 cycles of staining-elution, image composition, etc.?}{9}{section.3.1}%
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: this is may not be included in the final work}{3}{section.2.1}%
+\contentsline {fixme}{Note: this is may not be included in the final work}{10}{section.3.2}%
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: See how to refer properly to this library}{4}{section.2.1}%
+\contentsline {fixme}{Note: See how to refer properly to this library}{11}{section.3.2}%
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: It is necessary to improve the description of how this 00\_EU channel is turned into a number. So far it is done by averaging all the entrances of the channel, however it still need to be decided if this will be done like this.}{4}{section.2.1}%
+\contentsline {fixme}{Note: It is necessary to improve the description of how this 00\_EU channel is turned into a number. So far it is done by averaging all the entrances of the channel, however it still need to be decided if this will be done like this.}{11}{section.3.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {fixme}{Note: Consider adding here also the justification for the number the steps $m$ in the Riemann sum.}{13}{chapter.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {fixme}{Note: after finishing, check that the baseline model is still called baseline}{14}{table.caption.7}%
+\defcounter {refsection}{0}\relax 
+\contentsline {fixme}{Note: If there is time, add a section containing common parameters}{19}{lstnumber.-2.1}%

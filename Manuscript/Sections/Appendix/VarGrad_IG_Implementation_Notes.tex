@@ -1,0 +1,25 @@
+
+In order to generate the \acrlong{vg} \acrlong{ig} score maps, you must execute the python script \texttt{get\_VarGradIG\_from\_TFDS.py} specifying the parameters file
+\begin{lstlisting}[language=Bash]
+python get_VarGradIG_from_TFDS.py -p ./Parameters_file_name.json
+\end{lstlisting}
+
+Table \ref{table:imp_notes:VGIG_params} show all the parameters that need to be specified to execute \texttt{get\_VarGradIG\_from\_TFDS.py} successfully.
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{c|c|c}
+    Hyperparam & JSON variable name & Notes \\
+    \hline
+    $m$ & \texttt{IG\_m\_steps} & Number of steps to approximate \gls{ig} \\
+    \hline
+     &  & Baseline image for \gls{ig}. Available: "black" \\
+    $x'$ &  \texttt{IG\_baseline} & for a simple black image and "noise" for an image \\
+     &  &  filled with Gaussian noise ($\mu=0,\ \sigma=1$) \\
+    \hline
+    $n$ & \texttt{VarGrad\_n\_samples} & Number of noisy images to compute \gls{vg} \\
+    \hline
+  \end{tabular}
+  \caption{Parameters to compute score maps.}
+  \label{table:imp_notes:VGIG_params}
+\end{table}

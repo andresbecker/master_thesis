@@ -48,10 +48,13 @@ Sections/Declaration,%
 Sections/Abstract,%
 Sections/Acknowledgments,
 Sections/Introduction,%
-Sections/Implementation,
+Sections/Basics,
+Sections/Dataset,
+Sections/Methodology,
+%Sections/Implementation,
 Sections/Results,
 Sections/conclusion,%
-%Sections/appendix%
+Sections/Appendix%
 }%
 % ------------------------------------------------------------------------------
 
@@ -112,6 +115,11 @@ Sections/conclusion,%
 \newacronym{scmos}{sCMOS}{scientific complementary metal oxide semiconductor}
 \newacronym{cnn}{CNN}{Convolutional Neural Network}
 \newacronym{mrna}{mRNA}{messenger RNA}
+\newacronym{ig}{IG}{Integrated Gradient}
+\newacronym{vg}{VG}{VarGrad}
+\newacronym{sg}{SG}{SmoothGrad}
+\newacronym{vgig}{VGIG}{VarGrad Integrated Gradient}
+\newacronym{dnn}{DNN}{Deep Neural Network}
 % ------------------------------------------------------------------------------
 
 % ==============================================================================
@@ -147,7 +155,11 @@ Sections/conclusion,%
 
 \include{Sections/Introduction}
 
-\include{Sections/Implementation}
+\include{Sections/Basics}
+
+\include{Sections/Dataset}
+
+\include{Sections/Methodology}
 
 \include{Sections/Results}
 
@@ -155,7 +167,7 @@ Sections/conclusion,%
 
 % appendices (if appropriate)
 \appendix
-\include{Sections/appendix}
+\include{Sections/Appendix}
 % all appendices behind backmatter will go without numbers
 \backmatter
 
