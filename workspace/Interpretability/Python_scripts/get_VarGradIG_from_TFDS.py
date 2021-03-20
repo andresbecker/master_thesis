@@ -112,10 +112,6 @@ input_ids = input_ids.astype(np.int16)
 msg = 'Corresponding input channel ids:\n{}'.format(input_ids)
 printc(msg)
 
-# Get projection matrix to filter channels
-input_shape = np.array(ds_info.features['image'].shape)
-projection_tensor = Data_augmentation.get_projection_tensor(input_shape, input_ids)
-
 # DF to store the stddev per channel (sum of pixels) and for the whole cell
 channel_names = list(tfds_metadata['channels_df'].set_index('TFDS_channel_id').iloc[input_ids].name.values)
 col_name = channel_names + ['Total_cell_stddev']
