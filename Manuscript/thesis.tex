@@ -37,28 +37,6 @@
 % ------------------------------------------------------------------------------
 
 % ------------------------------------------------------------------------------
-% Using the include-command: The content of the work will be incorporated using
-% the include-command. So that you can test things out without always needing
-% the full thesis, you can define here which sections will be incorporated and
-% which will not. Of course, for the final version you should be sure to
-% incorporate everything.
-\includeonly{%
-%titlepage,%
-Sections/Declaration,%
-Sections/Abstract,%
-Sections/Acknowledgments,
-Sections/Introduction,%
-Sections/Basics,
-Sections/Dataset,
-Sections/Methodology,
-%Sections/Implementation,
-Sections/Results,
-Sections/conclusion,%
-Sections/Appendix%
-}%
-% ------------------------------------------------------------------------------
-
-% ------------------------------------------------------------------------------
 % PDF-Metadaten
 \hypersetup{
  pdfauthor={Andres Alberto Becker Sanabria},
@@ -143,9 +121,7 @@ Sections/Appendix%
 %\makedeclaration%
 
 \include{Sections/Declaration}
-
 \include{Sections/Abstract}
-
 \include{Sections/Acknowledgments}
 
 \tableofcontents%
@@ -153,23 +129,151 @@ Sections/Appendix%
 \mainmatter%
 \pagestyle{headings}
 
-\include{Sections/Introduction}
+%% =============================================================================
+%% Basics chapter
+%% =============================================================================
+\chapter{Introduction}
+\label{ch:introduction}
+\input{Sections/Introduction/Chapter_intro}
 
-\include{Sections/Basics}
+\section{Motivation}
+\label{sec:intro:motivation}
 
-\include{Sections/Dataset}
+\section{Literature review}
+\label{sec:intro:literature_review}
+\input{Sections/Introduction/Literature_review}
 
-\include{Sections/Methodology}
+%% =============================================================================
+%% Basics chapter
+%% =============================================================================
+\chapter{Basics}
+\label{ch:basics}
+\input{Sections/Basics/Chapter_intro}
 
-\include{Sections/Results}
+\section{Biology Background}
+\label{sec:basics:bio_back}
 
+\section{Artificial Neural Networks}
+\label{sec:basics:Cellular_Expression}
+
+\subsection{Convolutional Neural Networks}
+\label{sec:basics:CNN}
+
+\section{Interpretability Methods}
+\label{sec:basics:interpretability_methods}
+\input{Sections/Basics/Interpretability_Methods}
+
+\subsection{Integrated Gradients}
+\label{sec:basics:IG}
+\input{Sections/Basics/Integrated_Gradients}
+
+\subsection{VarGrad}
+\label{sec:basics:VarGrad}
+\input{Sections/Basics/VarGrad}
+
+\section{Interpretability Methods Evaluation}
+\label{sec:basics:vgig_eval}
+
+%% =============================================================================
+%% Dataset chapter
+%% =============================================================================
+\chapter{The Dataset}
+\label{ch:dataset}
+\input{Sections/Dataset/Chapter_intro}
+
+\section{Multiplexed Protein Maps}
+\label{sec:dataset:multiplexed_protein_maps}
+\input{Sections/Dataset/Multiplexed_Protein_Maps}
+
+\section{Data preprocessing}
+\label{sec:dataset:data_pp}
+\input{Sections/Dataset/Data_preprocessing}
+
+\section{Data Augmentation}
+\label{sec:dataset:data_augmentation}
+
+%% =============================================================================
+%% Methodology chapter
+%% =============================================================================
+\chapter{Methodology}
+\label{ch:methodology}
+\input{Sections/Dataset/Chapter_intro}
+
+\section{Dataset Setup}
+\label{sec:methodology:tfds}
+
+\section{Models}
+\label{sec:methodology:models}
+
+\subsection{Linear Model}
+\label{sec:methodology:lm}
+
+\subsection{Baseline CNN}
+\label{sec:methodology:BL_CNN}
+
+\subsection{ResNet50V2}
+\label{sec:methodology:RN50V2}
+
+\subsection{Model Metrics}
+\label{sec:methodology:metrics}
+
+\section{Interpretability Methods}
+\label{sec:methodology:interpretability_methods}
+\input{Sections/Methodology/VarGrad_IG_Experimental_Setup}
+
+%\subsection{Experimental Setup}
+%\label{sec:methodology:VarGrad_IG_Experimental_Setup}
+%\input{Sections/Methodology/VarGrad_IG_Experimental_Setup}
+
+\section{Interpretability Methods Evaluation}
+\label{sec:methodology:vgig_eval}
+
+%% =============================================================================
+%% Results chapter
+%% =============================================================================
+\chapter{Results}
+\label{ch:results}
+\input{Sections/Results/Chapter_intro}
+
+\section{Model Performance}
+\label{sec:model_performance}
+
+\subsection{Baseline values}
+\label{sec:results:bl_values}
+
+\subsection{Linear Model}
+\label{sec:results:lm}
+
+\subsection{Baseline CNN}
+\label{sec:results:bl_cnn}
+
+\subsection{ResNet50V2}
+\label{sec:results:RN50V2}
+
+\section{Model Interpretation}
+\label{sec:results:model_interpretation}
+
+\section{Model Interpretation Evaluation}
+\label{sec:results:model_inter_eval}
+
+\section{Discussion}
+
+%% =============================================================================
+%% conclusion chapter
+%% =============================================================================
 \include{Sections/conclusion}
 
-% appendices (if appropriate)
+%% =============================================================================
+%% Appendix chapter
+%% =============================================================================
 \appendix
 \include{Sections/Appendix}
 % all appendices behind backmatter will go without numbers
 \backmatter
+
+%% =============================================================================
+%% Lists, glossaries, etc.
+%% =============================================================================
 
 %List of Figures
 \listoffigures
