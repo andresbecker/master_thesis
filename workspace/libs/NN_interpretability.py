@@ -287,7 +287,7 @@ def plot_VarGrad_IG_with_control(img=None, img_mask=None, score_map_1=None, scor
 
     plt.show()
 
-def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2, img_size=(7,7), channels_df=None, score_map_same_sacale=True, channels_2_plot=None, plot_overlap=False, plot_colorbar=True, plot_name=None):
+def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=1, img_size=(7,7), channels_df=None, score_map_same_sacale=True, channels_2_plot=None, plot_overlap=False, plot_colorbar=True, plot_name=None):
 
     if channels_2_plot is None:
         channels_2_plot = range(img.shape[-1])
@@ -315,7 +315,7 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2,
 
     # Plot original image
     for i, c in enumerate(channels_2_plot, 1):
-        channel_name = channels_df['name'][channels_df.channel_id == c].values[0]
+        channel_name = channels_df['name'][channels_df.TFDS_channel_id == c].values[0]
 
         # Plot original image
         plt.subplot(n_plot_rows, n_plot_columns, i)
@@ -357,7 +357,7 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2,
 
         # Plot score map
         for i, c in enumerate(channels_2_plot, 1):
-            channel_name = channels_df['name'][channels_df.channel_id == c].values[0]
+            channel_name = channels_df['name'][channels_df.TFDS_channel_id == c].values[0]
 
             # Get the variance (in the score map) corrsponding to this channel
             channel_stddev_percen = round(100*score_channel_std[c]/total_var,3)
@@ -376,7 +376,7 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=0.2,
         # Plot overlap
         if plot_overlap:
             for i, c in enumerate(channels_2_plot, 1):
-                channel_name = channels_df['name'][channels_df.channel_id == c].values[0]
+                channel_name = channels_df['name'][channels_df.TFDS_channel_id == c].values[0]
                 # Plot image and importance map together
                 plt.subplot(n_plot_rows, n_plot_columns, row_count*n_plot_columns+i)
                 plot_cell(img=temp_map[:,:,c],
