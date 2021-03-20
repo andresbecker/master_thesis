@@ -16,7 +16,7 @@
     "IG_m_steps": 70,
     "_comment": "Available baselines: black (image filled with zeros), noice (image filled with random noise (mean=0, stddev=1))",
     "IG_baseline": "black",
-    "VarGrad_n_samples": 40,
+    "VarGrad_n_samples": 50,
     "use_cell_mask": 1,
 
     "log_file_name": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/VarGrad_BL_RIV2_test4.log",
