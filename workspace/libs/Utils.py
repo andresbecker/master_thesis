@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import copy
 import socket
 import time
+from Data_augmentation import apply_data_preprocessing as data_pp
 
 def print_stdout_and_log(msg):
     log = logging.getLogger()
@@ -104,7 +105,7 @@ def create_model_dirs(parameters: dict):
 
 class evaluate_model():
 
-    def __init__(self, p, model, projection_tensor, metadata_df, metrics):
+    def __init__(self, p, model, metadata_df, metrics):
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.info('evaluate_model class initialed')
 
@@ -113,7 +114,6 @@ class evaluate_model():
         self.model = model
         self.metrics = metrics
         self.metadata_df = metadata_df
-        self.projection_tensor = projection_tensor
 
         self._get_predictions()
 
@@ -130,9 +130,8 @@ class evaluate_model():
             for cells in ds:
                 cell_ids = [cell_id.decode() for cell_id in cells['mapobject_id_cell'].numpy()]
                 cell_ids = np.asarray(cell_ids).reshape(-1,1)
-                cell_imgs, Y = Data_augmentation.apply_data_preprocessing(cells['image'], cells['target'], self.projection_tensor)
-                Y = Y.numpy()
-                Y_hat = self.model.predict(cell_imgs)
+                Y = cells['target'].numpy()
+                Y_hat = self.model.predict(cells['image'])
                 temp_df = pd.DataFrame(np.concatenate((Y, Y_hat), axis=1), columns=['y', 'y_hat'])
                 temp_df['mapobject_id_cell'] = cell_ids
                 temp_df['set'] = dsn
@@ -169,11 +168,6 @@ class evaluate_model():
         self.train_data = self.train_data.batch(BATCH_SIZE)
         self.val_data = self.val_data.batch(BATCH_SIZE)
         self.test_data = self.test_data.batch(BATCH_SIZE)
-
-        if as_supervised:
-            self.train_data = self.train_data.map(lambda image, target: Data_augmentation.apply_data_preprocessing(image, target, self.projection_tensor), num_parallel_calls=AUTOTUNE)
-            self.val_data = self.val_data.map(lambda image, target: Data_augmentation.apply_data_preprocessing(image, target, self.projection_tensor), num_parallel_calls=AUTOTUNE)
-            self.test_data = self.test_data.map(lambda image, target: Data_augmentation.apply_data_preprocessing(image, target, self.projection_tensor), num_parallel_calls=AUTOTUNE)
 
         self.train_data = self.train_data.prefetch(AUTOTUNE)
         self.val_data = self.val_data.prefetch(AUTOTUNE)
@@ -746,6 +740,13 @@ def set_model_default_parameters(p_old=None):
     else:
         p_new[key] = p_old[key]
     info += '\n    Random Seed: '+str(p_new[key])
+
+    key = 'val_seeds'
+    if key not in p_old.keys():
+        p_new[key] = [123, 321, 312]
+    else:
+        p_new[key] = p_old[key]
+    info += '\n    Validation Seeds: '+str(p_new[key])
 
     info += '\n  Cuda:'
     # Cuda Config
