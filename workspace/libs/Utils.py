@@ -701,13 +701,13 @@ def set_model_default_parameters(p_old=None):
         p_new[key] = False
     else:
         p_new[key] = p_old[key]
-    info += '\n    '+key+str(p_new[key])
+    info += '\n    '+key+': '+str(p_new[key])
     key = 'Random_noise_stddev'
     if key not in p_old.keys():
         p_new[key] = 1
     else:
         p_new[key] = p_old[key]
-    info += '\n    '+key+str(p_new[key])
+    info += '\n        '+key+': '+str(p_new[key])
 
     info += '\n'
     # End of the Data augmentation section--------------------------------------
