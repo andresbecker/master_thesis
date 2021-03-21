@@ -10,7 +10,6 @@ import copy
 import os
 import time
 #from tensorflow.python.keras.engine import data_adapter
-from Data_augmentation import apply_RandomIntencity as da_RI
 
 class CustomModel(tf.keras.Model):
     """
@@ -29,39 +28,23 @@ class CustomModel(tf.keras.Model):
       `tf.keras.callbacks.CallbackList.on_train_batch_end`. Typically, the
       values of the `Model`'s metrics are returned.
     """
-    def __init__(self, eval_seed=[123], RCI_dist='uniform', RCI_mean=0, RCI_stddev=0.1667,  **kwargs):
-        # save seed to be used during validation evaluation to garantee that every time we evaluate the val set the same augmantation is performed
-        self.eval_seed = eval_seed
-        self.RCI_dist = RCI_dist
-        self.RCI_mean = RCI_mean
-        self.RCI_stddev = RCI_stddev
+    def __init__(self,  **kwargs):
+        """
+        Raplace tf.keras.Model __init__ method in case some arguments need to be given to CustomModel class.
+        """
 
         # Run original tf.keras.Model __init__ method
         super().__init__(**kwargs)
 
-    def _apply_aug(self, x=None, k=0, flip=False, seed=123):
+    def _apply_aug(self, x=None, k=0, flip=False):
         """
         Apply data augmentation and channel filtering over x.
         """
 
         if flip:
-            return img_flip(img_rot90(da_RI(images=x,
-                                            targets=None,
-                                            stateless=True,
-                                            dist=self.RCI_dist,
-                                            mean=self.RCI_mean,
-                                            stddev=self.RCI_stddev,
-                                            seed=seed
-                                            )[0], k=k))
+            return img_flip(img_rot90(x, k=k))
         else:
-            return img_rot90(da_RI(images=x,
-                                   targets=None,
-                                   stateless=True,
-                                   dist=self.RCI_dist,
-                                   mean=self.RCI_mean,
-                                   stddev=self.RCI_stddev,
-                                   seed=seed
-                                   )[0], k=k)
+            return img_rot90(x, k=k)
 
     def _predict_targets_with_augmentation(self, x, y):
         """
@@ -70,17 +53,16 @@ class CustomModel(tf.keras.Model):
         # Compute predictions over imgs with k*90 deg (k=1,2,3) rotations
         # apply rotations and random color shift using different seed. This increase the size of the val set.
         counter = 0
-        for seed in self.eval_seed:
-            for flip in [True, False]:
-                for k in range(0,4):
-                    counter += 1
-                    temp_pred = self(self._apply_aug(x, k=k, flip=flip, seed=seed), training=False)
-                    if counter == 1:
-                        y_pred = tf.identity(temp_pred)
-                        y_new = tf.identity(y)
-                    else:
-                        y_pred = tf.concat((y_pred, temp_pred), axis=0)
-                        y_new = tf.concat((y_new, y), axis=0)
+        for flip in [True, False]:
+            for k in range(0,4):
+                counter += 1
+                temp_pred = self(self._apply_aug(x, k=k, flip=flip), training=False)
+                if counter == 1:
+                    y_pred = tf.identity(temp_pred)
+                    y_new = tf.identity(y)
+                else:
+                    y_pred = tf.concat((y_pred, temp_pred), axis=0)
+                    y_new = tf.concat((y_new, y), axis=0)
 
         return y_new, y_pred
 
@@ -110,7 +92,7 @@ class Individual_Model_Training():
     """
     The idea of this clase is to join all the needed process to train a model into one class, so training several models using the same parameters can be easy.
     """
-    def __init__(self, input_shape=(224, 224, 38), input_ids=None, val_seeds=[123]):
+    def __init__(self, input_shape=(224, 224, 38), input_ids=None):
 
         self.log = logging.getLogger(self.__class__.__name__)
         self._print_stdout_and_log("Individual_Model_Training class initialed")
@@ -119,7 +101,6 @@ class Individual_Model_Training():
         self.metrics = ['mse', 'mean_absolute_error']
         self.callbacks = []
         self.input_ids = input_ids
-        self.val_seeds = val_seeds
 
         if input_shape is None:
             msg = 'Please specify the input shape! E.g.:\n'
@@ -130,6 +111,51 @@ class Individual_Model_Training():
             self.input_shape = tuple(input_shape)
 
         self.projection_tensor = self._get_projection_tensor(input_shape, input_ids)
+
+
+    def set_model(self, arch_name='baseline_CNN', pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, use_custom_model=True):
+
+        msg = 'Model {} selected!'.format(arch_name)
+        self._print_stdout_and_log(msg)
+
+        self.pre_training = pre_training
+        self._set_regularization(conv_reg, dense_reg, bias_l2_reg)
+
+        # init model architecture
+        self.input_layer = tf.keras.Input(shape=self.input_shape, name='InputLayer')
+
+        # Filter unwanted channels
+        x = self._filter_channels(self.input_layer)
+
+        if arch_name == 'baseline_CNN':
+            prediction = self._get_baseline_CNN(x)
+
+        elif arch_name == 'ResNet50V2':
+            prediction = self._get_ResNet50V2(x)
+
+        elif arch_name == 'Xception':
+            prediction = self._get_Xception(x)
+
+        elif arch_name == 'Linear_Regression':
+            prediction = self._get_Linear_Regression(x)
+
+        else:
+            msg = 'Specified model {} not implemented!'.format(arch_name)
+            self.log.error(msg)
+            raise NotImplementedError(arch_name)
+
+        # Instantiate tf model class
+        if use_custom_model:
+            self.model = CustomModel(inputs=self.input_layer, outputs=prediction)
+        else:
+            self.model = tf.keras.models.Model(inputs=self.input_layer, outputs=prediction)
+
+        # Print model summary
+        self.model.summary(print_fn=self._print_stdout_and_log)
+
+        # Sanity check: print model losses (one for each layer regularized (1 for bias reg and 1 for kernel reg))
+        self._print_stdout_and_log('Losses:\n{}'.format(self.model.losses))
+
 
     def build_model(self, loss_name='huber', learning_rate=0.001):
 
@@ -193,50 +219,6 @@ class Individual_Model_Training():
         msg += '\ndense_l1_reg: {}, dense_l2_reg: {}'.format(dense_reg[0], dense_reg[1])
         msg += '\nBias l2 reg: {}'.format(bias_l2_reg)
         self._print_stdout_and_log(msg)
-
-
-    def set_model(self, arch_name='baseline_CNN', pre_training=False, conv_reg=[0,0], dense_reg=[0,0], bias_l2_reg=0, use_custom_model=True, RCI_dist='uniform', RCI_mean=0, RCI_stddev=0.1667):
-
-        msg = 'Model {} selected!'.format(arch_name)
-        self._print_stdout_and_log(msg)
-
-        self.pre_training = pre_training
-        self._set_regularization(conv_reg, dense_reg, bias_l2_reg)
-
-        # init model architecture
-        self.input_layer = tf.keras.Input(shape=self.input_shape, name='InputLayer')
-
-        # Filter unwanted channels
-        x = self._filter_channels(self.input_layer)
-
-        if arch_name == 'baseline_CNN':
-            prediction = self._get_baseline_CNN(x)
-
-        elif arch_name == 'ResNet50V2':
-            prediction = self._get_ResNet50V2(x)
-
-        elif arch_name == 'Xception':
-            prediction = self._get_Xception(x)
-
-        elif arch_name == 'Linear_Regression':
-            prediction = self._get_Linear_Regression(x)
-
-        else:
-            msg = 'Specified model {} not implemented!'.format(arch_name)
-            self.log.error(msg)
-            raise NotImplementedError(arch_name)
-
-        # Instantiate tf model class
-        if use_custom_model:
-            self.model = CustomModel(self.val_seeds, RCI_dist, RCI_mean, RCI_stddev, inputs=self.input_layer, outputs=prediction)
-        else:
-            self.model = tf.keras.models.Model(inputs=self.input_layer, outputs=prediction)
-
-        # Print model summary
-        self.model.summary(print_fn=self._print_stdout_and_log)
-
-        # Sanity check: print model losses (one for each layer regularized (1 for bias reg and 1 for kernel reg))
-        self._print_stdout_and_log('Losses:\n{}'.format(self.model.losses))
 
     def _get_projection_tensor(self, input_shape, input_ids):
         """This function returns a tensor used as preprocessing to filter the input channels.
