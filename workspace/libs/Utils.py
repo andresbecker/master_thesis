@@ -745,13 +745,6 @@ def set_model_default_parameters(p_old=None):
         p_new[key] = p_old[key]
     info += '\n    Random Seed: '+str(p_new[key])
 
-    key = 'val_seeds'
-    if key not in p_old.keys():
-        p_new[key] = [123, 321, 312]
-    else:
-        p_new[key] = p_old[key]
-    info += '\n    Validation Seeds: '+str(p_new[key])
-
     info += '\n  Cuda:'
     # Cuda Config
     key = 'disable_gpu'
