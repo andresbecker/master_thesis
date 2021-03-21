@@ -155,18 +155,56 @@ def get_random_tensor(shape=None, stateless=False, seed=123, dist='uniform', mea
     # random shift only for the input channels
     if dist == 'normal':
         if stateless:
-            return tf.random.stateless_normal(shape=shape, seed=t_seed, mean=mean, stddev=stddev)
+            return tf.random.stateless_normal(shape=shape, seed=t_seed, mean=mean, stddev=stddev, dtype=tf.float32)
         else:
-            return tf.random.normal(shape=shape, mean=mean, stddev=stddev)
+            return tf.random.normal(shape=shape, mean=mean, stddev=stddev, dtype=tf.float32)
     elif dist == 'uniform':
         minval = mean - 3 * stddev
         maxval = mean + 3 * stddev
         if stateless:
-            return tf.random.stateless_uniform(shape=shape, seed=t_seed, minval=minval, maxval=maxval)
+            return tf.random.stateless_uniform(shape=shape, seed=t_seed, minval=minval, maxval=maxval, dtype=tf.float32)
         else:
-            return tf.random.uniform(shape=shape, minval=minval, maxval=maxval)
+            return tf.random.uniform(shape=shape, minval=minval, maxval=maxval, dtype=tf.float32)
 
     return random_tensor
+
+@tf.function
+def add_noise(images, stddev=1):
+    """
+    This function add noice during training as a data augmentation technique with the objective of reducing noise during model interpretation (VarGrad IG).
+    Reference:
+    SmoothGrad: removing noise by adding noise, section 4
+    Input:
+        images: must be a tensor of shape (batch_size, img_size, img_size, n_channels).
+        stddev: stddev for normal dist (mean 0) to sample noise
+    """
+    # get some needed values
+    n_channels = tf.shape(images)[-1] - 1
+    batch_size = tf.shape(images)[0]
+
+    # get mask
+    mask_batch = get_batch_masks(images)
+    # concat mask to go from (batch_size, 224, 224, 1) to (batch_size, 224, 224, n_channels)
+    mask_batch = tf.repeat(mask_batch, repeats=n_channels, axis=-1)
+    mask_batch = tf.cast(mask_batch, dtype=tf.bool)
+
+    # get noice image and filter it accordingly to mask
+    # get random image of the same shape as a single image
+    temp_shape = tf.shape(mask_batch)[1:]
+    noise_tensor = get_random_tensor(shape=temp_shape, stateless=False, dist='normal', mean=0, stddev=stddev)
+    # repeat noisy image to have the same shape as the batch (to make it less computational expen.)
+    noise_tensor = tf.expand_dims(noise_tensor, axis=0)
+    noise_tensor = tf.repeat(noise_tensor, repeats=batch_size, axis=0)
+    # filter noise accordingly to mask to add noice only to the cell image
+    noise_tensor = tf.where(mask_batch, noise_tensor, [0])
+
+    # add a channel of zeros to not affect the mask
+    temp_shape = tf.shape(mask_batch)[:-1]
+    temp_tensor = tf.zeros(shape=temp_shape, dtype=tf.float32)
+    temp_tensor = tf.expand_dims(temp_tensor, axis=-1)
+    noise_tensor = tf.concat((noise_tensor, temp_tensor), axis=-1)
+
+    return images + noise_tensor
 
 @tf.function
 def apply_RandomIntencity(images, targets, **kwargs):
@@ -207,6 +245,14 @@ def apply_data_preprocessing(image, target):
 
     return tf.cast(image, dtype=tf.float32), tf.cast(target, dtype=tf.float32)
 
+@tf.function
+def apply_add_noise(images, targets, stddev):
+    """
+    Function add nocie to bach o cell images.
+    """
+
+    return add_noise(images, stddev), targets
+
 def prepare_train_and_val_TFDS(train_data, val_data, p):
 
     buffer_size = 512
@@ -222,6 +268,22 @@ def prepare_train_and_val_TFDS(train_data, val_data, p):
 
     # Data Agmentation processes
 
+	# Random channel intensity (random per-channel shift) most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
+    if p['Random_channel_intencity']:
+        train_data = train_data.map(lambda image, target: apply_RandomIntencity(images=image,
+                              targets=target,
+                              dist=p['RCI_dist'],
+                              mean=p['RCI_mean'],
+                              stddev=p['RCI_stddev']
+                              ), num_parallel_calls=AUTOTUNE)
+
+    if p['Random_noise']:
+        train_data = train_data.map(lambda image, target:
+            apply_add_noise(images=image,
+                            targets=target,
+                            stddev=p['Random_noise_stddev']
+                            ), num_parallel_calls=AUTOTUNE)
+
     # CenterZoom most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
     # ZoomIn and ZoomOut
     if p['CenterZoom']:
@@ -231,15 +293,6 @@ def prepare_train_and_val_TFDS(train_data, val_data, p):
                          stddev=p['cell_size_ratio_stddev'],
                          lower_bound=p['cell_size_ratio_low_bound']
                          ), num_parallel_calls=AUTOTUNE)
-
-	# Random channel intensity (random per-channel shift) most be applyed before filtering the channels. This is because this use the mask of the image, which is saved in the last channel
-    if p['Random_channel_intencity']:
-        train_data = train_data.map(lambda image, target: apply_RandomIntencity(images=image,
-                              targets=target,
-                              dist=p['RCI_dist'],
-                              mean=p['RCI_mean'],
-                              stddev=p['RCI_stddev']
-                              ), num_parallel_calls=AUTOTUNE)
 
     # random Left and right flip
     if p['random_horizontal_flipping']:
@@ -282,15 +335,6 @@ def visualize_data_augmentation(tensor_image, p):
             if p['random_90deg_rotations']:
                 temp_tensor, _ = apply_random_90deg_rotations(temp_tensor, 0)
 
-            # ZoomIn and ZoomOut
-            if p['CenterZoom']:
-                temp_tensor, _ = apply_CenterZoom(temp_tensor, 0,
-                                    mode=p['CenterZoom_mode'],
-                                    mean=p['cell_size_ratio_mean'],
-                                    stddev=p['cell_size_ratio_stddev'],
-                                    lower_bound=p['cell_size_ratio_low_bound']
-                                    )
-
             # Random channel intensity
             if p['Random_channel_intencity']:
                 temp_tensor, _ = apply_RandomIntencity(
@@ -300,5 +344,22 @@ def visualize_data_augmentation(tensor_image, p):
                                         mean=p['RCI_mean'],
                                         stddev=p['RCI_stddev']
                                         )
+
+            if p['Random_noise']:
+                temp_tensor, _ = apply_add_noise(
+                                        images=temp_tensor,
+                                        targets=0,
+                                        stddev=p['Random_noise_stddev']
+                                        )
+
+            # ZoomIn and ZoomOut
+            if p['CenterZoom']:
+                temp_tensor, _ = apply_CenterZoom(temp_tensor, 0,
+                                    mode=p['CenterZoom_mode'],
+                                    mean=p['cell_size_ratio_mean'],
+                                    stddev=p['cell_size_ratio_stddev'],
+                                    lower_bound=p['cell_size_ratio_low_bound']
+                                    )
+
             plt.subplot(1,4,i+1)
             visualize_tensor_cell_image(temp_tensor[0], 'Augmented Cell')
