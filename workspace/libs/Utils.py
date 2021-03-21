@@ -209,9 +209,7 @@ class evaluate_model():
         huber_loss = tf.keras.losses.Huber()
 
         # Create df to store metrics to compare models
-        columns = ['Model', 'Loss', 'lr', 'N_Epochs', 'Conv_L1_reg', 'Conv_L2_reg', 'Dense_L1_reg', 'Dense_L2_reg', 'Bias_l2_reg', 'PreTrained', 'Aug_rand_h_flip', 'Aug_rand_90deg_r', 'Aug_Zoom', 'Aug_Zoom_mode', 'Aug_rand_int', 'Aug_RI_dist', 'Aug_RI_mean', 'Aug_RI_stddev', 'Aug_RI_rescale_cte', 'Set', 'Bias', 'Std', 'R2', 'MAE', 'MSE', 'Huber', 'CMA_size', 'CMA', 'CMA_Std', 'Epoch', 'DS_name', 'custom_model_class', 'Early_stop_patience', 'Parameters_file_path']
-
-        self.metrics_df = pd.DataFrame(columns=columns)
+        self.metrics_df = pd.DataFrame()
 
         for ss in np.unique(self.targets_df['set']):
             mask = (self.targets_df['set'] == ss)
@@ -240,7 +238,6 @@ class evaluate_model():
                         'Aug_RI_dist': self.p['RCI_dist'],
                         'Aug_RI_mean': self.p['RCI_mean'],
                         'Aug_RI_stddev': self.p['RCI_stddev'],
-                        'Aug_RI_rescale_cte': self.p['RCI_rescale_cte'],
                         'Set':ss,
                         'Bias':self.targets_df['y - y_hat'][mask].mean(),
                         'Std':self.targets_df['y - y_hat'][mask].std(),
@@ -698,12 +695,6 @@ def set_model_default_parameters(p_old=None):
     else:
         p_new[key] = p_old[key]
     info += '\n      RCH dist stddev: ' + str(p_new[key])
-    key = 'RCI_rescale_cte'
-    if key not in p_old.keys():
-        p_new[key] = 1
-    else:
-        p_new[key] = p_old[key]
-    info += '\n      RCI_rescale_cte: ' + str(p_new[key])
 
     key = 'Random_noise'
     if key not in p_old.keys():
