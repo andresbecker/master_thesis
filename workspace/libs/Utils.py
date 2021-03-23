@@ -704,7 +704,7 @@ def set_model_default_parameters(p_old=None):
     info += '\n    '+key+': '+str(p_new[key])
     key = 'Random_noise_stddev'
     if key not in p_old.keys():
-        p_new[key] = 1
+        p_new[key] = 0.1663
     else:
         p_new[key] = p_old[key]
     info += '\n        '+key+': '+str(p_new[key])
