@@ -682,7 +682,7 @@ def set_model_default_parameters(p_old=None):
         p_new[key] = 'uniform'
     else:
         p_new[key] = p_old[key]
-    info += '\n    Random channel dist: '+str(p_new[key])
+    info += '\n      Random channel dist: '+str(p_new[key])
     key = 'RCI_mean'
     if key not in p_old.keys():
         p_new[key] = 0
