@@ -30,6 +30,7 @@ tf_dataset_parameters.json
 **/Old_Notebooks
 **/Old_scripts
 *_local.json
+*_local.txt
 
 # TFDS
 **/*.tsv
