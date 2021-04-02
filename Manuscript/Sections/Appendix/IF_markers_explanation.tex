@@ -1,0 +1,29 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+
+This appendix contains notes about some of the the \gls{if} markers used for the \gls{mpm} protocol to generate the dataset used in this work. Table \ref{table:apendix:if_markers} shows the name of the marker, its identifier used in the parameters files for the implementation, and a small description of it.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.12\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.15\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.73\mylinewidth-2\arraycolsep}%
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{>{\centering\arraybackslash}m{\mylengtha}|>{\centering\arraybackslash}m{\mylengthb}|m{\mylengthc}} % m stands for middle (p:top, b:bottom)
+    \hline
+    Marker name & Marker identifier & Description \\
+    \hline
+    DAPI & \texttt{00\_DAPI} & DAPI, or \textit{4',6-diamidino-2-phenylindole}, is a fluorescent stain that binds strongly to adenine–thymine-rich regions in DNA \cite{kapuscinski1995dapi} \\
+    \hline
+    PCNA & \texttt{14\_PCNA} & Proliferating cell nuclear antigen, or PCNA, is a DNA clamp that acts as a processivity factor for \hl{DNA polymerase} $\delta$\footnotemark in eukaryotic cells and is essential for replication \cite{kisielewska2005gfp} \\
+    \hline
+  \end{tabular}
+  \caption{\Acrlong{if} markers description. The first column shows the markers name, the second the identifier used on the implementation (parameters file) and the third a brief description of it.}
+  \label{table:apendix:if_markers}
+\end{table}
+\footnotetext{DNA polymerase delta, or DNA Pol $\delta$, is an enzyme complex found in eukaryotes that is involved in DNA replication and repair.}

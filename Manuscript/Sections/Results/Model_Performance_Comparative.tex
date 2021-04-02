@@ -1,0 +1,20 @@
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{c|c|c|c|c|c|c|c}
+    Model & Dataset Properties & Bias & Std & R2 & MAE & MSE & Huber \\
+    \hline
+    \multirow{2}{*}{Linear} & color and structure & -0.63 & 44.68 & 0.49 & 33.08 & 1991.45 & 32.58 \\
+    \cline{2-8}
+     & structure & -2.45 & 54.99 & 0.22 & 41.54 & 3022.32 & 41.04 \\
+     \hline
+     \multirow{2}{*}{CNN} & color and structure & -1.44 & 42.25 & 0.54 & 31.81 & 1782.90 & 31.32 \\
+     \cline{2-8}
+      & structure & -2.72 & 44.84 & 0.48 & 32.84 & 2012.85 & 32.35 \\
+      \hline
+      Baseline & targets average & 0 & 0 & 0 & 46.81 & 3685.75 & 46.31 \\
+  \end{tabular}
+  \caption{Model performance comparative. Row \textit{Dataset Properties} indicate what information was preserved in the dataset during training. \textit{structure} indicates that per-channel random color shifting was applied as data augmentation technique, to reduce information contained in the cell image colors. \textit{color and structure} indicate that no random color shifting was applied. The row indicated as \textit{baseline} contains the values for the metrics, when the model always return the average value  of the targets (on the training set).}
+  \label{table:results:model_performance_comparative}
+\end{table}
+
+\fxnote{Add the ResNet50V2 info to the table \ref{table:results:model_performance_comparative}.}

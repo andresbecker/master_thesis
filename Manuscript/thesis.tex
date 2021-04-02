@@ -89,23 +89,45 @@
 
 %\newacronym[<options>]{<label>}{<short>}{<long>}
 \newacronym{4i}{4i}{iterative indirect immunofluorescence imaging}
+\newacronym{if}{IF}{Indirect immunofluorescence}
+\newacronym{mpm}{MPM}{multiplexed protein map}
+\newacronym{mcu}{MCU}{multiplexed cell unit}
 \newacronym{tr}{TR}{transcription rate}
 \newacronym{scmos}{sCMOS}{scientific complementary metal oxide semiconductor}
 \newacronym{cnn}{CNN}{Convolutional Neural Network}
 \newacronym{mrna}{mRNA}{messenger RNA}
+\newacronym{pmrna}{pre-mRNA}{pre-messenger RNA}
 \newacronym{ig}{IG}{Integrated Gradient}
 \newacronym{vg}{VG}{VarGrad}
 \newacronym{sg}{SG}{SmoothGrad}
 \newacronym{vgig}{VGIG}{VarGrad Integrated Gradient}
+% Models
 \newacronym{dnn}{DNN}{Deep Neural Network}
+\newacronym{svm}{SVM}{Support Vector Machine}
 % ------------------------------------------------------------------------------
 
 % ==============================================================================
 % Costume commands
 % ==============================================================================
-\newcommand{\hl}[1]{\textbf{#1}} % Defined to highlight new words
+\newcommand{\hl}[1]{\textit{#1}} % Defined to highlight new words
 
 % ------------------------------------------------------------------------------
+
+% ==============================================================================
+% Utilities and curiosities
+% ==============================================================================
+% print page width (in pts)
+%\the\textwidth
+%Output: 408.2971
+% in mm: 144.03814361, https://www.unitconverters.net/length/point-to-millimeter.html
+
+% set some variables to store linewidths (to create tables that fits the page)
+\newlength{\mylinewidth}
+\newlength{\mylengtha}
+\newlength{\mylengthb}
+\newlength{\mylengthc}
+\newlength{\mylengthd}
+\newlength{\mylengthe}
 
 % ==============================================================================
 % Main part of the document
@@ -138,6 +160,11 @@
 
 \section{Motivation}
 \label{sec:intro:motivation}
+\input{Sections/Introduction/Motivation}
+
+\section{Goal of this Thesis}
+\label{sec:intro:goals}
+\input{Sections/Introduction/Thesis_Goals}
 
 \section{Literature review}
 \label{sec:intro:literature_review}
@@ -153,6 +180,9 @@
 \section{Biology Background}
 \label{sec:basics:bio_back}
 \input{Sections/Basics/Biology_Background}
+\subsection{Transcription Process}
+\label{sec:basics:transcription_process}
+\input{Sections/Basics/Transcription_process}
 
 \section{Artificial Neural Networks}
 \label{sec:basics:Cellular_Expression}
@@ -251,6 +281,10 @@
 \subsection{ResNet50V2}
 \label{sec:results:RN50V2}
 
+\subsection{Model Performance Comparative}
+\label{sec:results:comparative}
+\input{Sections/Results/Model_Performance_Comparative}
+
 \section{Model Interpretation}
 \label{sec:results:model_interpretation}
 
@@ -262,13 +296,27 @@
 %% =============================================================================
 %% conclusion chapter
 %% =============================================================================
+\chapter{Conclusion}
+\label{ch:Conclusion}
 \include{Sections/conclusion}
 
 %% =============================================================================
 %% Appendix chapter
 %% =============================================================================
 \appendix
-\include{Sections/Appendix}
+
+\chapter{Remarks on Implementation}
+\label{Appendix-Implementation}
+\input{Sections/Appendix/Remarks_on_Implementation}
+
+\section{VarGrad IG Implementation Notes}
+\label{sec:appendix:VarGrad_IG_Experimental_Setup}
+\input{Sections/Appendix/VarGrad_IG_Implementation_Notes}
+
+\section{Indirect Immunofluorescence markers explanation}
+\label{sec:appendix:if_markers}
+\input{Sections/Appendix/IF_markers_explanation}
+
 % all appendices behind backmatter will go without numbers
 \backmatter
 

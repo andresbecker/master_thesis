@@ -1,15 +1,16 @@
-%% conclusion.tex
-%%
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
 
-%% ==================
-\chapter{Conclusion}
-\label{ch:Conclusion}
-%% ==================
+%% Reset glossary to show long gls names
+\glsresetall
 
 Nothing new here, only a short recap of the project, it's results, as well as possible future work.
 
-%Future work
+%% Future work
+% interpretability
 As future work, it would be interesting to explore other interpretability  methods or go more in-depth with the current one by, for instance, exploring different baseline for \acrlong{ig} and analyzing their impact on the importance maps.
+% Perturbed dataset
+It also would be interesting to extend this work to the perturbed dataset and to see how the pharmacological and metabolic perturbations change score maps. To see if instead of relaying on the shape of the nucleolus and/or splicing speckles, the \gls{cnn} looks at other subnuclear structures. It also would be interesting to see how the similarities between score map channels (or score maps channels and cell image channels) change.
 
 
 Hannah's recommendations:

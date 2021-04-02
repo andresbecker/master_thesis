@@ -1,21 +1,32 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
 
 In order to generate the \acrlong{vg} \acrlong{ig} score maps, you must execute the python script \texttt{get\_VarGradIG\_from\_TFDS.py} specifying the parameters file
 \begin{lstlisting}[language=Bash]
 python get_VarGradIG_from_TFDS.py -p ./Parameters_file_name.json
 \end{lstlisting}
 
-Table \ref{table:imp_notes:VGIG_params} show all the parameters that need to be specified to execute \texttt{get\_VarGradIG\_from\_TFDS.py} successfully.
+Table \ref{table:imp_notes:VGIG_params} show all the parameters that need to be specified to execute \\
+\noindent \texttt{get\_VarGradIG\_from\_TFDS.py} successfully.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.18\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.27\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.55\mylinewidth-2\arraycolsep}%
 
 \begin{table}[!ht]
   \centering
-  \begin{tabular}{c|c|c}
+  \begin{tabular}{>{\centering\arraybackslash}m{\mylengtha}|>{\centering\arraybackslash}m{\mylengthb}|m{\mylengthc}} % m stands for middle (p:top, b:bottom), max 144 mm
+    \hline
     Hyperparam & JSON variable name & Notes \\
     \hline
     $m$ & \texttt{IG\_m\_steps} & Number of steps to approximate \gls{ig} \\
     \hline
-     &  & Baseline image for \gls{ig}. Available: "black" \\
-    $x'$ &  \texttt{IG\_baseline} & for a simple black image and "noise" for an image \\
-     &  &  filled with Gaussian noise ($\mu=0,\ \sigma=1$) \\
+    $x'$ &  \texttt{IG\_baseline} & Baseline image for \gls{ig}. Available: "black" for a simple black image and "noise" for an image filled with Gaussian noise ($\mu=0,\ \sigma=1$) \\
     \hline
     $n$ & \texttt{VarGrad\_n\_samples} & Number of noisy images to compute \gls{vg} \\
     \hline

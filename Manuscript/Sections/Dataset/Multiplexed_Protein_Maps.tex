@@ -1,16 +1,119 @@
-As we already explained in the section xx \fxnote{add here the ref for section where transcription process is explained}, the main objective of this work is to predict the \Gls{tr} of a cell, given a map of the proteins inside the cell. For this we use \textit{Multiplexed Protein Maps}.
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
 
-Accordingly with \cite{Guteaar7042}, \textit{Multiplexed Protein Maps} (in case of the paper, 40-plex) are protein readouts from biological samples obtained by \Gls{4i}. This method simultaneously captures different properties of the cell, like its shape, cycle state, detailed morphology of organelles, nuclear subcompartments, etc. It also captures highly multiplexed subcellular protein maps, which can be used to identify functionally relevant single-cell states, like \Gls{tr}.
+%% Reset glossary to show long gls names
+\glsresetall
 
-Therefore, how to get the multiplexed protein map of a single cell? First, lets explain briefly how does \gls{4i} work.
+%% Set path to look for the images
+\graphicspath{{./Sections/Dataset/Resources/}}
 
-Roughly speaking, given a population of cultured cells (human tissue), a specific protein inside the cells is stained with a fluorescent antibody. Then, the tissue is exposed to high-energy light and photographed. After that, the fluorescent antibody is removed by an elution process from the tissue, to start the process again but with another fluorescent antibody. This process is repeated several times to photograph the concentration and distribution of around 40 different proteins inside the cell. Finally, by means of computer vision algorithms\fxnote{should I add the reference to the papers where this is explained?? ref 22-24 and 30}, each cell in the photographed tissue is identified, segmented (Nucleus and Cytoplasm) and saved separately. It is also important to mention that for this process, the tissue is located in a gridded plate, where each grid (called \hl{Well}) contains several cells. The \gls{4i} process can be observed in figure \cref{fig:4i}
+% A small motivation to create Multiplexed Protein Maps
+The amount of protein or \gls{mrna} inside a cell may not be enough to fully describe cellular function. Accordingly to Buxbaum et al. \cite{Buxbaum_2014} and Korolchuk et al. \cite{Korolchuk2011}, cellular function can heavily depends on the specific intracellular location and interaction with other molecules and intracellular structures. Therefore, cellular expression is determined by the functional state, abundance, morphology, and turnover of its intracellular organelles and cytoskeletal structures. This means that having the ability to look at the concentration and distribution of different molecules within a cell, is an important technological achievement that can significantly leverage scientific discoveries in biomedicine.
+This is exactly what \gls{mpm} allows us to do (\cite{Guteaar7042}). \gls{mpm} are protein readouts from cell cultures, that simultaneously captures different properties of the cell, like its shape, cycle state, detailed morphology of organelles, nuclear subcompartments, etc. It also captures highly multiplexed subcellular protein maps, which can be used to identify functionally relevant single-cell states, like \gls{tr}. These maps can also identify new cellular states and allow quantitative comparisons of intracellular organization between single cells in different cell cycle states, microenvironments, and drug treatments \cite{Guteaar7042}.
 
-\fxnote{The last paragraph explain only in general the whole process to get a single cell image. However, should I add also the explanation of the \gls{4i} protocol? \ie the process of 21 cycles of staining-elution, image composition, etc.?}
+So, let us explain more in deept what are these \gls{mpm}. Accordingly to Gabriele Gut et al. \cite{Guteaar7042}, \gls{mpm} is a nondegrading protocol that allows to capture efficiently thousands of single cell multichannel images, where each channel contains captures the distribution and concentration of a protein of interest inside each cell. To achieve this, the protocol is made up of different steps that will be briefly explained here.
+
+% 4i explanation
+\subsubsection{Iterative indirect immunofluorescence imaging}
+The \gls{mpm} protocol starts with a process called \gls{4i} developed by the same group. The \gls{4i} is a complete protocol by itself, and it allows to capture the concentration and distribution of individual proteins in thousands of different cells in a tissue\footnote{The tissues are made from cell cultures, which were made using the HeLa Kyoto cell line. \hl{HeLa} is the oldest and most commonly used immortal human cell line used in scientific research. The story behind it quite interesting, so it's worth checking out.}.
+Before applying the \gls{4i} protocol, the \hl{plate} where the cell culture is must to be divided into squared sections called \hl{wells}. Then, the \gls{4i} protocol is applied over each well and photographed in sections called \hl{sites}.
+
+Roughly speaking, \gls{4i} works as follow
+\begin{enumerate}
+  % 1
+  \item The selected well is prepared for the staining-elution process.
+  %2
+  \item A specific protein inside the cells is photographed by saturating a well with a liquid containing \hl{antibodies}\footnote{An antibody is a Y-shaped protein that can recognize and bind to a unique molecule (its antigen, e.g. a specific protein).} stained with a fluorescent ink (\gls{if}), which binds to the targeted protein.
+  %3
+  \item The well is exposed to a high-energy light and photographed using a light microscopy.
+  %4
+  \item The antibodies inside the tissue are washed-out using a chemical elution substrate.
+  %5
+  \item Steps 2 and 4 are repeated 20 times to get 20 images of the same protein.
+  %6
+  \item The 20 images are projected into a single one by \hl{maximum intensity projection}, to improve the protein readouts.
+\end{enumerate}
+
+Figure \ref{fig:4i:1} illustrates the steps of the \gls{4i} protocol to captures the saturation and distribution of a specific protein. Keep in mind that even though the \gls{4i} protocol captures sever images of the tissue, it returns an uni-channel image (step 6). Figure \ref{fig:4i:2} shows the \gls{4i} protocol applied 40 times with different \gls{if} and over a 384-well plate, to capture the concentration and distribution of 40 different targeted proteins.
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[width=100mm]{./Sections/Images/plate-well.png}
-  \caption{\Acrlong{4i} process. Image source \cite{Guteaar7042}.}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{4i_1.png}
+    \caption{\Acrfull{4i} protocol.}
+    \label{fig:4i:1}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.45\linewidth}
+    \includegraphics[width=\linewidth]{4i_2.png}
+    \caption{\gls{4i} protocol applied over a specific well of plate and for 40 different \gls{if}.}
+    \label{fig:4i:2}
+  \end{subfigure}%
+  \caption{Schematic representation of the \gls{4i} protocol for a single well and for 40 different fluorescent antibodies. Figure \subref{fig:4i:2} also shows the image analysis to identify single cells and its components (nucleus and cytoplasm). Images source: \cite{Guteaar7042}.}
   \label{fig:4i}
 \end{figure}
+
+By the time \cite{Guteaar7042} was published, the \gls{4i} protocol was able to capture cell culture images with up to 40 channels without degrading the tissue, which is why \gls{mpm} is called a \textit{nondegrading} protocol.
+
+\subsubsection{Multiplexed single cell analysis}
+
+Once the multichannel images were generated using the \gls{4i} protocol, a series of image preprocessing and image analysis methods (\cite{Carpenter2006} and \cite{snijder2012single}) are applied to generate segmentation masks to identify individual cells, as well as their cytoplasm and nucleus. Figure \ref{fig:4i:2} shows this segmentation at a cellular level, while figure \ref{fig:4i:segmentation} shows it also at a subcellular level. In both cases the boundaries are marked with white lines. This single cell analysis is also used to identify cells that do not satisfy certain quality controls (like cells in the border of the image or in mitosis stage). However, this will be addressed in detail on section \ref{sec:dataset:data_pp}.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.5\linewidth]{4i_segmentation.png}
+  \caption{Visualization of the subcellular segmentation of a \gls{4i} protocol for 18 \gls{if} stains. The image was created by combining the readouts of 3 of this \gls{if} stains: PCNA (cyan), FBL (magenta) and TFRC (yellow). The number next to each staining label indicates their corresponding 4i acquisition cycle (\gls{4i} protocol step 5). The orange rectangle and the tile at its right shows a section of the nucleus and cytoplasm of a single cell. The other 3 tiles shows the \gls{4i} readout of each of the 3 proteins.}
+  \label{fig:4i:segmentation}
+\end{figure}
+
+\subsubsection{Multiplexed single-pixel analysis framework}
+Even though the cell cultures are now segmented into individual cells and nucleus, there is still one missing part that must be considered, and that is that cells are 3-dimensional objects. Recall that the \gls{4i} protocol saturates the cell culture with a liquid containing fluorescent antibodies. This means that the antibody can either bind to its corresponding protein inside or outside the cell nucleus. Therefore, even though that we segmented a cell into nucleus and cytoplasm, a readout assigned to the nucleus could come from a protein in the cytoplasm under or above the nucleus, and not from inside it. Fortunately, readouts from proteins inside the nucleus are much higher than those in the cytoplasm. Therefore, by means of a two steps clustering approach\footnote{To identify clusters in an unsupervised manner, \hl{Self Organizing Maps} algorithm and \hl{Phenograph} analysis were used over a very large number of pixels sampled from a large number of single cells \cite{Guteaar7042}.} pixels can be classified accordingly to their intensity profile (figures \ref{fig:mcu:1} and \ref{fig:mcu:2}), so the source of their readout can be identified. This pixel type classification is called \Acrfull{mcu} and is illustrated in figure \ref{fig:mcu:3}. After pixels clusters (intensity profiles) where identified, the pixels whose measurement comes from the cytoplasm and not from the nucleus are removed.
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{mcu_1.png}
+    \caption{Extraction of pixel intensities.}
+    \label{fig:mcu:1}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{mcu_2.png}
+    \caption{Pixel clustering by Self Organizing Maps and Phenograph.}
+    \label{fig:mcu:2}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{mcu_3.png}
+    \caption{Cell subdivision base on the \gls{mcu}.}
+    \label{fig:mcu:3}
+  \end{subfigure}
+  \caption{Figure \subref{fig:mcu:1} shows the pixel intensity extraction for a single cell. The pixel intensity is a vector containing the readout of that 2D location for each protein, one specific protein readout per entrance. Figure \subref{fig:mcu:2} shows the clusters found by Self Organizing Maps algorithm and Phenograph analysis over the pixel intensities. Figure \subref{fig:mcu:3} shows a cell masked with the clusters found by the \gls{mcu} analysis. Images source: \cite{Guteaar7042}.}
+  \label{fig:mcu}
+\end{figure}
+
+Finally, the nucleus of each cell is stored separately and identified with a unique id.\fxnote{After you finish writing the dataset section review if this sentence is accurate.}
+
+\subsubsection{Cell cycle phase classification: $G_1,\ S,\ G_2$ and $M$ phase}
+
+The \gls{mpm} protocol is not only capable to capture the concentration and distribution of molecules inside thousands of cells. It can also identify the phase each cell is in, which is tightly related with the abundances and distribution of molecules inside a cell \cite{Guteaar7042}.
+
+Roughly speaking, cell cycle phase was determined by means of a \gls{svm} classifier and k-means clustering. First, a \gls{svm} classifier is trained to identify $M$ phase cells based on the nuclear information in one of the image channels (\hl{DAPI}\footnote{A brief description of this marker can be bound on section \ref{sec:appendix:if_markers}.}). Then, based on the nuclear information of channel \hl{PCNA}, a second \gls{svm} classifier is trained to identify cells in phase $S$. Finally, cells in phase $G_1$ and $G_2$ are classified using a k-means algorithm, using the pixel intensity profiles of the DAPI channels excluding the cells in $S$ and $M$ phase. A more detailed explanation of the cell cycle classification process can be found on the dataset paper \cite{Guteaar7042}.
+
+\subsubsection{Pharmacological and metabolic perturbations}
+
+To further explore the capabilities of the \gls{mpm} protocol, the creators of the dataset (Gabriele Gut et al. \cite{Guteaar7042}) applied the \gls{mpm} protocol to a cell populations that were to nine pharmacological and metabolic perturbations. The analysis reveled expected and unexpected changes in the concentration and distribution of molecules inside the cell. However, this work focused on cells without pharmacological and metabolic perturbations. This means that only cells marked as \hl{normal} (no perturbed cells) and \hl{DMSO}\footnote{Dimethyl sulfoxide, or DMSO, is an organic compound used to dissolve test compounds in in drug discovery and design \cite{cushnie2020bioprospecting}.} (control cells) were used.
+
+\subsubsection{Dataset description}
+
+The provided dataset contains the following features
+
+\begin{itemize}
+  \item How many single cells were given.
+  \item Mention how many normal and DMSO.
+  \item Number of cells per perturbation.
+  \item Number of channels and name of the channels (only the dataset channel id and channel name. The description and implementation names are on the appendix.)
+  \item Information given in the metadata (cell identifier: $mapobject\_id\_cell$, cell cycle, well, site, mitotic or not, etc.)
+\end{itemize}
+
+\fxnote{Add this info when you write the preprocessing section.}
