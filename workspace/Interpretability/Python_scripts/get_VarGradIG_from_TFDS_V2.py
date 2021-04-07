@@ -49,6 +49,8 @@ else:
 # Load parameters
 with open(PARAMETERS_FILE, 'r') as file:
     p = json.load(file)
+if 'save_df_only' not in p.keys():
+    p['save_df_only'] = False
 print(p.keys())
 
 # Set logging
@@ -175,12 +177,13 @@ for ds, dsn in zip(dss, ds_names):
             score_map_stddev_df = pd.concat([score_map_stddev_df, temp_df], ignore_index=True)
 
             tac = time.time()
-            msg = '\t Score map computed in {} seconds'.format(round(tac-tic,2))
-            printc(msg)
-            msg = '\t Saving score map...'
-            printc(msg)
-            file_path = os.path.join(output_path, 'data', p['output_name_prefix']+cell_id+'.npy')
-            np.save(file_path, temp_score_map)
+            if not p['save_df_only']:
+                msg = '\t Score map computed in {} seconds'.format(round(tac-tic,2))
+                printc(msg)
+                msg = '\t Saving score map...'
+                printc(msg)
+                file_path = os.path.join(output_path, 'data', p['output_name_prefix']+cell_id+'.npy')
+                np.save(file_path, temp_score_map)
 
 # Save DF with comulative stddevs
 temp_path = os.path.join(output_path, 'score_map_stddev.csv')
