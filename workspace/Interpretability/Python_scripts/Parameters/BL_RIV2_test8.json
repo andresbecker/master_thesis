@@ -1,7 +1,5 @@
 {
     "_comment": "Tensorflow datasets parameters-------------------------------",
-    "local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets",
-    "tf_ds_name": "mpp_ds_normal_dmso_z_score",
     "ds_partitions": ["train", "val"],
 
     "_comment": "Absolute path where score maps are saved---------------------",
