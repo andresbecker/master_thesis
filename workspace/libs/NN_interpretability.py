@@ -12,7 +12,7 @@ def plot_cell(img, cmap='PiYG', title='', vmin=0, vmax=1, colorbar=False, alpha=
                )
     plt.grid(False)
     plt.title(title, fontsize=title_fontsize)
-
+    plt.axis('off')
     if colorbar:
         plt.colorbar(fig, orientation="vertical", pad=0.05)
         #plt.colorbar(fig)
@@ -95,9 +95,10 @@ def get_VarGrad(img=None, img_mask=None, baseline='black', model=None, n_images=
             rnorm_img = tf.where(img_mask, rnorm_img, [0])
 
         ig_temp = get_integrated_gradients(baseline=bl,
-                                       image=img + rnorm_img,
-                                       model=model,
-                                       m_steps=IG_m_steps)
+                                           image=img+rnorm_img,
+                                           model=model,
+                                           m_steps=IG_m_steps
+                                           )
 
         ig_temp = tf.expand_dims(ig_temp, axis=0)
 
@@ -311,7 +312,8 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=1, i
     n_plot_columns = len(channels_2_plot)
 
     # set Plot size accordingly to the number of channels to plot and given maps
-    fig = plt.figure(figsize=(n_plot_columns*img_size[0], n_plot_rows*img_size[1]))
+    fig = plt.figure(figsize=(n_plot_columns*img_size[0]*0.95, n_plot_rows*img_size[1]))
+    plt.subplots_adjust(wspace=0, hspace=0)
 
     # Plot original image
     for i, c in enumerate(channels_2_plot, 1):
@@ -362,14 +364,17 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=1, i
             # Get the variance (in the score map) corrsponding to this channel
             channel_stddev_percen = round(100*score_channel_std[c]/total_var,3)
             #title=channel_name+', '+key+', ' + str(channel_stddev_percen) + '%'
-            title=key+', ' + str(round(channel_stddev_percen, 2)) + '%'
+            #title=key+', ' + str(round(channel_stddev_percen, 2)) + '%'
+            title=str(round(channel_stddev_percen, 2)) + '%'
+            #title=''
             # plot
             plt.subplot(n_plot_rows, n_plot_columns, row_count*n_plot_columns + i)
             plot_cell(img=temp_map[:,:,c],
                       cmap='Oranges',
                       colorbar=plot_colorbar,
                       title=title,
-                      title_fontsize=25,
+                      #title_fontsize=25,
+                      title_fontsize=35,
                       vmin=vmin, vmax=vmax)
         row_count += 1
 
@@ -384,9 +389,11 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=1, i
                           vmin=vmin, vmax=vmax,
                           colorbar=False)
                 #title = channel_name+' and '+key+' Score Map'
-                title = channel_name
-                plot_cell(img=img[:,:,c], cmap='Blues', title=title, title_fontsize=35, alpha=0.4)
+                #title = channel_name
+                title = 'Overlap'
+                plot_cell(img=img[:,:,c], cmap='Blues', title=title, title_fontsize=30, alpha=0.4)
             row_count += 1
     if plot_name is not None:
-        fig.savefig(plot_name)
+        fig.savefig(plot_name, bbox_inches='tight', pad_inches=0)
+    # remove space between subplots
     plt.show()
