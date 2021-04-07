@@ -80,8 +80,8 @@ print('\nOutput path:\n{}'.format(output_path))
 
 # Load TFDS
 dataset, ds_info = tfds.load(
-    name=model_p['tf_ds_name'],
-    data_dir=model_p['local_tf_datasets'],
+    name=p['tf_ds_name'],
+    data_dir=p['local_tf_datasets'],
     # If False, returns a dictionary with all the features
     as_supervised=False,
     shuffle_files=False,
@@ -89,7 +89,7 @@ dataset, ds_info = tfds.load(
 # Load TFDS metadata
 tfds_metadata = tfds_utils.Costum_TFDS_metadata().load_metadata(ds_info.data_dir)
 tfds_metadata.keys()
-msg = 'Tensorflow dataset {} loaded from:\n{}'.format(model_p['tf_ds_name'], model_p['local_tf_datasets'])
+msg = 'Tensorflow dataset {} loaded from:\n{}'.format(p['tf_ds_name'], p['local_tf_datasets'])
 printc(msg)
 
 # Load splits

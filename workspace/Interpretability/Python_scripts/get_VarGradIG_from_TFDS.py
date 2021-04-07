@@ -49,6 +49,8 @@ else:
 # Load parameters
 with open(PARAMETERS_FILE, 'r') as file:
     p = json.load(file)
+if 'save_df_only' not in p.keys():
+    p['save_df_only'] = False
 print(p.keys())
 
 # Set logging
