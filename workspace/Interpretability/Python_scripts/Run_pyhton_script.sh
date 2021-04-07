@@ -3,7 +3,6 @@
 #                       Script to execut python script in server
 #   The inputs are the path to the python script, the path where the input
 #   parameters file (json) is and the name of the conda environment.
-# Created by Andres Becker
 ################################################################################
 
 ERROR_msg="\nPlease specify the conda environment name, the path to the python script and the path where the input parameters file is.\nFor example:\n"$0" -e my_conda_env_name -s /path_to_file/python_script.py -p /absolute_path/params.json\n"
@@ -65,6 +64,11 @@ else
   echo -e "\Error while loading environment "$ENVI"!!!!\n"
   exit 1
 fi
+
+# Export Environment variables for CUDA 11.1
+export PATH=/usr/local/cuda-11.1/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.1/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.1/targets/x86_64-linux/lib
 
 # Execute python script
 python $PYTHON_SCRIPT -i $PARM_FILE #--cell_id "321021"
