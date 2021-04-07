@@ -12,4 +12,4 @@
 #SBATCH -t 24:00:00
 #SBATCH --nice=10000
 
-../Run_pyhton_script.sh -e icb_mt -s ../get_VarGradIG_from_TFDS.py -p ../Parameters/BL_RIV2_test8.json
+../Run_pyhton_script.sh -e icb_mt -s ../get_VarGradIG_from_TFDS_V2.py -p ../Parameters/BL_RIV2_test8.json
