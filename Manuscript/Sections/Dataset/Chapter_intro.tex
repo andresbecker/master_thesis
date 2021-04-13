@@ -1,3 +1,9 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+
 The objective of this work is to predict \gls{tr} using spacial information contained in cell images. So, how can we describe/predict the \gls{tr}? And the answer is through antibodies.
 
 This part should contain:
@@ -6,3 +12,8 @@ This part should contain:
   \item Why multiplexed protein maps can be used.
   \item A small overview. Explain roughly the pipline: Preprocessing -> TDFS -> CNN
 \end{itemize}
+
+%% -----------------------------------------------------------------------------
+In this section we give a small introduction to the protocol employed to generate the data used in this work, the \gls{mpm} protocol. Besides this, we also explain roughly the process to go from raw data to a dataset that can be use efficiently to train deep learning models. This include some technical notes about how the raw data was received, and the applied preprocessing techniques. We finish this section with a explanation of the data augmentation techniques used during training. Figure \ref{} shows the pipeline from raw data to training data.
+
+\fxnote{Add here a figure of the data pipeline and improve the text here after finishing the section of this chapter.} 

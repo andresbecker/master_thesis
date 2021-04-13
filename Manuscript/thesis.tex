@@ -101,6 +101,7 @@
 \newacronym{vg}{VG}{VarGrad}
 \newacronym{sg}{SG}{SmoothGrad}
 \newacronym{vgig}{VGIG}{VarGrad Integrated Gradient}
+\newacronym{tfds}{TFDS}{TensorFlow Dataset}
 % Models
 \newacronym{dnn}{DNN}{Deep Neural Network}
 \newacronym{svm}{SVM}{Support Vector Machine}
@@ -109,8 +110,10 @@
 % ==============================================================================
 % Costume commands
 % ==============================================================================
-\newcommand{\hl}[1]{\textit{#1}} % Defined to highlight new words
-
+% Defined to highlight new words
+\newcommand{\hl}[1]{\textit{#1}}
+% change the thickness of horizontal lines in tables
+\newcommand{\ChangeRT}[1]{\noalign{\hrule height #1}}
 % ------------------------------------------------------------------------------
 
 % ==============================================================================
@@ -223,18 +226,24 @@
 \section{Data Augmentation}
 \label{sec:dataset:data_augmentation}
 
+\section{Discussion}
+\label{sec:dataset:discussion}
+\input{Sections/Dataset/Discussion}
+
 %% =============================================================================
 %% Methodology chapter
 %% =============================================================================
 \chapter{Methodology}
 \label{ch:methodology}
-\input{Sections/Dataset/Chapter_intro}
+\input{Sections/Methodology/Chapter_intro}
 
 \section{Dataset Setup}
 \label{sec:methodology:tfds}
+\input{Sections/Methodology/Dataset_Setup}
 
 \section{Models}
 \label{sec:methodology:models}
+\input{Sections/Methodology/Models}
 
 \subsection{Linear Model}
 \label{sec:methodology:lm}
@@ -312,6 +321,18 @@
 \section{VarGrad IG Implementation Notes}
 \label{sec:appendix:VarGrad_IG_Experimental_Setup}
 \input{Sections/Appendix/VarGrad_IG_Implementation_Notes}
+
+\section{Raw data processing and QC Implementation Notes}
+\label{sec:appendix:raw_data}
+\input{Sections/Appendix/Raw_data_processing_and_QC_Implementation_Notes}
+
+\section{TensorFlow Dataset and image preprocessing Implementation Notes}
+\label{sec:appendix:tfds}
+\input{Sections/Appendix/TensorFlow_Dataset_and_image_preprocessing_Implementation_Notes}
+
+\chapter{General Remarks}
+\label{Appendix-general-remarks}
+\input{Sections/Appendix/General_Remarks}
 
 \section{Indirect Immunofluorescence markers explanation}
 \label{sec:appendix:if_markers}

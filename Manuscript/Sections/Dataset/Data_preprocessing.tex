@@ -1,23 +1,290 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
 
-Some technical details about \gls{4i}:
-\begin{itemize}
-  \item The images where obtained using a 40x objective and a \gls{scmos} camera, where the surface of each pixel is 165 nm by 165 nm.
-  \item Each photo captures around 20,000 single cells.
-  \item In \cite{Guteaar7042} (Fig 2), it is mentioned that use of 384-well plates, where wells were imaged at 40× magnification in a 7 × 6 tiled fashion for 21 4i cycles.
-  \item The used cultured cells (tissue) where HeLa. HeLa is an immortal cell line used in scientific research.
-\end{itemize}
+\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Dataset/Resources/}}
 
-The information for each single cell is not stored as a separated image as one may think, instead the information is first divided by Wells. Then, the information of the cells in a given well is stored in 7 files \fxnote{this is may not be included in the final work}:
-\begin{itemize}
-  \item \texttt{metadata.csv}: contains information of each cell in the well
-  \item \texttt{channels.csv}: contains information of each protein (channel) photographed
-  \item \texttt{labels.npy}: 1 dim array containing the cell label of each pixel
-  \item \texttt{mpp.npy}: 2 dim array, where size of first dim is the same as number of measured pixels and size of second dim is the same as the number of channels. This file contains the observed measured values (intensities) of each pixel and for each protein. The values in \texttt{mpp.npy} vary from 0 to 65535 i.e. $2^{16}$ i.e. 2 bytes or 16 bits.
-  \item \texttt{x.npy} and \texttt{y.npy}: 1 dim array containing the x/y coordinates of the measured pixels (pixels where a signal was detected by the \gls{scmos} camera. Accordingly with \cite{Guteaar7042}, the size of a single cell image (for each channel) is 2560x2160. Therefore, the values in \texttt{x.npy} vary between 1 and 2560 and form 1 to 2160 for \texttt{x.npy}
-  \item \texttt{mapobject\_ids.npy}: 1 dim array where its size is the same as the number of rows in the \texttt{metadata.csv} file. Therefore, \texttt{mapobject\_ids.npy} maps the information given in the metadata file with each pixel in the well.
-\end{itemize}
 
-\textbf{QUESTION TO HANNAH:} In the paper it is mentioned that for each channel (protein), the tissue is stained with with 2 fluorescent antibodies (in that case TUBA1A and CTNNB1, NOT at the same time, TUBa1A-elution-CTNNB1), why? to create a background as reference for the protein that is being photographed?
-Answer: To increase the measured signal, \ie to make the protein Shine more.
+Road map. This must be addressed in this section:
+\begin{enumerate}
+  \item Raw data preparation
+  \begin{enumerate}
+    \item Briefly explain how the data is given; file format, metadata, etc.
+    \item Speak about the quality control (discrimination of border, mitotic cells, etc.)
+    \item Speak about the transformation from files to images, only mention the script used and add an entrance in the appendix.
+  \end{enumerate}
+  \item Data Preprocessing
+  \begin{enumerate}
+    \item Preprocessing techniques; clipping and standardization
+    \item Creation of the Dataset, just mention that TFDS is used and add an entrance into the Appendix
+    \item Also mention here the other preprocessing techniques tried.
+  \end{enumerate}
+\end{enumerate}
 
-Since we are using a \gls{cnn} to predict the \gls{tr}, therefore we need the data as multichannel images. However, as we already explained in \ref{sec:Motivation_and_Background:Dataset}, the information is providad in a pixel by pixel format. Using the library \texttt{mpp\_data.py} written by Dr. Hannah Spitzer \fxnote{See how to refer properly to this library}, the raw data is transformed to multichannel images (one channel per protein measured). During this process, the bordered cells and cells in division process (Mitosis state) are excluded. The provided data set also contain the target variable, \ie the \gls{tr} (amount of \gls{mrna} molecules produced by the cell nucleus in the last 30 minutes). However, this information is coded also as a protein channel (00\_EU). Therefore, after converting the data set into multichannel images, the channel corresponding to the protein 00\_EU is extracted and converted into a number \fxnote{It is necessary to improve the description of how this 00\_EU channel is turned into a number. So far it is done by averaging all the entrances of the channel, however it still need to be decided if this will be done like this.}.
+\noindent The data preprocessing consist mainly of 4 steps
+
+\begin{enumerate}
+  \item The raw data processing, where raw files are converted into images.
+  \item The quality control, where cells that are not useful for analysis are discarded.
+  \item The creation of the dataset, where data is spitted into \hl{Train, validation} and \hl{Test} sets and stored in a way that can be used for model training efficiently.
+  \item The image preprocessing, where the images are prepared before training the model (clipping and standardization).
+\end{enumerate}
+
+In this section we explain these 4 steps. However, the implementation is discussed in the sections \ref{sec:appendix:raw_data} (for steps 1 and 2) and \ref{sec:appendix:tfds} (for steps 3 and 4).
+
+\subsubsection{Raw data processing}
+
+As we mentioned in section \ref{sec:dataset:multiplexed_protein_maps}, the \gls{mpm} protocol is applied over section of cell cultures called \hl{wells}. The \gls{mpm} protocol will return several files for each well, containing the nuclear protein readouts of single cells, information from the subsequent analysis made to the intensities of the protein readouts, as well as information about the \gls{mpm} protocol experimental setup. We do not go into details about this files and how to transform them into multichannel images of single cell nucleus. However, a brief explanation of this can be found in the appendix \ref{sec:appendix:raw_data}. Appendix \ref{sec:appendix:raw_data} also show how to run the Python script that transforms the raw data into images, along with an explanation of the required parameters.
+
+The Python script introduced on appendix \ref{sec:appendix:raw_data} extract the protein readouts from the raw data files, and use them to build multichannel images containing the nucleus of a single cell (see figure \ref{fig:data_pp:sample_cell:nucleus}). This means that during the reconstruction of the images, it is necessary to add black pixels (zeros) in the places where no measures were taken (like in the low corner of figure \ref{fig:data_pp:sample_cell:nucleus}). However, as we saw on section \ref{sec:basics:CNN}, in order to train a \gls{cnn} model, all the cell images need to have a fixed size. For this reason, after the image is reconstructed, it is necessary to add zeros to the images borders (zero-padding) in order to make it squared and of a fixed size (see figure \ref{fig:data_pp:sample_cell:nucleus_pad}). Finally, for each single cell nucleus, a \hl{cell mask} is created to keep track of the measured and non-measured pixels (see figure \ref{fig:data_pp:sample_cell:cell_mask}).
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[t]{.211\linewidth}
+    \includegraphics[width=\linewidth]{cell_nucleus.jpg}
+    \caption{Single cell nucleus.}
+    \label{fig:data_pp:sample_cell:nucleus}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{cell_nucleus_w_pad.jpg}
+    \caption{Single cell nucleus with zero-padding.}
+    \label{fig:data_pp:sample_cell:nucleus_pad}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{cell_mask.jpg}
+    \caption{Single cell nucleus mask.}
+    \label{fig:data_pp:sample_cell:cell_mask}
+  \end{subfigure}
+  \caption{Figure \subref{fig:data_pp:sample_cell:nucleus} shows channels 10, 11 and 15 of the nucleus of a single cell multichannel image reconstructed form the raw data. Figure \subref{fig:data_pp:sample_cell:nucleus_pad} shows image \subref{fig:data_pp:sample_cell:nucleus} after adding zero to the borders (zero-padding) to make it of size 224 by 224 pixels. Figure \subref{fig:data_pp:sample_cell:cell_mask} shows the cell mask, i.e. measured pixels (in white) during the \gls{mpm} protocol.}
+  \label{fig:data_pp:sample_cell}
+\end{figure}
+
+The raw data processing script saves in a specified directory files containing 3 compressed NumPy arrays; 1) the multichannel image (figure \ref{fig:data_pp:sample_cell:nucleus_pad}), a 3D array contains the protein readouts of the nucleus of a single cell 2) the cell mask (figure \ref{fig:data_pp:sample_cell:cell_mask}), a 2D array that indicates the measured pixels by the \gls{mpm} protocol (ones on the measured $x$ and $y$ coordinates and zeros otherwise) and 3) the channels average, a 1D array containing the average of the measured pixels per channel/protein. Each file is named using the unique id assigned to each single cell nucleus (\texttt{mapobject\_id\_cell}). The script also returns a \texttt{csv} file\footnote{This \texttt{csv} file can be easily opened as a \hl{Pandas DataFrame}. For more information, please refer to the \href{https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{official documentation}.} containing the metadata of each single cell from every processed well (one row per cell and one column per cell feature). Table \ref{table:dataset:metadata} shows the metadata columns that were relevant for this work.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.3\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.7\mylinewidth-2\arraycolsep}%
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{>{\centering\arraybackslash}m{\mylengtha}|m{\mylengthb}} % m stands for middle (p:top, b:bottom), max 144 mm
+    \hline
+    Column name & Description \\
+    \hline
+    \texttt{mapobject\_id\_cell} & ID to uniquely identify each cell among all wells \\
+    \hline
+    \texttt{mapobject\_id} & ID to uniquely identify each cell on its well \\
+    \hline
+    \texttt{is\_border\_cell} & Binary flag, 1 if the cell is on the plate, well or site border; 0 if not \\
+    \hline
+    \texttt{cell\_cycle} & String, \texttt{G1} if cell is in $G_1$ phase, \texttt{S} if cell is in synthesis phase, \texttt{G2} if cell is in $G_2$ phase. If \texttt{NaN}, then the cell is in mitosis phase \\
+    \hline
+    \texttt{is\_polynuclei\_184A1} & Binary flag for \hl{184A1} cells, 1 if the cell was identified to have more than one nucleus (i.e. it is in mitosis phase); 0 if not\\
+    \hline
+    \texttt{is\_polynuclei\_HeLa} & Binary flag for \hl{HeLa} cells, 1 if the cell was identified to have more than one nucleus (i.e. it is in mitosis phase); 0 if not\\
+    \hline
+    \texttt{perturbation} & String indicating the pharmacological/metabolic perturbation \\
+    \hline
+  \end{tabular}
+  \caption{Relevant metadata columns.}
+  \label{table:dataset:metadata}
+\end{table}
+
+\subsubsection{Quality Control}
+
+During the transformation from raw data into images, cells that does not pass a quality control are discriminated. This quality control consist on avoiding cells that holds at least one of the following conditions
+\begin{enumerate}
+  \item The cell is in mitotic phase (i.e. on metadata, either \texttt{is\_polynuclei\_HeLa} or \texttt{is\_polynuclei\_184A1} is equal to 1 or \texttt{cell\_cycle} is \texttt{NaN}).
+  \item The cell is in the border of the plate, well or site (i.e. on metadata, \texttt{is\_border\_cell} is equal to 1).
+\end{enumerate}
+
+The quality control is performed by the same script that transforms the raw data into multichannel images. Its implementation and execution, as well as an explanation of the required parameters, can be found on appendix \ref{sec:appendix:raw_data}.
+
+\subsubsection{Dataset creation}
+
+After the raw data from all wells were processed, and mitotic and/or border cells were eliminated (quality control), we are able to build a dataset\footnote{For this work we decided to use (and build) a custom \acrfull{tfds}, which is a subclass of \texttt{tensorflow\_datasets.core.DatasetBuilder} and allows to create a pipeline that can easily feed data into a machine learning model built using TensorFlow. For more information, please refer to the \href{https://www.tensorflow.org/datasets/add_dataset}{official documentation}.} that can be used efficiently to train models. We will not explain here how to create this dataset. However, a brief explanation of this can be found in the appendix \ref{sec:appendix:tfds}. Appendix \ref{sec:appendix:tfds} also show how to run the Python script that builds this dataset, along with an explanation of the required parameters.
+
+Even though this script can bu used to build a dataset containing all available single cell images, for this work we created a dataset containing cells without pharmacological or metabolic perturbations (i.e. cells such that in the metadata \texttt{perturbation} is ether equal to \hl{normal} or \hl{DMSO}). Further more, during the creation of the dataset, it is possible to filter the image channels and select the target value from the channels average vector (which is stored along with each single cell image). In this case we kept all the input channels\footnote{The unnecessary/unwanted channels are removed during the model training/evaluation (see section \ref{sec:methodology:models}). The reason why this filtering is not made during the dataset creation, is to make the dataset set more robust (i.e. to avoid the need to create a new dataset each time the input channels of the image changed).}, except for the channel used to calculate the target value. This means that channel 35 was excluded (\texttt{00\_EU}\footnote{A brief description of this marker can be found on section \ref{sec:appendix:if_markers}.}), and entrance 35 from the channel average vector (interpreted as \gls{tr}) was selected as target value.
+
+Last but not least, for each cell, its mask is added at the end as an extra channel to keep track of the measured pixels. The reason why the cell mask is stored as a channel, is because it will be needed by other process latter in the pipeline (some of the data augmentation techniques, see section \ref{sec:dataset:data_augmentation}). However, this (and other channels) are removed before the image is used to feed the model (during and after the training process, see section \ref{sec:methodology:models}).
+
+\begin{table}[!ht]
+  \centering
+  \resizebox{0.7\linewidth}{!}{%
+  \begin{tabular}{c|c|c|c}
+    Channel name & Marker identifier & Raw data id & TFDS id \\
+    \hline
+    DAPI & \texttt{00\_DAPI} & 0 & 0 \\
+    \hline
+    H2B & \texttt{07\_H2B} & 1 & 1 \\
+    \hline
+    CDK9\_pT186 & \texttt{01\_CDK9\_pT186} & 2 & 2 \\
+    \hline
+    CDK9 & \texttt{03\_CDK9} & 3 & 3 \\
+    \hline
+    GTF2B & \texttt{05\_GTF2B} & 4 & 4 \\
+    \hline
+    SETD1A & \texttt{07\_SETD1A} & 5 & 5 \\
+    \hline
+    H3K4me3 & \texttt{08\_H3K4me3} & 6 & 6 \\
+    \hline
+    SRRM2 & \texttt{09\_SRRM2} & 7 & 7 \\
+    \hline
+    H3K27ac & \texttt{10\_H3K27ac} & 8 & 8 \\
+    \hline
+    KPNA2\_MAX & \texttt{11\_KPNA2\_MAX} & 9 & 9 \\
+    \hline
+    RB1\_pS807\_S811 & \texttt{12\_RB1\_pS807\_S811} & 10 & 10 \\
+    \hline
+    PABPN1 & \texttt{13\_PABPN1} & 11 & 11 \\
+    \hline
+    PCNA & \texttt{14\_PCNA} & 12 & 12 \\
+    \hline
+    SON & \texttt{15\_SON} & 13 & 13 \\
+    \hline
+    H3 & \texttt{16\_H3} & 14 & 14 \\
+    \hline
+    HDAC3 & \texttt{17\_HDAC3} & 15 & 15 \\
+    \hline
+    KPNA1\_MAX & \texttt{19\_KPNA1\_MAX} & 16 & 16 \\
+    \hline
+    SP100 & \texttt{20\_SP100} & 17 & 17 \\
+    \hline
+    NCL & \texttt{21\_NCL} & 18 & 18 \\
+    \hline
+    PABPC1 & \texttt{01\_PABPC1} & 19 & 19 \\
+    \hline
+    CDK7 & \texttt{02\_CDK7} & 20 & 20 \\
+    \hline
+    RPS6 & \texttt{03\_RPS6} & 21 & 21 \\
+    \hline
+    Sm & \texttt{05\_Sm} & 22 & 22 \\
+    \hline
+    POLR2A & \texttt{07\_POLR2A} & 23 & 23 \\
+    \hline
+    CCNT1 & \texttt{09\_CCNT1} & 24 & 24 \\
+    \hline
+    POL2RA\_pS2 & \texttt{10\_POL2RA\_pS2} & 25 & 25 \\
+    \hline
+    PML & \texttt{11\_PML} & 26 & 26 \\
+    \hline
+    YAP1 & \texttt{12\_YAP1} & 27 & 27 \\
+    \hline
+    POL2RA\_pS5 & \texttt{13\_POL2RA\_pS5} & 28 & 28 \\
+    \hline
+    U2SNRNPB & \texttt{15\_U2SNRNPB} & 29 & 29 \\
+    \hline
+    NONO & \texttt{18\_NONO} & 30 & 30 \\
+    \hline
+    ALYREF & \texttt{20\_ALYREF} & 31 & 31 \\
+    \hline
+    COIL & \texttt{21\_COIL} & 32 & 32 \\
+    \hline
+    BG488 & \texttt{00\_BG488} & 33 & 33 \\
+    \hline
+    BG568 & \texttt{00\_BG568} & 34 & 34 \\
+    \hline
+    EU & \texttt{00\_EU} & 35 & NA \\
+    \hline
+    SRRM2\_ILASTIK & \texttt{09\_SRRM2\_ILASTIK} & 36 & 35 \\
+    \hline
+    SON\_ILASTIK & \texttt{15\_SON\_ILASTIK} & 37 & 36 \\
+    \hline
+    Cell mask & NA & NA & 37 \\
+    \hline
+  \end{tabular}%
+  }
+  \caption{Image channels. Column \hl{Raw data id} shows the channel id used in the raw data, while column \hl{TFDS id} shows the channel id used in the TensorFlow dataset.}
+  \label{table:data_pp:channels}
+\end{table}
+
+Table \ref{table:data_pp:channels} shows the image channels in the \gls{tfds}, including the name (column \hl{Channel name}) and identifier of each immunofluorescence markers (column \hl{Marker identifier}). Table \ref{table:data_pp:channels} also shows the ids corresponding to the markers in the raw data (column \hl{Raw data id}) and in the \gls{tfds} (column \hl{TFDS id}). \hl{NA} means that the channel is not used/available either on the raw data or the \gls{tfds}.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{c|c|c}
+    Set & Size & Percentage \\
+    \ChangeRT{1.7pt}
+    Train & 2962 & $80\%$ \\
+    \hline
+    Validation & 371 & $10\%$ \\
+    \hline
+    Test & 370 & $10\%$ \\
+    \ChangeRT{1.7pt}
+    Total & 3703 & $100\%$ \\
+  \end{tabular}
+  \caption{Distribution of the dataset partitions.}
+  \label{table:data_pp:dataset_dist}
+\end{table}
+
+During the creation of the dataset, the images are also spitted into 3 sets, \hl{Train, Validation} and \hl{Test}, using the proportions $80\%$, $10\%$ and $10\%$ respectively. Table \ref{table:data_pp:dataset_dist} shows the size of these 3 sets.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Set & Cell Cycle & Size & Percentage \\
+    \ChangeRT{1.7pt}
+    \multirow{3}{*}{Train} & $G_1$ & 1652 & $55.77\%$ \\
+    \cline{2-4}
+    & $S$ & 864 & $29.17\%$ \\
+    \cline{2-4}
+    & $G_2$ & 446 & $15.06\%$ \\
+    \hline
+    \multirow{3}{*}{Validation} & $G_1$ & 205 & $55.41\%$ \\
+    \cline{2-4}
+    & $S$ & 103 & $27.84\%$ \\
+    \cline{2-4}
+    & $G_2$ & 62 & $16.76\%$ \\
+    \hline
+    \multirow{3}{*}{Test} & $G_1$ & 213 & $57.41\%$ \\
+    \cline{2-4}
+    & $S$ & 103 & $27.76\%$ \\
+    \cline{2-4}
+    & $G_2$ & 55 & $14.82\%$ \\
+    \ChangeRT{1.7pt}
+    \multirow{3}{*}{Total} & $G_1$ & 2070 & $55.90\%$ \\
+    \cline{2-4}
+    & $S$ & 1070 & $28.90\%$ \\
+    \cline{2-4}
+    & $G_2$ & 563 & $15.20\%$ \\
+  \end{tabular}
+  \caption{Distribution of the dataset partitions by cell phase (cell cycle).}
+  \label{table:data_pp:dataset_dist_cc}
+\end{table}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Set & Perturbation & Size & Percentage \\
+    \ChangeRT{1.7pt}
+    \multirow{2}{*}{Train} & Normal & 2040 & $68.87\%$ \\
+    \cline{2-4}
+    & DMSO & 922 & $31.13\%$ \\
+    \hline
+    \multirow{2}{*}{Validation} & Normal & 257 & $69.46\%$ \\
+    \cline{2-4}
+    & DMSO & 113 & $30.54\%$ \\
+    \hline
+    \multirow{2}{*}{Test} & Normal & 260 & $70.08\%$ \\
+    \cline{2-4}
+    & DMSO & 111 & $29.92\%$ \\
+    \ChangeRT{1.7pt}
+    \multirow{2}{*}{Total} & Normal & 2557 & $69.05\%$ \\
+    \cline{2-4}
+    & DMSO & 1146 & $30.95\%$ \\
+  \end{tabular}
+  \caption{Distribution of the dataset partitions by perturbation.}
+  \label{table:data_pp:dataset_dist_per}
+\end{table}
+
+Since we are dealing with cells in different phases (cell cycles), it is important that the distribution of the 3 phases is kept  in the train, validation and test sets\fxnote{Should I mention than half of the cells are in $G_1$ phase, which means that cell in $G_1$ phase apply more pressure on the optimization of the model parameters during training, while the cells in the $G_2$ phase will not? And/Or should I mention this in the conclusions as a future work?}. The same must happen with the proportion of cells without pharmacological/metabolic perturbation (\hl{Normal} cells) and control cells (\hl{DMSO} cells). Tables \ref{table:data_pp:dataset_dist_cc} and \ref{table:data_pp:dataset_dist_per} show respectively that these proportions are hold across the 3 sets.
+
+\subsubsection{Image preprocessing}
+
+During the creation of the dataset, two preprocessing techniques are applied to each cell image.... PRIMERO HAS LA TABLA DE LOS DATOS, LUEGO TERMINA EL APENDIX PARA LOS RAW FILES LA EJECUCION DE RWA DATA TRANSFORMATION Y LA CRWACION DEL TFDS.
+
+Clipping: Pixel intensities above a threshold are truncated to a certain value.

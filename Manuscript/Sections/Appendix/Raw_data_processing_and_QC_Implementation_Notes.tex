@@ -1,0 +1,51 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+
+This appendix contains implementation and technical notes about the data preprocessing process that needs to be performed before the construction of the dataset used to train the models. This process is performed by a single Pyhton script (Jupyter Notebook) and contemplate two main steps
+
+\begin{enumerate}
+  \item The reconstruction of single cell images from the raw data (text files).
+  \item The discrimination of single cell images accordingly to a quality control.
+\end{enumerate}
+
+As it is explained in section \ref{sec:dataset:data_pp}, the protein readout of each well are contained in several files. Here we introduce those that are relevant for this work
+
+\begin{itemize}
+  \item \texttt{mpp.npy}: 2D NumPy array. Each row contains the protein readouts (intensities) of each pixel of the well (one column per protein). The values of this array vary from 0 to 65535 i.e. $2^{16}$ i.e. 2 bytes or 16 bits.
+  \item \texttt{x.npy}/\texttt{y.npy}: 1D NumPy array. Each entrance contains the $x/y$ coordinate of a pixel of the well protein readouts (i.e. \texttt{x.npy} and \texttt{y.npy} map the protein readouts in \texttt{mpp.npy} with a 2D plane). Accordingly with \cite{Guteaar7042}, the size of a single channel well image is 2560x2160. Therefore, the values in \texttt{x.npy} vary between 1 and 2560 and form 1 to 2160 for \texttt{y.npy}
+  \item \texttt{mapobject\_ids.npy}: 1D NumPy array. Each entrance contains an id that maps the protein readouts in \texttt{mpp.npy} with the nucleus of a cell in the well. Each cell nucleus in the well is identified by a unique id.
+\end{itemize}
+
+Since files \texttt{mpp.npy}, \texttt{x.npy}, \texttt{y.npy} and \texttt{mapobject\_ids.npy} contains different parts of the well protein readouts, the first dimension of the arrays contained in the files always has the same size.
+
+Beside the files with protein readouts (\texttt{npy} files), each well also comes with two additional \texttt{csv} files\footnote{These \texttt{csv} files can be easily opened as a \hl{Pandas DataFrame}. For more information, please refer to the \href{https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{official documentation}.} containing further information about each cell in the well
+
+\begin{itemize}
+  \item \texttt{metadata.csv}. Contains one raw per single cell nucleus in the well. The mapping between the metadata file and the protein readouts (\texttt{npy} files), is made through the column \hl{mapobject\_id}, which uniquely identify cells (but only within the well). On the other hand, column \hl{mapobject\_id\_cell} uniquely identify cells across all wells. Columns \hl{is\_polynuclei\_HeLa} and	\hl{is\_polynuclei\_184A1} indicate if a cell is in mitosis phase. This metadata file also contains information about the experimental setup, like plate name, well name, site position, etc..
+  \item \texttt{channels.csv}. Contains only two columns that maps the immunofluorescence marker name (column \hl{channel\_name}) and the channel id (column \hl{id}) of the protein readouts.
+\end{itemize}
+
+The files introduced so far are specific to each well. However, we still need to introduce other 3 files which contains information about all the wells
+
+\begin{itemize}
+  \item \texttt{secondary\_only\_relative\_normalisation.csv}. Contains the experimental setup information related to the image capturing process. Among other information, it contains the \hl{background value} of each channel that has to be subtracted from the protein readouts during the reconstruction of the images.
+  \item \texttt{cell\_cycle\_classification.csv}. Contains the phase of each cell.
+  \item \texttt{wells\_metadata.csv}. Contains more information about the experimental setup. Among other information, it contains the pharmacological/metabolic perturbation applied to each well.
+\end{itemize}
+
+To execute the raw data processing, one has to open the Python Jupyter Notebook \\
+\noindent\texttt{MPPData\_into\_images\_no\_split.ipynb} and replace the variable \texttt{PARAMETERS\_FILE} with the absolute path and name of the input parameters file before running the notebook. A sample parameter file (\texttt{MppData\_to\_imgs\_no\_split\_sample.json}) is provided along with this work. It contains the parameters used for the experiments shown in this work. Table \ref{} provides an explanation of some of this parameters.
+
+% Table here!
+
+Roughly speaking, the notebook iterates over the specified wells sequentially. This means that for each well the notebook
+\begin{enumerate}
+  \item Reads the well metadata file \texttt{metadata.csv} and merge it with the general metadata files, \texttt{cell\_cycle\_classification.csv} and \texttt{wells\_metadata.csv}.
+  \item Performs the quality control and select the ids (\hl{mapobject\_id\_cell}) that were approved.
+  \item Converts\footnote{The library \texttt{mpp\_data\_V2.py} used to perform the raw data transformation, is almost entirely based on Dr. Hannah Spitzer library \texttt{mpp\_data.py}. I thank the Dr. Spitzer for providing me with her library for this work.} and saves the selected ids using the well protein readouts files \texttt{mpp.npy}, \texttt{x.npy}, \texttt{y.npy}, \texttt{mapobject\_ids.npy} and the general file \\ \texttt{secondary\_only\_relative\_normalisation.csv}.
+\end{enumerate}
+
+The notebook also saves at the end a general metadata file (\texttt{csv} file), containing the metadata of all the processed wells.
