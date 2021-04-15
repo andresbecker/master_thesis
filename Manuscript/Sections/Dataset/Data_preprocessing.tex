@@ -5,24 +5,7 @@
 % define where the images are
 \graphicspath{{./Sections/Dataset/Resources/}}
 
-
-Road map. This must be addressed in this section:
-\begin{enumerate}
-  \item Raw data preparation
-  \begin{enumerate}
-    \item Briefly explain how the data is given; file format, metadata, etc.
-    \item Speak about the quality control (discrimination of border, mitotic cells, etc.)
-    \item Speak about the transformation from files to images, only mention the script used and add an entrance in the appendix.
-  \end{enumerate}
-  \item Data Preprocessing
-  \begin{enumerate}
-    \item Preprocessing techniques; clipping and standardization
-    \item Creation of the Dataset, just mention that TFDS is used and add an entrance into the Appendix
-    \item Also mention here the other preprocessing techniques tried.
-  \end{enumerate}
-\end{enumerate}
-
-\noindent The data preprocessing consist mainly of 4 steps
+\noindent The data preprocessing consist of 4 main steps
 
 \begin{enumerate}
   \item The raw data processing, where raw files are converted into images.
@@ -33,7 +16,7 @@ Road map. This must be addressed in this section:
 
 In this section we explain these 4 steps. However, the implementation is discussed in the sections \ref{sec:appendix:raw_data} (for steps 1 and 2) and \ref{sec:appendix:tfds} (for steps 3 and 4).
 
-\subsubsection{Raw data processing}
+\subsection{Raw data processing}
 
 As we mentioned in section \ref{sec:dataset:multiplexed_protein_maps}, the \gls{mpm} protocol is applied over section of cell cultures called \hl{wells}. The \gls{mpm} protocol will return several files for each well, containing the nuclear protein readouts of single cells, information from the subsequent analysis made to the intensities of the protein readouts, as well as information about the \gls{mpm} protocol experimental setup. We do not go into details about this files and how to transform them into multichannel images of single cell nucleus. However, a brief explanation of this can be found in the appendix \ref{sec:appendix:raw_data}. Appendix \ref{sec:appendix:raw_data} also show how to run the Python script that transforms the raw data into images, along with an explanation of the required parameters.
 
@@ -94,7 +77,7 @@ The raw data processing script saves in a specified directory files containing 3
   \label{table:dataset:metadata}
 \end{table}
 
-\subsubsection{Quality Control}
+\subsection{Quality Control}
 
 During the transformation from raw data into images, cells that does not pass a quality control are discriminated. This quality control consist on avoiding cells that holds at least one of the following conditions
 \begin{enumerate}
@@ -104,7 +87,8 @@ During the transformation from raw data into images, cells that does not pass a 
 
 The quality control is performed by the same script that transforms the raw data into multichannel images. Its implementation and execution, as well as an explanation of the required parameters, can be found on appendix \ref{sec:appendix:raw_data}.
 
-\subsubsection{Dataset creation}
+\subsection{Dataset creation}
+\label{sec:dataset:data_pp:dataset_creation}
 
 After the raw data from all wells were processed, and mitotic and/or border cells were eliminated (quality control), we are able to build a dataset\footnote{For this work we decided to use (and build) a custom \acrfull{tfds}, which is a subclass of \texttt{tensorflow\_datasets.core.DatasetBuilder} and allows to create a pipeline that can easily feed data into a machine learning model built using TensorFlow. For more information, please refer to the \href{https://www.tensorflow.org/datasets/add_dataset}{official documentation}.} that can be used efficiently to train models. We will not explain here how to create this dataset. However, a brief explanation of this can be found in the appendix \ref{sec:appendix:tfds}. Appendix \ref{sec:appendix:tfds} also show how to run the Python script that builds this dataset, along with an explanation of the required parameters.
 
@@ -112,98 +96,9 @@ Even though this script can bu used to build a dataset containing all available 
 
 Last but not least, for each cell, its mask is added at the end as an extra channel to keep track of the measured pixels. The reason why the cell mask is stored as a channel, is because it will be needed by other process latter in the pipeline (some of the data augmentation techniques, see section \ref{sec:dataset:data_augmentation}). However, this (and other channels) are removed before the image is used to feed the model (during and after the training process, see section \ref{sec:methodology:models}).
 
-\begin{table}[!ht]
-  \centering
-  \resizebox{0.7\linewidth}{!}{%
-  \begin{tabular}{c|c|c|c}
-    Channel name & Marker identifier & Raw data id & TFDS id \\
-    \hline
-    DAPI & \texttt{00\_DAPI} & 0 & 0 \\
-    \hline
-    H2B & \texttt{07\_H2B} & 1 & 1 \\
-    \hline
-    CDK9\_pT186 & \texttt{01\_CDK9\_pT186} & 2 & 2 \\
-    \hline
-    CDK9 & \texttt{03\_CDK9} & 3 & 3 \\
-    \hline
-    GTF2B & \texttt{05\_GTF2B} & 4 & 4 \\
-    \hline
-    SETD1A & \texttt{07\_SETD1A} & 5 & 5 \\
-    \hline
-    H3K4me3 & \texttt{08\_H3K4me3} & 6 & 6 \\
-    \hline
-    SRRM2 & \texttt{09\_SRRM2} & 7 & 7 \\
-    \hline
-    H3K27ac & \texttt{10\_H3K27ac} & 8 & 8 \\
-    \hline
-    KPNA2\_MAX & \texttt{11\_KPNA2\_MAX} & 9 & 9 \\
-    \hline
-    RB1\_pS807\_S811 & \texttt{12\_RB1\_pS807\_S811} & 10 & 10 \\
-    \hline
-    PABPN1 & \texttt{13\_PABPN1} & 11 & 11 \\
-    \hline
-    PCNA & \texttt{14\_PCNA} & 12 & 12 \\
-    \hline
-    SON & \texttt{15\_SON} & 13 & 13 \\
-    \hline
-    H3 & \texttt{16\_H3} & 14 & 14 \\
-    \hline
-    HDAC3 & \texttt{17\_HDAC3} & 15 & 15 \\
-    \hline
-    KPNA1\_MAX & \texttt{19\_KPNA1\_MAX} & 16 & 16 \\
-    \hline
-    SP100 & \texttt{20\_SP100} & 17 & 17 \\
-    \hline
-    NCL & \texttt{21\_NCL} & 18 & 18 \\
-    \hline
-    PABPC1 & \texttt{01\_PABPC1} & 19 & 19 \\
-    \hline
-    CDK7 & \texttt{02\_CDK7} & 20 & 20 \\
-    \hline
-    RPS6 & \texttt{03\_RPS6} & 21 & 21 \\
-    \hline
-    Sm & \texttt{05\_Sm} & 22 & 22 \\
-    \hline
-    POLR2A & \texttt{07\_POLR2A} & 23 & 23 \\
-    \hline
-    CCNT1 & \texttt{09\_CCNT1} & 24 & 24 \\
-    \hline
-    POL2RA\_pS2 & \texttt{10\_POL2RA\_pS2} & 25 & 25 \\
-    \hline
-    PML & \texttt{11\_PML} & 26 & 26 \\
-    \hline
-    YAP1 & \texttt{12\_YAP1} & 27 & 27 \\
-    \hline
-    POL2RA\_pS5 & \texttt{13\_POL2RA\_pS5} & 28 & 28 \\
-    \hline
-    U2SNRNPB & \texttt{15\_U2SNRNPB} & 29 & 29 \\
-    \hline
-    NONO & \texttt{18\_NONO} & 30 & 30 \\
-    \hline
-    ALYREF & \texttt{20\_ALYREF} & 31 & 31 \\
-    \hline
-    COIL & \texttt{21\_COIL} & 32 & 32 \\
-    \hline
-    BG488 & \texttt{00\_BG488} & 33 & 33 \\
-    \hline
-    BG568 & \texttt{00\_BG568} & 34 & 34 \\
-    \hline
-    EU & \texttt{00\_EU} & 35 & NA \\
-    \hline
-    SRRM2\_ILASTIK & \texttt{09\_SRRM2\_ILASTIK} & 36 & 35 \\
-    \hline
-    SON\_ILASTIK & \texttt{15\_SON\_ILASTIK} & 37 & 36 \\
-    \hline
-    Cell mask & NA & NA & 37 \\
-    \hline
-  \end{tabular}%
-  }
-  \caption{Image channels. Column \hl{Raw data id} shows the channel id used in the raw data, while column \hl{TFDS id} shows the channel id used in the TensorFlow dataset.}
-  \label{table:data_pp:channels}
-\end{table}
+Table \ref{table:tfds_in:channels} (on appendix \ref{sec:appendix:tfds}) shows the image channels in the \gls{tfds}, including the name (column \hl{Channel name}) and identifier of each immunofluorescence markers (column \hl{Marker identifier}). Table \ref{table:tfds_in:channels} also shows the ids corresponding to the markers in the raw data (column \hl{Raw data id}) and in the \gls{tfds} (column \hl{TFDS id}). \hl{NA} means that the channel is not used/available either on the raw data or the \gls{tfds}.
 
-Table \ref{table:data_pp:channels} shows the image channels in the \gls{tfds}, including the name (column \hl{Channel name}) and identifier of each immunofluorescence markers (column \hl{Marker identifier}). Table \ref{table:data_pp:channels} also shows the ids corresponding to the markers in the raw data (column \hl{Raw data id}) and in the \gls{tfds} (column \hl{TFDS id}). \hl{NA} means that the channel is not used/available either on the raw data or the \gls{tfds}.
-
+% Data extracted form notebook Preprocessing_resources.ipynb
 \begin{table}[!ht]
   \centering
   \begin{tabular}{c|c|c}
@@ -223,6 +118,7 @@ Table \ref{table:data_pp:channels} shows the image channels in the \gls{tfds}, i
 
 During the creation of the dataset, the images are also spitted into 3 sets, \hl{Train, Validation} and \hl{Test}, using the proportions $80\%$, $10\%$ and $10\%$ respectively. Table \ref{table:data_pp:dataset_dist} shows the size of these 3 sets.
 
+% Data extracted form notebook Preprocessing_resources.ipynb
 \begin{table}[!ht]
   \centering
   \begin{tabular}{c|c|c|c}
@@ -256,6 +152,7 @@ During the creation of the dataset, the images are also spitted into 3 sets, \hl
   \label{table:data_pp:dataset_dist_cc}
 \end{table}
 
+% Data extracted form notebook Preprocessing_resources.ipynb
 \begin{table}[!ht]
   \centering
   \begin{tabular}{c|c|c|c}
@@ -283,8 +180,58 @@ During the creation of the dataset, the images are also spitted into 3 sets, \hl
 
 Since we are dealing with cells in different phases (cell cycles), it is important that the distribution of the 3 phases is kept  in the train, validation and test sets\fxnote{Should I mention than half of the cells are in $G_1$ phase, which means that cell in $G_1$ phase apply more pressure on the optimization of the model parameters during training, while the cells in the $G_2$ phase will not? And/Or should I mention this in the conclusions as a future work?}. The same must happen with the proportion of cells without pharmacological/metabolic perturbation (\hl{Normal} cells) and control cells (\hl{DMSO} cells). Tables \ref{table:data_pp:dataset_dist_cc} and \ref{table:data_pp:dataset_dist_per} show respectively that these proportions are hold across the 3 sets.
 
-\subsubsection{Image preprocessing}
+\subsection{Image preprocessing}
 
-During the creation of the dataset, two preprocessing techniques are applied to each cell image.... PRIMERO HAS LA TABLA DE LOS DATOS, LUEGO TERMINA EL APENDIX PARA LOS RAW FILES LA EJECUCION DE RWA DATA TRANSFORMATION Y LA CRWACION DEL TFDS.
+In this work we use \glspl{cnn} and images of cell nucleus to predict \gls{tr}. This means that there are two main features of the images that came into account when the model learns and predicts the \gls{tr}, the spatial distribution of the elements in the image and the intensity of the colors.
+However, this work aims to explain and predict transcription based on the information encoded in the spatial distribution of proteins and organelles within the nucleus. Therefore, the image preprocessing techniques applied here should help mitigate the influence of color during training and prediction, so that the model can focus only on spatial information. For this reason, two preprocessing techniques are applied to each cell image, clipping and standardization. The clipping, as well as the standardization, are performed during the construction of the \gls{tfds}, which can be consulted in appendix \ref{sec:appendix:tfds}.
 
-Clipping: Pixel intensities above a threshold are truncated to a certain value.
+\subsubsection{Clipping}
+
+The idea of clipping is to avoid extreme outliers to influence or leverage the model parameters during training. Figure \ref{fig:data_pp:outlier} gives an example of this. The blue line shows a model fitted including the outliers (the two dots on the right upper corner), while the orange line a model fitted without them.
+
+% Figure created with notebook Preprocessing_resources.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.5\linewidth]{outlier.jpg}
+  \caption{Comparison between two linear regression models, fitted with (blue line) and without (orange line) outliers.}
+  \label{fig:data_pp:outlier}
+\end{figure}
+
+To prevent high intense pixels to influence the model, we truncate/limit the value of pixels that are above a certain threshold. This threshold is different for each image channel and is determined using the cell images belonging to the training set. For each channel, the train images are loaded and the threshold is set as the $98\%$ percentile of the measured pixel intensities belonging to the channel. Then, using this threshold vector (one entrance per channel) all the images in the dataset (train, validation and test) are clipped. This is done before the data standardization. Finally, the clipping parameter (threshold) of each channel is stored in a metadata file, provided along with the \gls{tfds}. Figures \ref{fig:data_pp:pixel_dist:ori} and \ref{fig:data_pp:pixel_dist:clip} show the pixel intensity distribution of channel HDAC3 before and after clipping respectively.
+
+\subsubsection{Standardization}
+
+As we mentioned at the beginning of this section, to predict cell \gls{tr} we seek the model to rely on spatial information, rather than the intensity of the pixels. Therefore, to reduce pixel intensity influence, we apply per-channel standardization, which is just a shift and rescaling (a linear transformation) of the original data. Standardization is also called \hl{Z-score}, since the data is transformed using the mean $\mu$ and standard deviation $\sigma$ (normal distribution parameters) of a sample, as a shift and rescaling parameters respectively. As it is done in clipping, the standardization parameters are different for each channel and are computed using the images belonging to the training set. For all the measured pixels intensities in the \gls{tfds} (i.e. for train, validation and test sets), the standardization of pixel $i$ belonging to channel $c$ (i.e. $z_{i,c}$), is done as follow
+
+\begin{equation}
+  z_{i,c} = \frac{x_{i,c} - \mu_c}{\sigma_c}
+  \label{eq:data_pp:z-score}
+\end{equation}
+
+\noindent where $x_{i,c}$ is the corresponding readout $i$ from channel $c$, and $\mu_c$, $\sigma_c$ are the mean and standard deviation (respectively) of channel $c$ computed using the training images.
+
+The standardization centers the measured pixels of each channel around 0 (see figures \ref{fig:data_pp:pixel_dist:clip} and \ref{fig:data_pp:pixel_dist:clip_z}), reducing the color correlation between channels, which also reduce pixel intensity influence over the model.
+
+% Plots made using notebook Data_PP_clipping_and_standard.ipynb
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[t]{.29\linewidth}
+    \includegraphics[width=\linewidth]{Pixel_dist.png}
+    \caption{Pixel intensity distribution.}
+    \label{fig:data_pp:pixel_dist:ori}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Pixel_dist_clip.png}
+    \caption{Pixel intensity distribution after clipping.}
+    \label{fig:data_pp:pixel_dist:clip}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.28\linewidth}
+    \includegraphics[width=\linewidth]{Pixel_dist_clip_z.png}
+    \caption{Pixel intensity distribution after clipping and standardization.}
+    \label{fig:data_pp:pixel_dist:clip_z}
+  \end{subfigure}
+  \caption{Intensity distribution of measured pixels for channel HDAC3. The channel readouts were taken from the training set. Figure \subref{fig:data_pp:pixel_dist:ori}) shows the distribution without any modification. Figure \subref{fig:data_pp:pixel_dist:clip}) shows the distribution after applying $98\%$ percentile clipping, while figure \subref{fig:data_pp:pixel_dist:clip_z}) shows the distribution after applying same clipping and standardization.}
+  \label{fig:data_pp:pixel_dist}
+\end{figure}

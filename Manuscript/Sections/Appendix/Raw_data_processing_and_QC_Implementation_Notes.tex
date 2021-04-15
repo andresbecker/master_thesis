@@ -37,9 +37,54 @@ The files introduced so far are specific to each well. However, we still need to
 \end{itemize}
 
 To execute the raw data processing, one has to open the Python Jupyter Notebook \\
-\noindent\texttt{MPPData\_into\_images\_no\_split.ipynb} and replace the variable \texttt{PARAMETERS\_FILE} with the absolute path and name of the input parameters file before running the notebook. A sample parameter file (\texttt{MppData\_to\_imgs\_no\_split\_sample.json}) is provided along with this work. It contains the parameters used for the experiments shown in this work. Table \ref{} provides an explanation of some of this parameters.
+\noindent\texttt{MPPData\_into\_images\_no\_split.ipynb} and replace the variable \texttt{PARAMETERS\_FILE} with the absolute path and name of the input parameters file before running the notebook. A sample parameter file (\texttt{MppData\_to\_imgs\_no\_split\_sample.json}) is provided along with this work. It contains the parameters used for the experiments shown in this work. Table \ref{table:row_data_in:params} provides an explanation of some of this parameters.
 
-% Table here!
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.4\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.6\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | m{\mylengthb}}
+    \hline
+    JSON variable name & Description \\
+    \hline
+    \texttt{raw\_data\_dir} & Path where the directories that contain the raw data files of each well are \\
+    \hline
+    \texttt{perturbations\_and\_wells} & Dictionary. The dictionary keys must be the directories for each perturbation, while the elements (a list) must contain the directory name of each well (one list entrance per well) \\
+    \hline
+    \texttt{output\_pp\_data\_path} & Path where the output folder of the notebook must be located \\
+    \hline
+    \texttt{output\_pp\_data\_dir\_name} & Folder name where the notebook output will be saved \\
+    \hline
+    \texttt{img\_saving\_mode} & Indicate the shape of the output images. To replicate the experiments of this work, this variable must be set to \texttt{original\_img\_and\_fixed\_size}, which means squared images of fixed size \\
+    \hline
+    \texttt{img\_size} & Integer. High and width of the output image (squared) \\
+    \hline
+    \texttt{return\_cell\_size\_ratio} & Binary. Indicate if cell size ratio (percentage of the image that is occupied by the cell nucleus measurements) must be added to the output metadata file. During the data augmentation, this information can be used to approximate the parameters of the distribution used to randomly vary the size of the cell nucleus \\
+    \hline
+    \texttt{background\_value} & Path and name (normally \texttt{secondary\_only\_relative\_normalisation.csv}) of the metadata file containing the per-channel background values \\
+    \hline
+    \texttt{subtract\_background} & Binary. Indicate if background color need to be subtracted from each channel \\
+    \hline
+    \texttt{cell\_cycle\_file} & Path and name (normally \texttt{cell\_cycle\_classification.csv}) of the metadata file containing the phase of each cell \\
+    \hline
+    \texttt{add\_cell\_cycle\_to\_metadata} & Binary. Indicate if cell phase must be add to the output metadata file \\
+    \hline
+    \texttt{well\_info\_file} & Path and name (normally \texttt{wells\_metadata.csv}) of the metadata file containing the information about well perturbation \\
+    \hline
+    \texttt{add\_well\_info\_to\_metadata} & Binary. Indicate if columns of \texttt{well\_info\_file} must be add to the output metadata file \\
+    \hline
+    \texttt{filter\_criteria} & List containing the metadata columns names that will be used in the quality control. For this work ["is\_border\_cell", "is\_polynuclei\_184A1", "is\_polynuclei\_HeLa", "cell\_cycle"] was used \\
+    \hline
+    \texttt{filter\_values} & List containing the filtered values for the columns indicated in \texttt{filter\_criteria}. For this work [1, 1, 1, "NaN"] was used \\
+    \hline
+    \texttt{aggregate\_output} & Indicate how to project each image channel into a number. Must be equal to "avg" (average) \\
+    \hline
+    \texttt{project\_into\_scalar} & Binary. Indicate if the channel scalar projection must be add to the output metadata file \\
+    \hline
+  \caption{Parameters to perform the raw data processing.}
+  \label{table:row_data_in:params}
+\end{longtable}
 
 Roughly speaking, the notebook iterates over the specified wells sequentially. This means that for each well the notebook
 \begin{enumerate}

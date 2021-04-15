@@ -3,3 +3,147 @@
 
 %% Reset glossary to show long gls names
 \glsresetall
+
+After the raw data was processed and converted into images of single cell nucleus (see section \ref{ch:dataset} and appendix \ref{sec:appendix:raw_data}), it is possible to build a \gls{tfds} data can easily end efficiently feed data into a model built in TensorFlow. A \acrlong{tfds} is build by writing a subclass of the \texttt{tensorflow\_datasets.core.DatasetBuilder} class (for more information, please refer to the \href{https://www.tensorflow.org/datasets/add_dataset}{official documentation}), and there are some steps that need to be followed to do so. The easiest way to build a \gls{tfds}, is by running the bash script \texttt{Create\_tf\_dataset.sh}, which executes this steps. The script needs to be executed (and located) in the same directory where the folder containing the Python code to build the dataset is
+
+\begin{lstlisting}[language=Bash]
+  ./Create_tf_dataset.sh -o /Path_to_save_TFDS -n Folder_name_containing_the_TFDS_builder_code -p /Path_to_parameters_files/parameters_file.json -e my_conda_env_name
+\end{lstlisting}
+
+\noindent where the flag \texttt{-o} indicates the path where \gls{tfds} will be located after it is built, \texttt{-n} the name of the directory (not the path, the folder name in the same directory as the script) containing the python (builder) code for required dataset, \texttt{-p} the absolute path and name of the input parameters file\footnote{This file needs to be \texttt{JSON} format and located in a directory named \texttt{Parameters}, which needs to be located inside the directory specified by the \texttt{-n} flag.} and \texttt{-e} the name of the Anaconda environment used to build the \gls{tfds}.
+The specified Anaconda environment is necessary not just to build the \gls{tfds}, but also to register it in the environment. If a \gls{tfds} is not registers in an Anaconda environment, the \texttt{tensorflow\_datasets}\footnote{See the documentation \href{https://www.tensorflow.org/datasets}{here}.} library will not find it, and the user will not be able to call it and use it. Therefore, to register a custom \gls{tfds} in another environment, one just have to execute the \texttt{Create\_tf\_dataset.sh} script specifying the new environment using the \texttt{-e} flag. If the \gls{tfds} was already built by another environment, python will just register the dataset under the new environment and it will not build it again.
+
+Table \ref{table:tfds_in:params} provides an explanation of the variables contained in the parameters file.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.35\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.65\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | m{\mylengthb}}
+    \hline
+    JSON variable name & Description \\
+    \hline
+    \texttt{data\_source\_parameters} & Path where the parameters file used in the raw data processing is (see appendix \ref{sec:appendix:raw_data}). Several parameters from this file are used to build the \gls{tfds} \\
+    \hline
+    \texttt{perturbations} & A list containing the names of the perturbations to be included in the \gls{tfds}. For instance, ["normal", "DMSO"] \\
+    \hline
+    \texttt{cell\_cycles} & A list containing the names of the cell phases to be included in the \gls{tfds}. For instance, ["G1", "S", "G2"] \\
+    \hline
+    \texttt{train\_frac} & Scalar between 0 and 1. Proportion of the data to include in the train set \\
+    \hline
+    \texttt{val\_frac} & Scalar between 0 and 1. Proportion of the data to include in the validation set. Proportion of the data to include in the test set is 1 - \texttt{train\_frac} - \texttt{val\_frac} \\
+    \hline
+    \texttt{seed} & Scalar. For reproducibility of the train, val and test split \\
+    \hline
+    \texttt{percentile} & Scalar between 0 and 100. Percentile used in clipping and/or linear scaling and/or standardization \\
+    \hline
+    \texttt{apply\_clipping} & Binary. If 1, per-channel clipping is applied using the channel percentile \\
+    \hline
+    \texttt{apply\_mean\_extraction} & Binary. If 1, per-channel mean shift is applied using the channel mean  \\
+    \hline
+    \texttt{apply\_linear\_scaling} & Binary. If 1, per-channel scaling is applied using the channel percentile \\
+    \hline
+    \texttt{apply\_z\_score} & Binary. If 1, per-channel standardization is applied using the channel parameters \\
+    \hline
+    \texttt{input\_channels} & List containing the name of the channels (elements of the column \hl{Marker identifier} of table \ref{table:tfds_in:channels}) to be included in the images contained in the \gls{tfds} \\
+    \hline
+    \texttt{output\_channels} & List of only ONE element containing the name of the channel to be used as the target variable (its protection, i.e. the channel average) \\
+    \hline
+  \caption{Parameters to perform the raw data processing.}
+  \label{table:tfds_in:params}
+\end{longtable}
+
+As it is shown in table \ref{table:tfds_in:params}, the parameter \texttt{input\_channels} specifies the channels that will be included in the \gls{tfds} images (see table \ref{table:tfds_in:channels}). However, to avoid building a new dataset every time we change the input channels, all the channels are included here and then filtered in the model (see section \ref{sec:dataset:data_pp:dataset_creation} for a more detailed explanation).
+
+A sample parameter file (\texttt{tf\_dataset\_parameters\_sample.json}) is provided along with this work. It contains the parameters used in the Python script \\ \texttt{MPP\_DS\_normal\_DMSO\_z\_score.py}, to build the dataset \\ \texttt{mpp\_ds\_normal\_dmso\_z\_score} used to train the models in this work.
+
+\begin{table}[!ht]
+  \centering
+  \resizebox{0.7\linewidth}{!}{%
+  \begin{tabular}{c|c|c|c}
+    Channel name & Marker identifier & Raw data id & TFDS id \\
+    \hline
+    DAPI & \texttt{00\_DAPI} & 0 & 0 \\
+    \hline
+    H2B & \texttt{07\_H2B} & 1 & 1 \\
+    \hline
+    CDK9\_pT186 & \texttt{01\_CDK9\_pT186} & 2 & 2 \\
+    \hline
+    CDK9 & \texttt{03\_CDK9} & 3 & 3 \\
+    \hline
+    GTF2B & \texttt{05\_GTF2B} & 4 & 4 \\
+    \hline
+    SETD1A & \texttt{07\_SETD1A} & 5 & 5 \\
+    \hline
+    H3K4me3 & \texttt{08\_H3K4me3} & 6 & 6 \\
+    \hline
+    SRRM2 & \texttt{09\_SRRM2} & 7 & 7 \\
+    \hline
+    H3K27ac & \texttt{10\_H3K27ac} & 8 & 8 \\
+    \hline
+    KPNA2\_MAX & \texttt{11\_KPNA2\_MAX} & 9 & 9 \\
+    \hline
+    RB1\_pS807\_S811 & \texttt{12\_RB1\_pS807\_S811} & 10 & 10 \\
+    \hline
+    PABPN1 & \texttt{13\_PABPN1} & 11 & 11 \\
+    \hline
+    PCNA & \texttt{14\_PCNA} & 12 & 12 \\
+    \hline
+    SON & \texttt{15\_SON} & 13 & 13 \\
+    \hline
+    H3 & \texttt{16\_H3} & 14 & 14 \\
+    \hline
+    HDAC3 & \texttt{17\_HDAC3} & 15 & 15 \\
+    \hline
+    KPNA1\_MAX & \texttt{19\_KPNA1\_MAX} & 16 & 16 \\
+    \hline
+    SP100 & \texttt{20\_SP100} & 17 & 17 \\
+    \hline
+    NCL & \texttt{21\_NCL} & 18 & 18 \\
+    \hline
+    PABPC1 & \texttt{01\_PABPC1} & 19 & 19 \\
+    \hline
+    CDK7 & \texttt{02\_CDK7} & 20 & 20 \\
+    \hline
+    RPS6 & \texttt{03\_RPS6} & 21 & 21 \\
+    \hline
+    Sm & \texttt{05\_Sm} & 22 & 22 \\
+    \hline
+    POLR2A & \texttt{07\_POLR2A} & 23 & 23 \\
+    \hline
+    CCNT1 & \texttt{09\_CCNT1} & 24 & 24 \\
+    \hline
+    POL2RA\_pS2 & \texttt{10\_POL2RA\_pS2} & 25 & 25 \\
+    \hline
+    PML & \texttt{11\_PML} & 26 & 26 \\
+    \hline
+    YAP1 & \texttt{12\_YAP1} & 27 & 27 \\
+    \hline
+    POL2RA\_pS5 & \texttt{13\_POL2RA\_pS5} & 28 & 28 \\
+    \hline
+    U2SNRNPB & \texttt{15\_U2SNRNPB} & 29 & 29 \\
+    \hline
+    NONO & \texttt{18\_NONO} & 30 & 30 \\
+    \hline
+    ALYREF & \texttt{20\_ALYREF} & 31 & 31 \\
+    \hline
+    COIL & \texttt{21\_COIL} & 32 & 32 \\
+    \hline
+    BG488 & \texttt{00\_BG488} & 33 & 33 \\
+    \hline
+    BG568 & \texttt{00\_BG568} & 34 & 34 \\
+    \hline
+    EU & \texttt{00\_EU} & 35 & NA \\
+    \hline
+    SRRM2\_ILASTIK & \texttt{09\_SRRM2\_ILASTIK} & 36 & 35 \\
+    \hline
+    SON\_ILASTIK & \texttt{15\_SON\_ILASTIK} & 37 & 36 \\
+    \hline
+    Cell mask & NA & NA & 37 \\
+    \hline
+  \end{tabular}%
+  }
+  \caption{Image channels. Column \hl{Raw data id} shows the channel id used in the raw data, while column \hl{TFDS id} shows the channel id used in the TensorFlow dataset.}
+  \label{table:tfds_in:channels}
+\end{table}
