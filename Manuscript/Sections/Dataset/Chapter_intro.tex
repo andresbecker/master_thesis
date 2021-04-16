@@ -4,16 +4,6 @@
 %% Reset glossary to show long gls names
 \glsresetall
 
-The objective of this work is to predict \gls{tr} using spacial information contained in cell images. So, how can we describe/predict the \gls{tr}? And the answer is through antibodies.
+We can interpret \gls{tr} as the amount of new RNA molecules inside a cell nucleus in a given period of time. By means of a fluorescent marker, it is possible to identify these new RNA molecules and thus approximate \gls{tr}. But, what about the morphology of other molecules and organelles within the cell nucleus? The distribution, shape and location of molecules, proteins and organelles within the nucleus could potentially encode relevant information for cellular expression. This has been the main motivation for this work. By means of a \gls{cnn}, we seek to predict \gls{tr} base mainly in spacial information encoded on images of cell nucleus.
 
-This part should contain:
-\begin{itemize}
-  \item Recap of what is the aim of this work.
-  \item Why multiplexed protein maps can be used.
-  \item A small overview. Explain roughly the pipline: Preprocessing -> TDFS -> CNN
-\end{itemize}
-
-%% -----------------------------------------------------------------------------
-In this section we give a small introduction to the protocol employed to generate the data used in this work, the \gls{mpm} protocol. Besides this, we also explain roughly the process to go from raw data to a dataset that can be use efficiently to train deep learning models. This include some technical notes about how the raw data was received, and the applied preprocessing techniques. We finish this section with a explanation of the data augmentation techniques used during training. Figure \ref{} shows the pipeline from raw data to training data.
-
-\fxnote{Add here a figure of the data pipeline and improve the text here after finishing the section of this chapter.} 
+In this section we introduce the process used to generate the data for this work, the \gls{mpm} protocol. In addition to this, we introduce the preprocessing and data augmentation techniques used. These techniques aim to improve the model's training performance, prevent overfitting and remove non-relevant information from the images. With this, we seek to encourage the model to base its prediction mainly on the spatial information encoded in the images of cell nucleus.

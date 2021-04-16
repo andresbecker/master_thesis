@@ -5,6 +5,8 @@
 % define where the images are
 \graphicspath{{./Sections/Dataset/Resources/}}
 
+To identify nascent RNA inside a cell nucleus, the \gls{mpm} protocol use the 5-ethynyl uridine (EU) marker (which is then interpreted as \gls{tr}). However, it has been observed that this marker also binds to DNA molecules after some incubation time \cite{jao2008exploring}, \cite{bao2018capturing}. As future work, another \gls{mpm} dataset could be analyzed, either with a shorter or longer incubation time for the UE marker. Then, it would be interesting to validate if the results obtained with both datasets are consistent.
+
 Besides the preprocessing techniques introduced in section \ref{sec:dataset:data_pp} (clipping and standardization), the following approaches were also tried
 
 \begin{itemize}
@@ -17,7 +19,7 @@ Besides the preprocessing techniques introduced in section \ref{sec:dataset:data
 
 Another aspect of the dataset that is worth to mention, is that more than half cells are in phase $G_1$ (see table \ref{table:data_pp:dataset_dist_cc}), while cells in $S$ phase are less than $30\%$ and around $15\%$ for $G_2$ cells. This causes the model to focus more on correctly predicting the \gls{tr} of $G_1$ cells, than for cells in the other two phases. This happens because $G_1$ cells have more influence on the minimization of the objective function, since it is more likely that the model is fed with $G_1$ cells during training.
 
-As it is shown on figure \ref{fig:dataset:discus:tr_dist}, \gls{tr} of $G_1$ cells is significantly lower than \gls{tr} of $S$ and $G_2$ cells. This, and that cells in different phases are not in the same proportion in the dataset, can cause the model to make a biased prediction when it is fed with a $S$ or $G_2$ cell. Two possible solutions to this problem are, either to add more cells in phases $S$ and $G_2$ to the dataset, or to sample with replacement over the available cells, so the proportion of cells in the three different phases is the same in the dataset. Another possible solution would be to do a weighted loss function based on the cell phase proportions, such that every phase has the same influence on it during training.\fxnote{Discuss with Hannah if this is the correct place to put this.}
+As it is shown on figure \ref{fig:dataset:discus:tr_dist}, the \gls{tr} of $G_1$ cells is significantly lower than the \gls{tr} of $S$ and $G_2$ cells. This, and that cells in different phases are not in the same proportion in the dataset, could cause the model to make a biased prediction when it is fed with a $S$ or $G_2$ cell. Two possible solutions to this problem are, either to add more cells in phases $S$ and $G_2$ to the dataset, or to sample with replacement over the available cells, so the proportion of cells in the three different phases is the same in the dataset. Another possible solution would be to make a weight loss function based on the proportions of the cell phases, such that every phase has the same influence on it during training.
 
 \begin{figure}[htb]
   \centering
@@ -26,11 +28,4 @@ As it is shown on figure \ref{fig:dataset:discus:tr_dist}, \gls{tr} of $G_1$ cel
   \label{fig:dataset:discus:tr_dist}
 \end{figure}
 
-
-
-Talk here about the other augmentation techniques tried.
-
-Color shifting: normal distribution for random shift tried 
-
-% TODO: https://www.baseclick.eu/product/5-ethynyl-uridine/ inicates: (EU) is a modified nucleoside that can be used for labeling of nascent RNA inside cells. ....experiments indicate that it will be first integrated in de novo RNA, but we have also observed incorporation into DNA after some incubation time.
-% This means that the RNA readouts may be contaminated with DNA if the duration time (30 mins) is to long. Write in the future work that this should be repeated with the dataset where the duration time was 10 mins.
+In \cite{Smilkov_smoothgrad}, Smilkov et al. mention that the addition of random noise to the images during model training, can improve the quality of the score maps (less noisy score maps). For this reason, beside the data augmentation techniques introduced in this section, the addition of random noise was also implemented and tried. However, in practice this did not show any apparent improvement.
