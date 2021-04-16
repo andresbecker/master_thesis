@@ -4,3 +4,120 @@
 \glsresetall
 % define where the images are
 \graphicspath{{./Sections/Dataset/Resources/}}
+
+% why data augmentation
+Data augmentation techniques are widely used to improve the results of \gls{cnn} by reducing overfitting (\cite{krizhevsky2017imagenet}, \cite{simard2003best}). This techniques improve generalization by creating new date from the existing one.
+
+% Data augmentation to focus on spatial information
+However, data augmentation techniques can not only help us to prevent overfitting, they can also be used to remove characteristics of the data that are not of interest to us. In our case, we want the model to rely on spatial information, rather than pixel intensity (color). Therefore, we implement the following data augmentation techniques, which help us to achieve this
+
+\begin{itemize}
+  \item To remove non-relevant data features
+  \begin{itemize}
+    \item Color shifting
+    \item Image zoom in/out
+  \end{itemize}
+  \item To improve model generalization
+  \begin{itemize}
+    \item Horizontal flipping
+    \item 90 degree rotations
+  \end{itemize}
+\end{itemize}
+
+This techniques are applied during training time\footnote{This means that instead of generating new data and then adding it to the dataset before training, new data is generated \hl{on the fly} during training, by applying random predefined transformations to the existing data.} and in the same order as shown in the list above.
+
+% data augmentation on the training and validation set
+Nevertheless, data augmentation techniques are not only limited to the training set. As we shown above, we can divide them into two groups; 1) to remove non-relevant data features and 2) to improve model generalization. So it makes sense to apply the second group to the validation set, so we can get a better idea of how well the model is generalizing during training\footnote{As always in statistics, more data equals more accurate approximations.}. This means that the size of the validation set is increased by a factor of 8, by rotating each element 0, 90, 180, 270 degrees and applying (or not) a horizontal flipping. Note that the transformations performed on the validation set do not introduce any randomness to it.
+
+\subsubsection{Color shifting}
+
+The data preprocessing techniques introduced on section \ref{sec:dataset:data_pp} (clipping and standardization), helped to reduce the influence that the intensity of the pixels, as well as the correlation between channels, have on the prediction of the model. By doing this, we encourage the model to rely more on the spatial information encoded in the images.
+
+However, we can go a little further by shifting the pixel intensities by a random number, which would reduce even more the influence of color on the model prediction. If we sample a different random number for each channel, then the correlation between channels is also reduced. We must be careful here, since during raw data processing (see section \ref{sec:dataset:data_pp:raw_data_p}) zero pixels were added to reconstruct the images. Therefore, if we add a different random number to each channel, then the non-relevant (unmeasured) pixels will have different values. Fortunately, during the creation of the \gls{tfds}, for each cell we included its \hl{cell mask} to its image as another channel (the last one). Therefore, we can use this information to randomly shift only the measured pixels. Mathematically, this means that for the channel $c$ its $i-th$ measured pixel $x_{i,c}$, the shifted pixel $x'_{i,c}$ is defined as
+
+\begin{equation}
+  x'_{i,c} = x_{i,c} + \eta_c
+\end{equation}
+
+\noindent where $\eta_c \sim U(-a, a)$, with $c\in\{0, \dots, C\}$, are i.i.d. random variables.
+
+Figures \ref{fig:dataset:da:ori} and \ref{fig:dataset:da:color_shift} show a cell nucleus image before and after applying per-channel random color shifting respectively.
+
+\subsubsection{Image zoom-in/out}
+
+Size is another characteristic of the cell nucleus that could influence the output of the model. Figure \ref{fig:dataset:da:diff_size} shows three cell nucleus with different sizes. However, as we already mentioned, we seek the model to predict \gls{tr} based on the distribution of organelles and proteins inside the nucleus (spatial information). For this reason, we randomly zoom-in/out the image to either increase or decrease (upsample or dawnsample respectively) the size of the cell nucleus inside it. This zoom is always applied over the center of the image. After that, the image either must be cropped in the center, or add zeros in the borders (padding), so the size of the zoomed image match the original size, i.e. $I_s$. Since this randomize the cell nucleus size, the model can not longer rely on it to make a prediction. Figures \ref{fig:dataset:da:ori} and \ref{fig:dataset:da:central_crop} show an example of this.
+
+% this plots were created using the notebook Preprocessing_resources.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{diff_sizes.jpg}
+  \caption{Cell nucleus with different sizes.}
+  \label{fig:dataset:da:diff_size}
+\end{figure}
+
+However, there are two things to have in mind when the size of the cell nucleus is changed, the maximum zoom-in (to avoid cutting the cell nucleus borders) and the cell nucleus size distribution.
+
+To avoid zooming-in over a cell nucleus image too much and cut its edges, we need to determine the maximum zoom-in ratio $U_{max}$ (which is different for every image of a  cell nucleus). This can be computed as follow
+
+\begin{equation}
+  \begin{split}
+    U_{max} &:= 1 - S_{ratio} \\
+    &:= 1 - \frac{2 d_{min}}{I_s}
+  \end{split}
+\end{equation}
+\noindent where $d_{min}:=min\{a, b, c, d\}$ is the minimum distance between the cell nucleus and the image borders. Figure \ref{fig:dataset:da:crop} illustrates this distances.
+
+Intuitively, $S_{ratio}:=2 d_{min} / I_s$ (cell nucleus size ratio) denotes the proportion that the cell nucleus is occupying in the image (transberzally).
+
+% this plots were created using the notebook Preprocessing_resources.ipynb
+% and the file Central_crop.odg
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.3\linewidth]{Central_crop.jpg}
+  \caption{Distances needed to determine the cell size ratio. The red lines show the distance between the measured pixels of the cell nucleus (border pixels) to the 4 edges of the cell image. The white dashed lines indicates the center of the image.}
+  \label{fig:dataset:da:crop}
+\end{figure}
+
+The last thing that has to be considered, is the distribution of the cell nucleus sizes. Since we are randomizing them, the distribution of the new sizes must be similar to the original distribution. Fortunately, during the raw data processing (see section \ref{sec:dataset:data_pp}), the cell nucleus size ratio $S_{ratio}$ of each cell was computed and saved in the metadata. Figure \ref{fig:dataset:da:cs_dist} shows the distribution of $S_{ratio}$. During model training, the zoom-in/out proportion is sampled considering this distribution.
+
+% this plots were created using the notebook Preprocessing_resources.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.5\linewidth]{cell_size_ratio.jpg}
+  \caption{Cell nucleus size ratio $S_{ratio}$ distribution.}
+  \label{fig:dataset:da:cs_dist}
+\end{figure}
+
+\subsubsection{Horizontal flipping and 90 degree rotations}
+
+Since there is no sense of orientation in a cell (there is no top, bottom, left, or right), flips and rotations will not change the distribution of the data at all. For this reason, we can use these transformations to simply increase the amount of data and alleviate overfitting.
+
+For this work we used random horizontal flips and $k\times90$ (degree) rotations, for $k\in{0, 1, 2, 3}$. As we already mentioned, these transformations are applied in both the training and the validation sets.\footnote{The only difference is that for the validation set, the flips and rotations are applied deterministically, while for the training set they are applied randomly.}. Figures \ref{fig:dataset:da:ori} and \ref{fig:dataset:da:rf} shows an example of a cell nucleus image after being flipped and rotated 180 degrees.
+
+% this plots were created using the notebook Preprocessing_resources.ipynb
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{DA_ori_img.jpg}
+    \caption{Original cell image.}
+    \label{fig:dataset:da:ori}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{DA_color_shift.jpg}
+    \caption{Per-channel random color shift.}
+    \label{fig:dataset:da:color_shift}
+  \end{subfigure}%
+  \vspace{3mm}
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{DA_central_crop.jpg}
+    \caption{Central cropping (downsampling).}
+    \label{fig:dataset:da:central_crop}
+  \end{subfigure}
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{DA_180_and_flip_img.jpg}
+    \caption{Horizontal flipping + 180 degree rotation.}
+    \label{fig:dataset:da:rf}
+  \end{subfigure}
+  \caption{Data augmentation techniques. Figure \subref{fig:dataset:da:ori}) shows channels 10, 11 and 15 of a multichannel image without augmentation techniques. Figure \subref{fig:dataset:da:color_shift}) shows image \subref{fig:dataset:da:ori}) after applying per-channel random color shifting. Figure \subref{fig:dataset:da:central_crop}) shows image \subref{fig:dataset:da:ori}) after applying central cropping (in this case, downsampling). Figure \subref{fig:dataset:da:rf}) shows image \subref{fig:dataset:da:ori}) after applying horizontal flipping and 180 degree rotation (counter-clockwise).}
+  \label{fig:dataset:da}
+\end{figure}
