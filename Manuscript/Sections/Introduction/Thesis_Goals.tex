@@ -1,1 +1,10 @@
-The objective of this work is to predict cell \gls{tr} through cell images that show specific proteins inside the nucleus and \gls{cnn}. This work also try to understand better the factors that influence cell \gls{tr} by applying interpretability techniques to the \gls{cnn} model.
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+\glsresetall
+
+The objective of this work is to predict the RNA concentration within the null of a cell using \glspl{cnn} and multiplexed images of the cell nucleus. These multiplexed images capture the distribution and location of several molecules and proteins, as well as the shape and location of some organelles within a cell nucleus.
+
+Nevertheless, this work goes beyond just trying to predict RNA concentration. Through interpretation methods, we can observe the places in the cell nucleus image that were most relevant to the model when making its prediction (score maps). To do this, we implemented preprocessing and data augmentation techniques aimed to improve the model's training performance and prevent overfitting, but most importantly, to remove non-relevant information from images. This encouraged the model to focus mainly on spatial information and allowed us to obtain cleaner score maps, which can potentially help to understand cellular expression better. 
+
+Finally, we test the veracity of the information in the score maps, by confronting them with a validation method.
