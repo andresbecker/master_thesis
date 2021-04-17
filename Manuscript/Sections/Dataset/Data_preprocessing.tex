@@ -236,3 +236,13 @@ The standardization centers the measured pixels of each channel around 0 (see fi
   \caption{Intensity distribution of measured pixels for channel HDAC3. The channel readouts were taken from the training set. Figure \subref{fig:data_pp:pixel_dist:ori}) shows the distribution without any modification. Figure \subref{fig:data_pp:pixel_dist:clip}) shows the distribution after applying $98\%$ percentile clipping, while figure \subref{fig:data_pp:pixel_dist:clip_z}) shows the distribution after applying same clipping and standardization.}
   \label{fig:data_pp:pixel_dist}
 \end{figure}
+
+Figure \ref{fig:data_pp:outlier} shows 3 different cell nucleus sampled from the resulting \gls{tfds}. Each nucleus is in a different cell phase ($G_1$, $S$ and $G_2$ respectively), and shows a different group of 3 markers (channels).
+
+% Figure created with notebook Preprocessing_resources.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{ds_sample.jpg}
+  \caption{Cell nucleus in phases $G_1$, $S$ and $G_2$ respectively. Each nucleus shows a different group of 3 markers.}
+  \label{fig:data_pp:outlier}
+\end{figure}

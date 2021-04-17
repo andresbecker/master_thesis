@@ -29,7 +29,7 @@ This techniques are applied during training time\footnote{This means that instea
 % data augmentation on the training and validation set
 Nevertheless, data augmentation techniques are not only limited to the training set. As we shown above, we can divide them into two groups; 1) to remove non-relevant data features and 2) to improve model generalization. So it makes sense to apply the second group to the validation set, so we can get a better idea of how well the model is generalizing during training\footnote{As always in statistics, more data equals more accurate approximations.}. This means that the size of the validation set is increased by a factor of 8, by rotating each element 0, 90, 180, 270 degrees and applying (or not) a horizontal flipping. Note that the transformations performed on the validation set do not introduce any randomness to it.
 
-\subsubsection{Color shifting}
+\subsection{Color shifting}
 
 The data preprocessing techniques introduced on section \ref{sec:dataset:data_pp} (clipping and standardization), helped to reduce the influence that the intensity of the pixels, as well as the correlation between channels, have on the prediction of the model. By doing this, we encourage the model to rely more on the spatial information encoded in the images.
 
@@ -43,7 +43,7 @@ However, we can go a little further by shifting the pixel intensities by a rando
 
 Figures \ref{fig:dataset:da:ori} and \ref{fig:dataset:da:color_shift} show a cell nucleus image before and after applying per-channel random color shifting respectively.
 
-\subsubsection{Image zoom-in/out}
+\subsection{Image zoom-in/out}
 
 Size is another characteristic of the cell nucleus that could influence the output of the model. Figure \ref{fig:dataset:da:diff_size} shows three cell nucleus with different sizes. However, as we already mentioned, we seek the model to predict \gls{tr} based on the distribution of organelles and proteins inside the nucleus (spatial information). For this reason, we randomly zoom-in/out the image to either increase or decrease (upsample or dawnsample respectively) the size of the cell nucleus inside it. This zoom is always applied over the center of the image. After that, the image either must be cropped in the center, or add zeros in the borders (padding), so the size of the zoomed image match the original size, i.e. $I_s$. Since this randomize the cell nucleus size, the model can not longer rely on it to make a prediction. Figures \ref{fig:dataset:da:ori} and \ref{fig:dataset:da:central_crop} show an example of this.
 
@@ -88,7 +88,7 @@ The last thing that has to be considered, is the distribution of the cell nucleu
   \label{fig:dataset:da:cs_dist}
 \end{figure}
 
-\subsubsection{Horizontal flipping and 90 degree rotations}
+\subsection{Horizontal flipping and 90 degree rotations}
 
 Since there is no sense of orientation in a cell (there is no top, bottom, left, or right), flips and rotations will not change the distribution of the data at all. For this reason, we can use these transformations to simply increase the amount of data and alleviate overfitting.
 
