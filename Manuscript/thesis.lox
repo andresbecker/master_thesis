@@ -4,8 +4,6 @@
 \babel@toc {english}{}
 \babel@toc {english}{}
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: Fix/rewrite this after finishing the results and bio back.}{2}{section.1.1}%
-\defcounter {refsection}{0}\relax 
 \contentsline {fixme}{Note: Discuss this with Hannah!}{9}{section*.11}%
 \defcounter {refsection}{0}\relax 
 \contentsline {fixme}{Note: If there is time, add here a subsubsection briefly explaining the cell cycle phases.}{9}{equation.2.1.1}%
@@ -14,8 +12,8 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {fixme}{Note: Should I mention than half of the cells are in $G_1$ phase, which means that cell in $G_1$ phase apply more pressure on the optimization of the model parameters during training, while the cells in the $G_2$ phase will not? And/Or should I mention this in the conclusions as a future work?}{23}{table.caption.25}%
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: after finishing, check that the baseline model is still called baseline}{37}{table.caption.38}%
+\contentsline {fixme}{Note: after finishing, check that the baseline model is still called baseline}{37}{table.caption.36}%
 \defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: Add the ResNet50V2 info to the table \ref {table:results:model_performance_comparative}.}{39}{table.caption.40}%
+\contentsline {fixme}{Note: Add the ResNet50V2 info to the table \ref {table:results:model_performance_comparative}.}{39}{table.caption.38}%
 \defcounter {refsection}{0}\relax 
 \contentsline {fixme}{Note: If there is time, add a section containing common parameters}{43}{lstnumber.-2.1}%
