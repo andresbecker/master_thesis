@@ -44,6 +44,7 @@ However, we can go a little further by shifting the pixel intensities by a rando
 Figures \ref{fig:dataset:da:ori} and \ref{fig:dataset:da:color_shift} show a cell nucleus image before and after applying per-channel random color shifting respectively.
 
 \subsection{Image zoom-in/out}
+\label{sec:dataset:data_aug:zoom}
 
 Size is another characteristic of the cell nucleus that could influence the output of the model. Figure \ref{fig:dataset:da:diff_size} shows three cell nucleus with different sizes. However, as we already mentioned, we seek the model to predict \gls{tr} based on the distribution of organelles and proteins inside the nucleus (spatial information). For this reason, we randomly zoom-in/out the image to either increase or decrease (upsample or dawnsample respectively) the size of the cell nucleus inside it. This zoom is always applied over the center of the image. After that, the image either must be cropped in the center, or add zeros in the borders (padding), so the size of the zoomed image match the original size, i.e. $I_s$. Since this randomize the cell nucleus size, the model can not longer rely on it to make a prediction. Figures \ref{fig:dataset:da:ori} and \ref{fig:dataset:da:central_crop} show an example of this.
 

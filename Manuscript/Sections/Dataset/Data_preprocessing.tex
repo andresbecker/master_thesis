@@ -79,6 +79,7 @@ The raw data processing script saves in a specified directory files containing 3
 \end{table}
 
 \subsection{Quality Control}
+\label{sec:dataset:data_pp:qc}
 
 During the transformation from raw data into images, cells that does not pass a quality control are discriminated. This quality control consist on avoiding cells that holds at least one of the following conditions
 \begin{enumerate}
@@ -237,12 +238,12 @@ The standardization centers the measured pixels of each channel around 0 (see fi
   \label{fig:data_pp:pixel_dist}
 \end{figure}
 
-Figure \ref{fig:data_pp:outlier} shows 3 different cell nucleus sampled from the resulting \gls{tfds}. Each nucleus is in a different cell phase ($G_1$, $S$ and $G_2$ respectively), and shows a different group of 3 markers (channels).
+Figure \ref{fig:data_pp:cell_sample} shows 3 different cell nucleus sampled from the resulting \gls{tfds}. Each nucleus is in a different cell phase ($G_1$, $S$ and $G_2$ respectively), and shows a different group of 3 markers (channels).
 
 % Figure created with notebook Preprocessing_resources.ipynb
 \begin{figure}[htb]
   \centering
   \includegraphics[width=\linewidth]{ds_sample.jpg}
   \caption{Cell nucleus in phases $G_1$, $S$ and $G_2$ respectively. Each nucleus shows a different group of 3 markers.}
-  \label{fig:data_pp:outlier}
+  \label{fig:data_pp:cell_sample}
 \end{figure}

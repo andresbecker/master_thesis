@@ -5,4 +5,156 @@
 \glsresetall
 \graphicspath{{./Sections/Methodology/Resources/}}
 
-Mensiona aqui los canales usados y la interpretacion de TR i.e. las moleculas de RNA producidas en 30 mins.
+In this section we specify all the hyperparameters needed to execute the process explained on chapter \ref{ch:dataset}. This contemplates the raw data processing, the quality control, the \gls{tfds} creation, the image preprocessing, as well as data augmentation. Here we also specify some of the experimental setups used in the \gls{mpm} protocol.
+
+\subsection{Multiplexed Protein Maps}
+
+As we explained in section \ref{sec:dataset:multiplexed_protein_maps}, the \gls{mpm} protocol is capable of capturing up to 40 different proteins and molecules within a cell nucleus using fluorescent markers. The \gls{mpm} data provided for this work contains 38 channels, .i.e., readouts of 38 different proteins and molecules. Table \ref{table:tfds_in:channels} in appendix \ref{sec:appendix:tfds}, shows the marker used for each channel. Table \ref{table:apendix:if_markers} (appendix \ref{sec:appendix:if_markers}), shows an explanation of some of these markers.
+
+The \gls{tr} (target variable) was not provided directly with the \gls{mpm} data. For each cell, its \gls{tr} was calculated by averaging the measured pixels of channel 35 (marker \texttt{00\_EU}). For this reason, this channel is not used during model training/prediction. Furthermore, channel 35 contains nuclear readouts of nascent RNA in a given period of time. For the data provided, this time period was the same for each cell (30 minutes) and is specified in the \hl{duration} columns of the metadata.
+
+\subsection{Data preprocessing}
+
+As we explained in section \ref{sec:dataset:data_pp}, the data preprocessing consist of 4 main steps; 1) the raw data processing, 2) the quality control, 3) the creation of the dataset and 4) the image preprocessing.
+
+A complementary explanation of the data preprocessing parameters, as well as implementation references, can be found in the appendices \ref{sec:appendix:raw_data} and \ref{sec:appendix:tfds}.
+
+\subsubsection{Raw data processing}
+
+As we explained in section \ref{sec:dataset:data_pp:dataset_creation}, to build the \gls{tfds} it is necessary to specify the perturbations that will be included in the dataset. For this reason, all the available wells were processed and transformed into images. This included wells exposed to pharmacological and metabolic perturbations, control wells and unperturbed wells. This allows the user to easily create new datasets without having to run the raw data processing first. Table \ref{table:methodology:dataset:raw_data} shows the processed wells separated by perturbation.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{>{\centering\arraybackslash}m{0.35\linewidth} | >{\centering\arraybackslash}m{0.2\linewidth} | >{\centering\arraybackslash}m{0.3\linewidth}}
+    \hline
+    Perturbation type & Perturbation name & Well names \\
+    \hline
+    \multirow{5}{*}{pharmacological/metabolic} & CX5461 & I18, J22, J09 \\
+    \cline{2-3}
+     & AZD4573 & I13, J21, J14, I17, J18 \\
+    \cline{2-3}
+     & meayamycin & I12, I20 \\
+    \cline{2-3}
+    & triptolide & I10, J15 \\
+    \cline{2-3}
+    & TSA & J20, I16, J13 \\
+    \hline
+    control & DMSO & J16, I14 \\
+    \hline
+    unperturbed & normal & J10, I09, I11, J18, J12 \\
+    \hline
+  \end{tabular}
+  \caption{Well names divided by perturbation name and type.}
+  \label{table:methodology:dataset:raw_data}
+\end{table}
+
+Another hyperparameter that needs to be specified during the raw data processing, is the size of the output images $I_s$. This size applies to both, the width and height of the image (square images). Since some prebuilt architectures use a standard image size of 224 by 224, we define $I_s$ as 224.
+
+\subsubsection{Quality Control}
+
+As it is mentioned in section \ref{sec:dataset:data_pp:qc}, the quality control is meant to exclude cells with undesirable features. In our case we discriminate mitotic and border cells. The information used by the quality control is contained in the metadata of each well. Table \ref{table:methodology:dataset:qc} shows the metadata columns and the discriminated values. If a cell has any of these values, then it is excluded.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{>{\centering\arraybackslash}m{0.3\linewidth} | >{\centering\arraybackslash}m{0.3\linewidth} | >{\centering\arraybackslash}m{0.2\linewidth}}
+    \hline
+    Feature & Metadata column name & Discriminated value \\
+    \hline
+    \multirow{3}{*}{Cell in mitosis phace} & \texttt{is\_polynuclei\_HeLa} & 1 \\
+    \cline{2-3}
+     & \texttt{is\_polynuclei\_184A1} & 1 \\
+    \cline{2-3}
+     &  \texttt{cell\_cycle} & \texttt{NaN} \\
+    \hline
+    Border cell & \texttt{is\_border\_cell} & 1 \\
+    \hline
+  \end{tabular}
+  \caption{Discrimination characteristics for quality control.}
+  \label{table:methodology:dataset:qc}
+\end{table}
+
+\subsubsection{Dataset creation and image preprocessing}
+
+As it is explained in section \ref{sec:dataset:data_pp:dataset_creation}, in this work we decided to use a custom \gls{tfds}. Table \ref{table:methodology:dataset:tfds} shows the parameters used to build the dataset employed in this work, together with the image preprocessing parameters.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.25\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.65\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | >{\centering\arraybackslash}m{\mylengthb}}
+    \hline
+    Parameter & Description \\
+    \hline
+    Perturbations to be included in the dataset & \hl{normal} and \hl{DMSO} \\
+    \hline
+    Cell phases to be included in the dataset & $G_1$, $S$, $G_2$ \\
+    \hline
+    Training set split fraction & 0.8 \\
+    \hline
+    Validation set split fraction & 0.1 \\
+    \hline
+    Seed & 123 (for reproducibility of the train, val and test split) \\
+    \hline
+    Percentile & 98 (for clipping / linear scaling / standardization) \\
+    \hline
+    Clipping flag & 1 \\
+    \hline
+    Mean extraction flag & 0  \\
+    \hline
+    Linear scaling flag & 0 \\
+    \hline
+    Standardization (z-score) flag & 1 \\
+    \hline
+    Model input channels & All of them except for channel \texttt{00\_EU} (see table \ref{table:tfds_in:channels})  \\
+    \hline
+    Channel used to compute target variable (output channel) & \texttt{00\_EU} (channel id 35, see table \ref{table:tfds_in:channels}) \\
+    \hline
+  \caption{Parameters used to biuld \gls{tfds} and image preprocessing.}
+  \label{table:methodology:dataset:tfds}
+\end{longtable}
+
+The custom \gls{tfds} created with the parameters specified in table \ref{table:methodology:dataset:tfds} is called \texttt{mpp\_ds\_normal\_dmso\_z\_score}.
+
+The Python script that builds the custom \gls{tfds}, also returns a file with the image preprocessing parameters (\texttt{channels\_df.cvs}) (as this is applied at a per-channel level) and information about the channels (channel name, id, etc.). It also returns another file with the metadata of each cell included in the \gls{tfds} (\texttt{metadata\_df.csv}). These files are stored in the same directory as the \gls{tfds} files.
+
+\subsection{Data augmentation}
+
+In this section we specify the hyperparameters used for the data agumentation techniques introduced in section \ref{sec:dataset:data_augmentation}. Recall that the techniques are either aimed to remove non-relevant characteristics of the data (color shifting, central zoom in/out) or to improve model generalization (horizontal flipping, 90 degree rotations). Table \ref{table:methodology:dataset:augm} shows the used hyperparameters grouped by objective and technique.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.2\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.2\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.25\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthd}{0.22\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | >{\centering\arraybackslash}m{\mylengthb} | >{\centering\arraybackslash}m{\mylengthc} | >{\centering\arraybackslash}m{\mylengthd}}
+    \hline
+    Objective & Technique & Hyperparameter & Description \\
+    \hline
+    \multirow{6}{\mylengtha}{\centering Remove non-relevant features} & \multirow{4}{\mylengthb}{\centering color shifting} & flag & 1 \\
+    \cline{3-4}
+     & & distribution & uniform \\
+    \cline{3-4}
+     & & distribution mean & 0 \\
+    \cline{3-4}
+     & & distribution standard deviation & 1 \\
+    \cline{2-4}
+     & \multirow{2}{\mylengthb}{\centering central zoom in/out} & flag & 1 \\
+    \cline{3-4}
+     & & mode & \texttt{random\_normal}\footnotemark \\
+    \hline
+     \multirow{2}{\mylengtha}{\centering Improve generalization} & horizontal flipping & flag & 1 \\
+    \cline{2-4}
+     & 90 degrees rotations & flag & 1 \\
+    \hline
+  \caption{Parameters used for data augmentation techniques.}
+  \label{table:methodology:dataset:augm}
+\end{longtable}
+
+\footnotetext{This means that the random variable \hl{cell nucleus size ratio} $S_{ratio}$ (see section \ref{sec:dataset:data_aug:zoom}) will be sampled from a normal distribution. However, the user does not specify the parameters (mean and standard deviation). Instead, they are estimated using the information in column \texttt{cell\_size\_ratio} of the \gls{tfds} metadata file. Therefore, the \texttt{return\_cell\_size\_ratio} flag must be set to 1 (True) during raw data processing, so this column is created (see section \ref{sec:dataset:data_pp:raw_data_p} and appendix \ref{sec:appendix:raw_data}).}
+
+Even thought we specify the data augmentation hyperparameters here, in practice these are set for each model and applied during training time. However, all the models showed in this work were trained using these values. A complementary explanation can be found in appendix \ref{sec:appendix:Model_training_IN}.
+
+In section \ref{sec:dataset:data_augmentation} we mentioned that data augmentation techniques can be applied to both the training set and the validation set. However, we also mentioned that only horizontal flips and 90 degree rotations are applied for the validation set. Furthermore, for the training set these techniques are applied randomly, while for the validation set they are applied deterministically. Therefore, the hyperparameters specified in table \ref{table:methodology:dataset:augm} only apply to the training set.
