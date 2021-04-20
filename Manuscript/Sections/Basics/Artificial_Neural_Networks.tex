@@ -1,0 +1,94 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+
+%% Set path to look for the images
+\graphicspath{{./Sections/Basics/Resources/}}
+
+% what is a ANN
+Before explaining what a \gls{cnn} is, let us first introduce and explain \gls{ann} in general.
+
+Roughly speaking, an \gls{ann} is simply a mathematical function $f:\mathbb{R}^D \leftarrow \mathbb{R}^L$, that maps in input vector $x\in\mathbb{R}^D$ with an output vector $y\in\mathbb{R}^L$. However, to be considered an \gls{ann}, $f$ needs to have a specific form
+
+\begin{equation}
+  f()
+  \ref{eq:basics:slp}
+\end{equation}
+
+where $w\in\mathbb{R}^M$ and $\phi$ is a fixed non linear function.
+The vector $w$ are often known as \hl{weights}, while the function $\phi$ as \hl{base function}. Thus an \gls{ann} is simply a nonlinear function that maps a set of input variables $x_i$ to a set of output variables $y_k$ controlled by a vector $w$ of adjustable parameters \cite{bishop2006pattern}.
+
+In practice, the function $f$ shown in equation \ref{} is known as \hl{layer} (or single layer perceptron) and a deep neural network is a function $F$ composed of several layers $f$
+
+\begin{equation}
+  F()
+  \ref{eq:basics:ann}
+\end{equation}
+where $h$ must a non linear function known as \hl{activation function}.
+
+Note that in equation \ref{}, the base function $\phi$ is a composition of the activation function h1 and a linear function xw evaluated in the input vector x.
+
+Graphically, a neural network can be observed in figure \ref{fig:basics:ann:ann}. The layers (without considering the output layer) shown in figure \ref{fig:basics:ann:ann} are known as \hl{hidden layers}, while the circles on this hidden layers are known as \hl{hidden units}.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{Model_training_process.png}
+  \caption{Graphical representation of an \gls{ann}}
+  \label{fig:basics:ann:ann}
+\end{figure}
+
+% explain back prop
+However, once we have defined a \gls{ann}, how can we approximate its parameters (weights and biases)?
+
+%%%
+% Tal vez para esta parte define antes el input as X y el output as Y
+%%%
+Recall that we are dealing with a superviced learning problem. That means, that we have the data with which the \gls{ann} has to be fed (input data i.e., images of cell nucleus), as well as the values that the network should return (output data, i.e. the \gls{tr}). This means that we can fed the \gls{ann} with the available data, and then measure its performance by comparain its output $\hat{y}$ against the true values $y$. For this comparation we must define a \hl{loss function}, which should return high values when the output of the \gls{ann} is far from the true value, and low values when the $\hat{y}$ and $y$ are close. Then, can minimize the value of the loss funtion, just by adjusting the values of $w$ and $b$ (en alguna parte di, por simplicidad los w's y b's se engloban en W).
+
+%here mention why the negative gradient of the output (or loss) with respect parameter
+
+% here introduce the update rule
+
+% here say, now we know we need gradients, so how do ge get them? Back prop!
+The answer to this is through an iterative evaluation an  process known as \hl{back propagation}, which is performed during the \hl{training process}.
+
+% here put an algorithm for the update process (maybe)
+
+% whay ann works?
+In this work, every time we refer to an \gls{ann} we mean a \hl{fully connected feedforward neural network}. In some literature, this is also known as \gls{mlp}.
+
+The properties of \glspl{ann} have been studied extensively before (\cite{cybenko1989approximation}, \cite{hornik1989multilayer}, \cite{funahashi1989approximate}) and established in the \hl{Universal approximation theorem}
+
+\begin{theorem}[Universal approximation theorem]
+  An \gls{mlp} with a linear output layer and one hidden layer can approximate any continuous function defined over a closed and bounded subset of $\mathbb{R}^D$, under mild assumptions on the activation function (\hl{squashing} activation function) and given the number of hidden units is large enough.
+\end{theorem}
+
+For this reason \gls{ann} are known as \hl{universal approximators}, since they are able to approximate any continuous function on a compact\footnote{A set $A$ in a metric space is said to be \hl{compact} if it is close (i.e., it contain all its limit points) and bounded (i.e., all its points lie within some fixed distance of each other) \cite{bartle2000introduction}.} input domain with an arbitrary accuracy \cite{bishop2006pattern}. These means that, as long as a \gls{ann} has a sufficiently large number of hidden units, the nn can be reduce the loss function as much as we want. However, nice property can also lead to a not desirable property know as \hl{overfitting}.
+
+In practice, \hl{overfitting} means that the ann is able predict the data used to train the model with low error (low bias), but it has a high error when it is used on unseen data (high variance). This means that the ann \hl{memorized} the train data, and therefore it is unable to \hl{generalize} correctly.
+
+On the other hand, \hl{underfitting} is the when the model always returns a high error, no matter what data is used to feed it (high bias and low variance).
+
+Figure \ref{} shows an example non-linear regression problem with over (\subfig{}) and under fitting (\subfig{}).
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{}
+  \caption{}
+  \label{fig:basics:ann:over_under_fitting}
+\end{figure}
+
+In practice, we seek to approximate models that has low bias and low variance (i.e., good accuracy and good generalization).
+
+% here say how to prevent overfitting (i.e. how to train models and chose hyper params)
+
+As we saw in equation \ref{eq:basics:ann}, a \gls{ann} has sever hyperparameters that need to be specified. This hyperparameters are the \hl{number of layers} (also known as hidden layers), the \hl{number of units} (also known as \hl{neurons}) per layers and \hl{activation function} of each layer. In practice, these hyperparameters are chosen empirically by means of a validation set.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{Model_training_process.png}
+  \caption{Model building process.}
+  \label{fig:basics:model_train_process}
+\end{figure}
