@@ -8,56 +8,111 @@
 \graphicspath{{./Sections/Basics/Resources/}}
 
 % what is a ANN
-Before explaining what a \gls{cnn} is, let us first introduce and explain \gls{ann} in general.
 
-Roughly speaking, an \gls{ann} is simply a mathematical function $f:\mathbb{R}^D \leftarrow \mathbb{R}^L$, that maps in input vector $x\in\mathbb{R}^D$ with an output vector $y\in\mathbb{R}^L$. However, to be considered an \gls{ann}, $f$ needs to have a specific form
-
-\begin{equation}
-  f()
-  \ref{eq:basics:slp}
-\end{equation}
-
-where $w\in\mathbb{R}^M$ and $\phi$ is a fixed non linear function.
-The vector $w$ are often known as \hl{weights}, while the function $\phi$ as \hl{base function}. Thus an \gls{ann} is simply a nonlinear function that maps a set of input variables $x_i$ to a set of output variables $y_k$ controlled by a vector $w$ of adjustable parameters \cite{bishop2006pattern}.
-
-In practice, the function $f$ shown in equation \ref{} is known as \hl{layer} (or single layer perceptron) and a deep neural network is a function $F$ composed of several layers $f$
+Roughly speaking, an \gls{ann} is a non-linear function $f:\mathbb{R}^D \rightarrow \mathbb{R}^L$, that maps an input $\bs{x}\in\mathbb{R}^D$ with an output $\bs{y}\in\mathbb{R}^L$. Of course, to consider $f$ as a \gls{ann}, $f$ must have a specific form that will be address later. However, for the sake of this explanation, let us start by defining a simple function as follow
 
 \begin{equation}
-  F()
-  \ref{eq:basics:ann}
+  \begin{split}
+    f(\bs{x},\bs{w}) &:= h \left(w_0 + \sum_{j=1}^{M-1}w_j\phi_j(\bs{x}) \right) \\
+    &= h(\bs{w}^T\bs{\phi}(\bs{x})) \\
+    &:= h(z)
+  \end{split}
+  \label{eq:basics:slp}
 \end{equation}
-where $h$ must a non linear function known as \hl{activation function}.
 
-Note that in equation \ref{}, the base function $\phi$ is a composition of the activation function h1 and a linear function xw evaluated in the input vector x.
+\noindent where $\bs{\phi}:\mathbb{R}^{D+1} \rightarrow \mathbb{R}^M$ is an element-wise function, with $\phi_0:=1$, know as \hl{basis function}, $h:\mathbb{R} \rightarrow \mathbb{R}$ is a function know as \hl{activation function} and $\bs{w}\in\mathbb{R}^M$ is the parameter vector. The parameters $w_j$, with $j\in\{1,\dots M-1\}$ are known as \hl{weights}, while the parameter $w_0$ is know as \hl{bias}.
 
-Graphically, a neural network can be observed in figure \ref{fig:basics:ann:ann}. The layers (without considering the output layer) shown in figure \ref{fig:basics:ann:ann} are known as \hl{hidden layers}, while the circles on this hidden layers are known as \hl{hidden units}.
+Then, an \gls{ann} is composition of functions of the same form as \ref{eq:basics:slp}, with non-linear \hl{activation functions}, and where the basis functions are also of the same form as \ref{eq:basics:slp} (\cite{bishop2006pattern})
+
+\begin{equation}
+  F(\bs{x}, \bs{W}) :=
+  h_K(\bs{w}^T_K h_{K-1}(\bs{w}^T_{K-1} \dots h_{0}(\bs{w}^T_0 \bs{x}) \dots ))
+  \label{eq:basics:ann}
+\end{equation}
+
+The subscript in the parameter vectors $\bs{w}_k$ and the activation functions $h_k$, with $k\in\{0, \dots, K\}$, of \ref{eq:basics:ann} represents the depth of the layers. Note that unlike the other layers, the base function of the \hl{input layer} (k = 0) is the identity function. Furthermore, the activation function of the \hl{output layer} $h_K$ does not necessarily have to be non-linear. Instead, it is chosen based on the type of function we want to approximate. In our case, since we have a regression problem (predicting \gls{tr}), $h_K$ is chosen as the identity function.
+
+There are different non-linear activation functions that can be chosen for the hidden units. However, all the models showed in this work use the \gls{relu}
+
+\begin{equation}
+  ReLU := max\{0, x\}
+\end{equation}
+
+Figure \ref{fig:basics:ann:relu} shows the \gls{relu} activation function.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.8\linewidth]{Model_training_process.png}
-  \caption{Graphical representation of an \gls{ann}}
+  \includegraphics[width=0.8\linewidth]{}
+  \caption{\gls{relu} activation function.}
+  \label{fig:basics:ann:relu}
+\end{figure}
+
+Figure \ref{fig:basics:ann:ann} shows a graphical representation of a \gls{ann}. The circles represent the activation function applied to what is inside it. Black colored circles represent the identity function, red colored circles the non-linear activation function for the hidden layers, while green any function for the output layer that suits the problem we want to solve. Note that values inside the circles of the hidden and output layers $z^k_i$, for $k\in\{0, \dots, K\}$ and $i$ representing one of the units of the $k$ layer, are the output of a function of the same form as \ref{eq:basics:slp}. The lines connecting the circles represent the weights and biases corresponding to each layer $\bs{W}_k$, for $k\in\{0, \dots, K\}$. The circles in the \hl{hidden layers} are known as \hl{hidden units}.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{Diagrams/ANN.jpg}
+  \caption{Graphical representation of an \gls{ann}. The color of the circles represents the type of activation function. Black means the identity, red a non-linear function for the hidden layers and green any function for the output layer.}
   \label{fig:basics:ann:ann}
 \end{figure}
 
-% explain back prop
-However, once we have defined a \gls{ann}, how can we approximate its parameters (weights and biases)?
+Strictly speaking, equation \ref{eq:basics:ann} and figure \ref{fig:basics:ann:ann} represent a \hl{fully connected feedforward neural network}. However, in this work we will refer to it just as \gls{ann}, which in some literature is also known as \gls{mlp}.
 
-%%%
-% Tal vez para esta parte define antes el input as X y el output as Y
-%%%
-Recall that we are dealing with a superviced learning problem. That means, that we have the data with which the \gls{ann} has to be fed (input data i.e., images of cell nucleus), as well as the values that the network should return (output data, i.e. the \gls{tr}). This means that we can fed the \gls{ann} with the available data, and then measure its performance by comparain its output $\hat{y}$ against the true values $y$. For this comparation we must define a \hl{loss function}, which should return high values when the output of the \gls{ann} is far from the true value, and low values when the $\hat{y}$ and $y$ are close. Then, can minimize the value of the loss funtion, just by adjusting the values of $w$ and $b$ (en alguna parte di, por simplicidad los w's y b's se engloban en W).
+\subsubsection{Update rule}
 
-%here mention why the negative gradient of the output (or loss) with respect parameter
+Sow far we have introduced the general form an \gls{ann} must have. Moreover, equation \ref{eq:basics:ann} shows that an \gls{ann} is simply a non-linear function controlled by a set of adjustable parameters $\bs{W}$. Therefor the question is, how can we approximate this parameters?
 
-% here introduce the update rule
+Recall that we are dealing with a supervised learning problem, which means that we can use both the input data (images of cell nucleus, $\bs{X}$) and the output data (the \glspl{tr}, $\bs{Y}$) to approximate $\bs{W}$. Therefore, we can fed the \gls{ann} with $\bs{X}$, and then measure its performance by comparing its output $\hat{\bs{Y}}$ against the true values $\bs{Y}$.
 
-% here say, now we know we need gradients, so how do ge get them? Back prop!
-The answer to this is through an iterative evaluation an  process known as \hl{back propagation}, which is performed during the \hl{training process}.
+This comparison is made by means of a \hl{loss function} $\mathcal{L}$ that must be chosen beforehand. The choice of $\mathcal{L}$ depends mainly on the type of problem you are solving (regression, classification, etc.). However, even for each type, there are many different options. For now, let us just say that $\mathcal{L}$ should return high values when $\hat{\bs{Y}}$ is far from the true values $\bs{Y}$, and low when they are close.
 
-% here put an algorithm for the update process (maybe)
+Then, we can fit the values of $\bs{W}$, by minimizing the loss function $\mathcal{L}$ each time the model is fed with an input value $\bs{x}$. Since the gradient of $\mathcal{L}$ with respect to $\bs{W}$ (i.e., $ \nabla_{\bs{W}} \mathcal{L}$) returns the direction in which the loss function grows the fastest, then we choose $- \nabla_{\bs{W}} \mathcal{L}$ as the direction of our update rule
 
-% whay ann works?
-In this work, every time we refer to an \gls{ann} we mean a \hl{fully connected feedforward neural network}. In some literature, this is also known as \gls{mlp}.
+\begin{equation}
+  \bs{W}_{new} = \bs{W}_{old} - \alpha \nabla_{\bs{W}} \mathcal{L}(\bs{W}_{old})
+  \label{eq:basics:ann:learn_rule}
+\end{equation}
+
+\noindent where $\alpha \in \mathbb{R}^+$ (known as \hl{learning rate}) controls how much we move in the direction of $-\nabla_{\bs{W}} \mathcal{L}(\bs{W}_{old})$ on every step.
+
+The iterative method in which \ref{eq:basics:ann:learn_rule} is applied over elements of $\bs{X}$ to optimize $\bs{W}$ is known as \gls{gd} \cite{bishop2006pattern}. However, in practice \ref{eq:basics:ann:learn_rule} is not applied for a single element of $\bs{X}$ every time, but to a random subset of $\bs{X}$ (known as a \hl{Batch}) instead. This process is known as \gls{sgd} and computationally is less  expensive than \gls{gd}.
+
+However, \gls{gd} (\gls{sgd}) has a downside, the choice of its hyperparameter $\alpha$ (learning rate). In practice, it has been shown that the correct choice of $\alpha$ is essential to train an \gls{ann} successfully. Therefore, other algorithms (\hl{optimizers}) have been proposed to mitigate this problem. The revision of these optimizers is out of the scope to this work. However, all of them follow the same idea proposed by \gls{gd}. For example, instead of having a fixed learning rate $\alpha$ as in \gls{gd}, the \gls{adam} optimizer adapts its learning rate dynamically during training depending on the mean and variance of the loss function \cite{kingma2014adam}.
+
+\subsubsection{Back propagation}
+
+Nevertheless, there is still one question that needs to be answered, which is how to efficiently calculate the derivative of the loss function ($\nabla_{\bs{W}} \mathcal{L}$) with respect to all the parameters of the \gls{ann}. The answer to this is through an algorithm called \hl{backpropagation}, which is performed during the \hl{training process}. Again, there is a lot of literature that explains this in depth(for instance \cite{Goodfellow-et-al-2016} or \cite{bishop2006pattern}). Therefor, here we will just provide the intuition behind it.
+
+Recall that $\mathcal{L}$ is a function of the true values $y$ and $\hat{y}$ i.e., $\mathcal{L}(y, \hat{y})$. Also from equation \ref{eq:basics:ann} and figure \ref{fig:basics:ann:ann} note that
+
+\begin{equation}
+  \begin{split}
+    y &:= F(\bs{x}, \bs{W}) \\
+    &= h_K(\bs{z}^K) \\
+    &= h_K(\bs{W}_K^T h_{K-1}(\bs{z}^{K-1}))
+  \end{split}
+  \label{eq:basics:ann:backprop_1}
+\end{equation}
+
+and therefore
+
+\begin{equation}
+  \begin{split}
+    \nabla_{\bs{W}_K} \mathcal{L} &= \frac{\partial \mathcal{L}}{\partial \bs{W}_K} \\
+    &= \frac{\partial \mathcal{L}}{\partial \hat{y}}
+    \frac{\partial \hat{y}}{\partial \bs{z^K}}
+    \frac{\partial \bs{z^K}}{\partial \bs{W}_K} \\
+  \end{split}
+  \label{eq:basics:ann:backprop_2}
+\end{equation}
+
+\noindent which is just the product of the derivative of the loss function w.r.t. $\hat{y}$ (i.e., $\frac{\partial \mathcal{L}}{\partial \hat{y}}$), the derivative of the activation function of the output layer w.r.t the argument of the last layer (i.e., $\frac{\partial \hat{y}}{\partial \bs{z^K}}$) and the output of the layer $K-1$ (i.e., $\frac{\partial \bs{z^K}}{\partial \bs{W}_K}=h_{K-1}(\bs{z^{K-1}})$).
+
+Note that we can easily compute the gradient of $\mathcal{L}$ w.r.t deeper parameters $\bs{W}_k$ (for $k\in\{0, \dots, K-1\}$), just by extending \ref{eq:basics:ann:backprop_1} and \ref{eq:basics:ann:backprop_2}.
+
+This shows how by means of the \hl{chain rule}\footnote{$(f \circ g)'=(f \circ g) \cdot g'$, or equivalently $h'(x)=f'(g(x))g'(x)$, for $h(x):=f(g(x))$.}, the backpropagation algorithm can compute the gradient of the loss function w.r.t. a specific parameter, just by multiplying the derivative of the loss function, the derivative of the activation functions and some values computed during the evaluation of the \gls{ann}.
+
+\subsubsection{Model development}
 
 The properties of \glspl{ann} have been studied extensively before (\cite{cybenko1989approximation}, \cite{hornik1989multilayer}, \cite{funahashi1989approximate}) and established in the \hl{Universal approximation theorem}
 
@@ -65,26 +120,51 @@ The properties of \glspl{ann} have been studied extensively before (\cite{cybenk
   An \gls{mlp} with a linear output layer and one hidden layer can approximate any continuous function defined over a closed and bounded subset of $\mathbb{R}^D$, under mild assumptions on the activation function (\hl{squashing} activation function) and given the number of hidden units is large enough.
 \end{theorem}
 
-For this reason \gls{ann} are known as \hl{universal approximators}, since they are able to approximate any continuous function on a compact\footnote{A set $A$ in a metric space is said to be \hl{compact} if it is close (i.e., it contain all its limit points) and bounded (i.e., all its points lie within some fixed distance of each other) \cite{bartle2000introduction}.} input domain with an arbitrary accuracy \cite{bishop2006pattern}. These means that, as long as a \gls{ann} has a sufficiently large number of hidden units, the nn can be reduce the loss function as much as we want. However, nice property can also lead to a not desirable property know as \hl{overfitting}.
+For this reason \gls{ann} are known as \hl{universal approximators}, since they are able to approximate any continuous function on a compact\footnote{A set $A$ in a metric space is said to be \hl{compact} if it is close (i.e., it contain all its limit points) and bounded (i.e., all its points lie within some fixed distance of each other) \cite{bartle2000introduction}.} input domain with an arbitrary accuracy \cite{bishop2006pattern}.
 
-In practice, \hl{overfitting} means that the ann is able predict the data used to train the model with low error (low bias), but it has a high error when it is used on unseen data (high variance). This means that the ann \hl{memorized} the train data, and therefore it is unable to \hl{generalize} correctly.
+These means that, as long as a \gls{ann} has a sufficiently large number of hidden units, the loss function can be reduced as much as desired. However, this nice property can also lead to an unwanted one known as \hl{overfitting}.
+Intuitively this means that the \gls{ann} \hl{memorize} the data used to train it (low error/bias), and therefore it is not able to perform (or \hl{generalize}) well when it is fed with new data (high error/bias and variance). This happens mainly when the \gls{ann} is optimized/fed too many times with the same data.
 
-On the other hand, \hl{underfitting} is the when the model always returns a high error, no matter what data is used to feed it (high bias and low variance).
+On the other hand, \hl{underfitting} means that the \gls{ann} performs poorly on both new data and data used to train the network (high bias and low variance). This usually happens when the training time is insufficient or the \gls{ann} is not complex enough (too few hidden units and/or layers).
 
-Figure \ref{} shows an example non-linear regression problem with over (\subfig{}) and under fitting (\subfig{}).
+Figure \ref{fig:basics:ann:fitting} shows synthetic data (blue circles), generated from a sine function (green line) and random noise sampled from a normal distribution.
+The red line in figure \ref{fig:basics:ann:fitting:under} represents a fitted model with high bias and low variance (underfitting), while in figure \ref{fig:basics:ann:fitting:over} a model with low bias and high variance (overfitting). The red line in figure \ref{fig:basics:ann:fitting:good}, represents a model with low bias and variance (good fit and good generalization).
+
+% this plots were extracted from page 7 (Bishop) and adapted in the file overfitting.odg
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Diagrams/underfitting.jpg}
+    \caption{Underfitted model.}
+    \label{fig:basics:ann:fitting:under}
+  \end{subfigure}
+  \vspace{3mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Diagrams/goodfit.jpg}
+    \caption{Model with good fit and generalization.}
+    \label{fig:basics:ann:fitting:good}
+  \end{subfigure}
+  \vspace{3mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Diagrams/overfitting.jpg}
+    \caption{Overfitted model.}
+    \label{fig:basics:ann:fitting:over}
+  \end{subfigure}
+  \caption{Representation of a model (red line) with underfitting \subref{fig:basics:ann:fitting:under}), good fit \subref{fig:basics:ann:fitting:good}) and overffiting \subref{fig:basics:ann:fitting:over}), trained over synthetic data (blue small circles). The synthetic data was generating by adding random noise to a sine function (green line) on the interval $[0,1]$. Image source \cite{bishop2006pattern}.}
+  \label{fig:basics:ann:fitting}
+\end{figure}
+
+In practice, we seek to fit models that has low bias and low variance (i.e., good accuracy and good generalization). Therefore, to prevent overfitting we split the data into 3 different sets; \hl{training}, \hl{validation} and \hl{test}, and train the model using only the first set. Then, during model training, we measure how well the model is generalizing by comparing the value of the loss function when it is evaluated in the training and validation set \footnote{This is usually known as the \hl{bias–variance tradeoff}.}.
+During the model development, the \hl{test} set is never evaluated and is only used at the end, to report the model performance. This methodology is shown in figure \ref{fig:basics:model_train_process}
+
+Figure \ref{fig:basics:bias_variance} shows this \hl{bias–variance tradeoff} between training and validation set. In practice, multiple versions of the model are saved during training and then the one with the lowest validation error is chosen.
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=0.8\linewidth]{}
-  \caption{}
-  \label{fig:basics:ann:over_under_fitting}
+  \caption{Bias–variance tradeoff.}
+  \label{fig:basics:bias_variance}
 \end{figure}
-
-In practice, we seek to approximate models that has low bias and low variance (i.e., good accuracy and good generalization).
-
-% here say how to prevent overfitting (i.e. how to train models and chose hyper params)
-
-As we saw in equation \ref{eq:basics:ann}, a \gls{ann} has sever hyperparameters that need to be specified. This hyperparameters are the \hl{number of layers} (also known as hidden layers), the \hl{number of units} (also known as \hl{neurons}) per layers and \hl{activation function} of each layer. In practice, these hyperparameters are chosen empirically by means of a validation set.
 
 \begin{figure}[!ht]
   \centering
@@ -92,3 +172,12 @@ As we saw in equation \ref{eq:basics:ann}, a \gls{ann} has sever hyperparameters
   \caption{Model building process.}
   \label{fig:basics:model_train_process}
 \end{figure}
+
+The methodology shown in figure \ref{fig:basics:model_train_process} is also used to optimize the hyperparameters of the model, like the number hidden units/layers or the activation function for the hidden layers.
+
+% batch normalization
+\subsubsection{Batch Normalization}
+
+TODO: has un plot de la relu pon h(z) en y and z in x. No vuelvas a hacer el diagrama! buscalo o pon cualquier referencia!
+
+Overfitting is not the only problem that ANN suffers...

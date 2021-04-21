@@ -15,7 +15,7 @@ Road map. Here we only explain what is a NN and maybe mention the over and under
   \item training logic: Data -> training process -> prediction
 \end{enumerate}
 
-\glspl{ann} are universal approximators widely used in the field of \gls{ml} and an important part of this work. This is a very broad subject and there are entire books that cover this in detail, like  \cite{Goodfellow-et-al-2016} or \cite{bishop2006pattern}. However, in this section we will give a small introduction to \glspl{ann}, specially to a specific kind of \gls{ann} known as \glspl{cnn}.
+\glspl{ann} are universal approximators widely used in the field of \gls{ml} and an important part of this work. This is a very broad subject and there are entire books that cover this in detail, like  \cite{Goodfellow-et-al-2016} or \cite{bishop2006pattern}. However, in this section we will give a small introduction to \glspl{ann} and \glspl{cnn}, which are a type of \gls{ann} that were specifically designed to deal with data in the form of images.
 
 Before defining what exactly is a \gls{ann}, lest first recall the definition of machine learning. We refer as \gls{ml} to the group of algorithms that automatically improve (learn) through experience. Among this algorithms, we could say that there are three main classes (which depend on the kind of experience we provide):
 
@@ -25,4 +25,8 @@ Before defining what exactly is a \gls{ann}, lest first recall the definition of
   \item \textbf{Reinforcement Learning}: No experience (data) is given, instead a dynamic \hl{environment} is provided and an \hl{agent} must learn how to interact with it in order to achieve a goal.
 \end{itemize}
 
-\glspl{ann} can be applied in any of the 3 kinds of learning algorithms listed above. However, \hl{supervised learning} is the one that best illustrates \glspl{ann} and it is also the kind of challenge we're dealing with. Recall that we seek to approximate a function (a \gls{cnn}), such that when it is fed with an images of a cell nucleus (input data), it can approximate the \gls{tr} (output data) of the corresponding cell.
+An \gls{ann} can be used in any of the 3 kinds of learning algorithms listed above.
+
+However, recall that the objective of this work is to approximate a function (in this case a \gls{cnn}), such that when it is fed with images of a cell nucleus (input data), it predicts the corresponding \gls{tr} (output data) Therefore, we are dealing with a \hl{supervised learning} task.
+
+Before explaining what a \gls{cnn} is, let us first introduce and explain \gls{ann} in general.
