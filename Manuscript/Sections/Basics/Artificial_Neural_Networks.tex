@@ -40,9 +40,10 @@ There are different non-linear activation functions that can be chosen for the h
 
 Figure \ref{fig:basics:ann:relu} shows the \gls{relu} activation function.
 
+% Figure made in notebook Preprocessing_resources.ipynb
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.8\linewidth]{}
+  \includegraphics[width=0.6\linewidth]{ReLU.jpg}
   \caption{\gls{relu} activation function.}
   \label{fig:basics:ann:relu}
 \end{figure}
@@ -157,27 +158,58 @@ The red line in figure \ref{fig:basics:ann:fitting:under} represents a fitted mo
 In practice, we seek to fit models that has low bias and low variance (i.e., good accuracy and good generalization). Therefore, to prevent overfitting we split the data into 3 different sets; \hl{training}, \hl{validation} and \hl{test}, and train the model using only the first set. Then, during model training, we measure how well the model is generalizing by comparing the value of the loss function when it is evaluated in the training and validation set \footnote{This is usually known as the \hl{bias–variance tradeoff}.}.
 During the model development, the \hl{test} set is never evaluated and is only used at the end, to report the model performance. This methodology is shown in figure \ref{fig:basics:model_train_process}
 
-Figure \ref{fig:basics:bias_variance} shows this \hl{bias–variance tradeoff} between training and validation set. In practice, multiple versions of the model are saved during training and then the one with the lowest validation error is chosen.
+Figure \ref{fig:basics:bias_variance} shows this \hl{bias–variance tradeoff} between training and validation set. In practice, multiple versions of the model are saved during training and then the one with the lowest validation error is chosen (red dot on figure \ref{fig:basics:bias_variance}).
 
+% figure taken from BL_070121_0942.ipynb
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.8\linewidth]{}
-  \caption{Bias–variance tradeoff.}
+  \includegraphics[width=0.8\linewidth]{bias_variance.png}
+  \caption{Bias–variance tradeoff. In orange (respectively blue) the loss function curve when it is evaluated in the validation (respectively training) set. The red dot shows the lowest loss for the validation set.}
   \label{fig:basics:bias_variance}
 \end{figure}
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.8\linewidth]{Model_training_process.png}
-  \caption{Model building process.}
+  \includegraphics[width=0.8\linewidth]{Diagrams/Model_methodologt.jpg}
+  \caption{Model development methodology.}
   \label{fig:basics:model_train_process}
 \end{figure}
 
-The methodology shown in figure \ref{fig:basics:model_train_process} is also used to optimize the hyperparameters of the model, like the number hidden units/layers or the activation function for the hidden layers.
+The methodology shown in figure \ref{fig:basics:model_train_process} is also used to optimize the hyperparameters of the model, like the number hidden units/layers or the activation function of the hidden layers.
 
-% batch normalization
 \subsubsection{Batch Normalization}
 
-TODO: has un plot de la relu pon h(z) en y and z in x. No vuelvas a hacer el diagrama! buscalo o pon cualquier referencia!
+However, overfitting is not the only problem we may encounter when training an \gls{ann}. Training \gls{ann} with several layers can be complicates, since the distribution of the data can change from layer to layer. This means that the input and output distribution of a layer will not necessarily be the same. It has been empirically proven that this can affect the training performance, since it require the use of lower learning rates \cite{ioffe2015batch}. This can also lead to \hl{saturation}\footnote{\hl{Saturation} is a commonly used term to refer to the situation when the evaluation of a "squashing" function returns values close to some of its horizontal asymptotes most of the time. Remember that these "squash" functions (like \hl{Sigmoid} or \hl{tanh}) compress the real line $(-\inf, \inf)$ into an interval of finite length $(a, b)$.} of the activation functions, so a more careful initialization of the \gls{ann} parameters is required. To address this problem Ioffe et al. \cite{ioffe2015batch} proposed to normalize the layer inputs.
 
-Overfitting is not the only problem that ANN suffers...
+Roughly speaking, batch normalization consist of two main steps; 1) the standardization of the layer input and 2) the normalization of the standardized data. For the first step the layer input is standardized using parameters extracted from the \hl{batch}
+
+\begin{equation}
+    \bs{z}'_k := \frac{\bs{z}_k-\bs{\mu}_k}{\sqrt{\bs{\sigma}_k^2-\epsilon}}
+\end{equation}
+\noindent with
+\begin{equation}
+  \begin{split}
+    \bs{\mu}_k &= \frac{1}{M}\sum_{m=1}^M \bs{z}_k \\
+    \bs{\sigma}_k^2 &= \frac{1}{M}\sum_{m=1}^M (\bs{z}_k - \bs{\mu}_k)^2 \\
+  \end{split}
+\end{equation}
+
+\noindent where $M$ is the \hl{Batch} size and $k$, with $k \in \{0 \dots K\}$, denotes the layer.
+
+Note that for each layer $k$ we have different normalization parameters $\bs{\mu}_k$ and $\bs{\sigma}_k$. Moreover, this normalization parameters are vectors of the same shape as the layer size (i.e., one pair of normalization parameters per unit/neuron).
+
+The second step in batch normalization consist on normalizing the standardized data $\bs{z}'_k$ using parameters $\bs{\gamma}_k$ and $\bs{\beta}_k$ learned during training
+
+\begin{equation}
+    \overset{\sim}{\bs{z}}_k := \bs{\gamma}_k \odot \bs{z}'_k + \bs{\beta}_k
+\end{equation}
+
+\noindent where $\odot$ denotes \hl{element-wise} multiplication.
+
+At the beginning of the training $\bs{\gamma}_k=1$ and $\bs{\beta}_k=0$ are used for all the layers and units.
+
+During training, the normalization parameters of each epoch are stored, so the average $\bar{\bs{\gamma}}_k$ and $\bar{\bs{\beta}}_k$ can be used when the model is not training (during evaluation).
+
+\subsubsection{Residual Block}
+
+Another technique that makes deep \gls{ann} training more stable is the use of \hl{residual blocks}.
