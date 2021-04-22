@@ -61,7 +61,7 @@ tf_dataset_parameters.json
 **/*.lox
 **/*.nav
 **/*.out
-**/*.pdf
+#**/*.pdf
 **/*.ps
 **/*.snm
 **/*.synctex.gz
