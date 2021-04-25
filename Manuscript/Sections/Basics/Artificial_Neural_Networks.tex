@@ -204,12 +204,18 @@ The second step in batch normalization consist on normalizing the standardized d
     \overset{\sim}{\bs{z}}_k := \bs{\gamma}_k \odot \bs{z}'_k + \bs{\beta}_k
 \end{equation}
 
-\noindent where $\odot$ denotes \hl{element-wise} multiplication.
+\noindent where $\odot$ denotes \hl{element-wise} multiplication. At the beginning of the training $\bs{\gamma}_k=1$ and $\bs{\beta}_k=0$ are used for all the layers and units.
 
-At the beginning of the training $\bs{\gamma}_k=1$ and $\bs{\beta}_k=0$ are used for all the layers and units.
+During training, the normalization parameters of each epoch are stored, so the average ($\bar{\bs{\gamma}}_k$ and $\bar{\bs{\beta}}_k$) can be used during evaluation (when the model is not training).
 
-During training, the normalization parameters of each epoch are stored, so the average $\bar{\bs{\gamma}}_k$ and $\bar{\bs{\beta}}_k$ can be used when the model is not training (during evaluation).
+\subsubsection{Residual Block V2}
 
-\subsubsection{Residual Block}
+As already mentioned, the \hl{Universal approximation theorem} guarantees that the training error can be reduced by adding more layer to an \gls{ann}. However, in practice it is not that simple. As we add layers to an \gls{ann}, the training becomes more unstable and difficult as we can face vanishing or exploding gradients (when the value of the gradients become very close to 0 or $\inf$ respectively during back propagation). To overcome this problem, He et al. (\cite{he2015deep} and \cite{he2016identity}) proposed the \hl{residual blocks}, which have been empirically shown to make deep \gls{ann} training more stable.
+The core idea of residual blocks is to reformulate the layers as \hl{learning residual functions} with reference to the layer inputs, by adding an \hl{identity connection}. Then, if a layer is not longer beneficial to the \gls{ann} (e.g. in case of gradient vanishing), the \gls{ann} can just "skip" it. Figure \ref{fig:basics:residual_block} shows a diagram of the second version of a residual block \cite{he2016identity}.
 
-Another technique that makes deep \gls{ann} training more stable is the use of \hl{residual blocks}.
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=\linewidth]{Diagrams/Residual_block_v2.jpg}
+  \caption{Residual block V2.}
+  \label{fig:basics:residual_block}
+\end{figure}

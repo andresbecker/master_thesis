@@ -1,0 +1,105 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+
+%% Set path to look for the images
+\graphicspath{{./Sections/Basics/Resources/}}
+
+So far we have explained how \glspl{ann} works assuming that we feed them with vectors of fixed length. Even though we could take a multichannel image and transform it into a vector, in practice this would be computationally very expensive. For instance, assuming that we have a 3 channel image of size 224 by 224, this would result into an input vector of length $3 \cdot 224 \cdot 224=150'528$. Then, if the first layer of our network has 100 units, this would mean more than 15 millions of parameters only for the first layer. Furthermore, the transformation of our image into a vector would mean a loss of spatial information. This means that the \gls{ann} would not be able to capture or use the spatial relationship between pixels and shapes within the image.
+
+A \gls{cnn} is a type of \gls{ann} widely used to analyze data in the form of images. The intuition behind a \gls{cnn} is that instead of just looking at an image and trying to predict the target value directly, first learn some \hl{features} within the image, and then make the predict base on this features.
+To achieve this, \glspl{cnn} mainly use \hl{convolution} and \hl{pooling} layers.
+
+\subsubsection{Convolution layer}
+
+The only difference a
+
+A convolution layer is very similar to a regular layer described in section \ref{sec:basics:ANN}. Basically, they only differ in the way the layer input is multiplied by the the layer weights.
+Recall that in a regular layer, the input of a unit is the dot product between the layer input and its corresponding weight vector (i.e., $z=\bs{w}^T\bs{x}$).
+This means that for each element in the input vector $\bs{x}$, there is a corresponding element in the weight vector $\bs{w}$. However, for a convolution layer this is not the case.
+Convolution layers are based on the shared-weight architecture of the convolution \hl{kernels} or \hl{filters} that slide along the input and returns a translation known as \hl{feature maps} \cite{zhang1988shift}. This means that the \hl{kernels} weights will be used for multiple elements of the layer input. Figure \ref{fig:basics:conv_layer} shows the convolution process with a 2 by 2 kernel over a RGB image (3 channels) of size 4 by 4. Each entrance of the returned feature map $z_i$ is the dot product between the kernel weights $\bs{w}$ and the $\bs{x}_i-th$ chunk of the image.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=\linewidth]{Diagrams/Conv_layer.png}
+  \caption{Convolution process steps. In red, green and blue the input image, in orange the convolution kernel (size 2 by 2 and stride of 1) and in gray the convolution output (feature map).}
+  \label{fig:basics:conv_layer}
+\end{figure}
+
+Mathematically this looks as follow
+
+\begin{equation}
+  z_i = \bs{w}^T \bs{x}_i + b
+\end{equation}
+
+where $\bs{w}\in\mathbb{R}^{2 \times 2 \times 3}$, $\bs{x_i}\in\mathbb{R}^{2 \times 2 \times 3}$ and $b\in\mathbb{R}$ is the bias (not shown in the images).
+
+Like the kernel size, the number of pixels we shift the kernel each time along side the input (\hl{Stride}) is also a hyperparameter of convolution layers. IN figure \ref{fig:basics:conv_layer}, the stride size is 1.
+
+Figure \ref{fig:basics:conv_layer} also shows that size (width and height) of the returned feature map is smaller than the input image. If we want to keep the input and output size the same (\hl{Same convolution}), then we must add zeros at the edges of the input features (zero-padding). This is shown on figure \ref{fig:basics:conv_layer_pad}.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.7\linewidth]{Diagrams/Conv_layer_pad.png}
+  \caption{Convolution with padding. In blue a single-channel input features, in orange the convolution kernel (size 3 by 3 and stride of 1) and in gray the convolution output (feature map).}
+  \label{fig:basics:conv_layer_pad}
+\end{figure}
+
+So far we have seen that a convolution projects a multi-channel input feature (image) into a single-channel feature map. Therefore, if we want our output feature map to have $n$ channels, then our convolution must have $n$ different kernels.
+
+Normally, a non-linear activation function is applied to the output of convolution layers (and normally also after batch normalization) to enable the \gls{cnn} to learn non-linear relations.
+
+\subsubsection{Pooling layer}
+
+Unlike convolution layers, the goal of Pooling layers is to reduce the feature image (height and width, but not depth) rather than learn features.
+However, Pooling layers work in a similar way to convolution layers in the way that they also slide a kernel along the input. However, in this case the kernel works independently on each feature map (that is, each channel) and has no weights to learn.
+This means that the pooling layers maintain the same number of input and output channels.
+There are several ways to do this downsampling, but the most common are Max Polling and Average Polling. As the name suggests, Average pooling shrinks the feature image by averaging sections of it, while Max pooling takes the maximum value. Figure \ref{fig:basics:pooling} shows an example of a max and average pooling layer on a single-channel feature image using a 2 by 2 kernel and a stride of 2.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.7\linewidth]{Diagrams/Pooling.png}
+  \caption{Max and average pooling with a 2 by 2 kernel and stride 2. The color denotes the kernel position.}
+  \label{fig:basics:pooling}
+\end{figure}
+
+Normally, Pooling layers are applied over the output of the activation functions.
+
+\subsubsection{Global Average Pooling layer}
+
+As we mentioned at the beginning of this section, the idea of a \gls{cnn} is to first learn the features within the input images and then make a prediction based on these features. To do this, the \hl{Global Average Pooling layer} transforms the channels of the last feature map into a vector (by averaging each of its channels), so that this can be used as input in a regular \gls{ann} to make the final prediction. Figure \ref{fig:basics:global_avg_pool} shows an example of this, when it is applied into a feature map with 7 channels.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.7\linewidth]{Diagrams/Global_avg_pooling.png}
+  \caption{Global Average Pooling layer.}
+  \label{fig:basics:global_avg_pool}
+\end{figure}
+
+\subsubsection{Inception module}
+
+Recall that a convolution layer is meant to learn features from a 3D object with 2 spatial dimensions (width and height) and a channel dimension. This means that each kernel in the convolution needs to learn simultaneously cross-channel and spatial correlations.
+The intuition behind the \hl{Inception module} is to improve this process by separating this two tasks, so that the cross-channel correlations and the spatial correlations can be learned separately and independently \cite{chollet2017xception}.
+
+A normal inception model looks at the cross-channel correlations first through a set of 3 or 4 \hl{pointwise convolutions}\footnote{A \hl{pointwise convolution} is a convolution with 1 by 1 kernels and stride 1.}, and then learns the spacial information in the downsampled feature image (in depth, not height and width), by means of regular convolution (usually with 3 by 3 or 5 by 5 kernels). Figure \ref{fig:basics:inception_module} shows a diagram of an Inveption V3 module.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.6\linewidth]{Inception_module.png}
+  \caption{A regular Inception module (Inveption V3). Image source \cite{chollet2017xception}.}
+  \label{fig:basics:inception_module}
+\end{figure}
+
+François Chollet \cite{chollet2017xception}, used the inception module as reference to propose the \hl{depthwise separable convolution}, which is something between a normal convolution and a normal convolution combined/followed by a pointwise convolution.
+Figure \ref{fig:basics:extreme_inception_module} shows an \hl{extreme} version of the inception module shown in figure \ref{fig:basics:inception_module}. The \hl{depthwise separable convolution} is very similar to the one shown in figure \ref{fig:basics:extreme_inception_module}, the only difference is that the pointwise convolution is applied before the 3 by 3 convolutions instead of after.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.6\linewidth]{Extreme_Inception_module.png}
+  \caption{An extreme version of our Inception module. Image source \cite{chollet2017xception}.}
+  \label{fig:basics:extreme_inception_module}
+\end{figure}
+
+Even though the \hl{depthwise separable convolution} is a simplified version of the inception module, the idea and motivation behind it is the same. The \hl{depthwise separable convolution}, and the residual block, are the main components of the \hl{Xception} architecture \cite{chollet2017xception}.
