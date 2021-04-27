@@ -19,7 +19,6 @@
     "RCI_dist": "uniform",
     "RCI_mean": 0,
     "RCI_stddev": 1,
-    "RCI_rescale_cte": 1,
 
     "_comment": "Model selection----------------------------------------------",
     "model_name": "baseline_CNN",
