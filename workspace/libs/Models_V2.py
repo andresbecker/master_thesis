@@ -261,8 +261,8 @@ class Individual_Model_Training():
 
         x = tf.keras.layers.Conv2D(128, (3,3),
                                    padding='same',
-                                   #kernel_regularizer=self.conv_reg,
-                                   #bias_regularizer=self.bias_reg
+                                   kernel_regularizer=self.conv_reg,
+                                   bias_regularizer=self.bias_reg
                                    )(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.ReLU()(x)
