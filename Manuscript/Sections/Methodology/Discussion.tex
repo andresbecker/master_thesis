@@ -1,0 +1,11 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+\graphicspath{{./Sections/Methodology/Resources/}}
+
+For all the implemented architectures, $L_1$ and $L_2$ regularization was tried for both dense and convolution layers.
+However, in practice this did not significantly improve the generalization of the models, but it did increase the number of hyperparameters that need to be tuned (which means more models to train). For this reason the use of regularization was discarded for all the models shown on this work ($L_1$ and $L_2$ regularization strength was set to 0).
+
+For the \hl{ResNet50V2} and \hl{Xception} architectures, the use of pre-trained weights and biases to initialize the model parameters (transfer learning) was also tried\footnote{This pre-trained parameters were obtained from the Keras library (which were fitted using the ImageNet dataset \cite{ILSVRC15}).}. However, since this did not improve significantly the performance of the models, its use was discarded.

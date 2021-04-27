@@ -1,0 +1,95 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+
+This appendix is intended to provide a brief explanation of how to run the Python script (Jupyter Notebook) responsible for training the models used in this work. In addition, here we also provide a short explanation of the parameter file that must be specified to train any model.
+
+Since data augmentation techniques can be selected independently for each trained model, their corresponding hyperparameters are also explained here.
+
+The Jupyter Notebook responsible for training the models is the one that requires the largest number of parameters. However, the function \texttt{set\_model\_default\_parameters} (in the \texttt{Utils.py} library) provides default values for all the parameters. Therefore, if some hyperparameter is not specified here or in section \ref{sec:methodology:models}, then the value used was the one specified in that function.
+
+To train a model, one has to open the Python Jupyter Notebook \\
+\noindent\texttt{Model\_training\_class.ipynb} and replace the variable \texttt{PARAMETERS\_FILE} with the absolute path and name of the input parameters file before running the notebook. A sample parameter file (\texttt{Train\_model\_sample.json}) is provided along with this work. It contains the parameters used to train the \hl{Baseline} \gls{cnn} (see section \ref{sec:methodology:BL_CNN}), using the data augmentation techniques specified in section \ref{sec:methodology:data:augm}.
+Table \ref{table:model_train_in:params} provides an explanation of some of the model training parameters, while table \ref{table:model_train_in:params_da} an explanation of some of the data augmentation parameters. Although the training and data augmentation parameters are specified in separate tables, they must be in the same \texttt{JSON} parameter file (and also as items in the same dictionary).
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.3\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.7\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | m{\mylengthb}}
+    \hline
+    JSON variable name & Description \\
+    \hline
+    \texttt{model\_name} & Name of the architecture to be trained. Available: \texttt{baseline\_CNN}, \texttt{ResNet50V2}, \texttt{Xception}, \texttt{Linear\_Regression} \\
+    \hline
+    \texttt{pre\_training} & Binary, whether or not use pretrained weights and biases as initial parameters. Only available for \texttt{ResNet50V2} or \texttt{Xception} architectures \\
+    \hline
+    \texttt{dense\_reg} & [$L_1$, $L_2$], where $L_1$ and $L_2$ are the regularization strengths for the dense layers weights\\
+    \hline
+    \texttt{conv\_reg} & [$L_1$, $L_2$], where $L_1$ and $L_2$ are the regularization strengths for the convolution layers weights \\
+    \hline
+    \texttt{bias\_l2\_reg} & $L_2$ regularization strengths for convolution and dense layers biases \\
+    \hline
+    \texttt{number\_of\_epochs} & Maximum number of epochs to train \\
+    \hline
+    \texttt{early\_stop\_patience} & For early stopping. Specify how many epochs at most the model can train without decreasing the loss function before stopping the training \\
+    \hline
+    \texttt{loss} & Loss function name. Available: \texttt{mse}, \texttt{huber}, \texttt{mean\_absolute\_error} \\
+    \hline
+    \texttt{learning\_rate} & Learning rate for Adam optimizer \\
+    \hline
+    \texttt{BATCH\_SIZE} & Batch size \\
+    \hline
+    \texttt{model\_path} & Path to save the models and checkpoints \\
+    \hline
+    \texttt{clean\_model\_dir} & Binary, whether or not to delete the content of the directory specified by \texttt{model\_path} \\
+    \hline
+    \texttt{tf\_ds\_name} & Name of the TFDS to be used during training\\
+    \hline
+    \texttt{local\_tf\_datasets} & Local path where the TFDSs are stored \\
+    \hline
+    \texttt{input\_channels} & List containing the name of the channels (elements of the column \hl{Marker identifier} of table \ref{table:tfds_in:channels}) to be included in the images contained in the \gls{tfds} \\
+    \hline
+    \texttt{shuffle\_files} & Binary, whether or not to shuffle the dataset at the beginning of each epoch \\
+    \hline
+    \texttt{seed} & Random seed to reproduce the shuffling of the TFDS \\
+    \hline
+  \caption{Model training parameters.}
+  \label{table:model_train_in:params}
+\end{longtable}
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.4\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.6\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | m{\mylengthb}}
+    \hline
+    JSON variable name & Description \\
+    \hline
+    \texttt{random\_horizontal\_flipping} & Binary, whether or not to perform random horizontal flips on the training set \\
+    \hline
+    \texttt{random\_90deg\_rotations} & Binary, whether or not to perform random 90deg rotations on the training set \\
+    \hline
+    \texttt{CenterZoom} & Binary, whether or not to perform random center zoom-in/out on the training set \\
+    \hline
+    \texttt{CenterZoom\_mode} & Zoom proportion R.V. distribution. Available: \texttt{random\_normal}, \texttt{random\_uniform} \\
+    \hline
+    \texttt{Random\_channel\_intencity} & Binary, whether or not to perform per-channel random color shifting on the training set \\
+    \hline
+    \texttt{RCI\_dist} & Distribution of random color shifts. Available: \texttt{uniform}, \texttt{normal}. If \texttt{uniform} distribution selected ($U(-a, a)$), then $a=\mu+3\sigma$ \\
+    \hline
+    \texttt{RCI\_mean} & Mean $\mu$ for the distribution specified by \texttt{RCI\_dist} \\
+    \hline
+    \texttt{RCI\_stddev} & Standard deviation $\sigma$ for the distribution specified by \texttt{RCI\_dist} \\
+    \hline
+    \texttt{Random\_noise} & Binary, whether or not to add random normal noise ($N(0, \sigma)$) on the training set \\
+    \hline
+    \texttt{Random\_noise\_stddev} & Standard deviation corresponding to the normal distribution of random noise \\
+    \hline
+  \caption{Data augmentation parameters.}
+  \label{table:model_train_in:params_da}
+\end{longtable}

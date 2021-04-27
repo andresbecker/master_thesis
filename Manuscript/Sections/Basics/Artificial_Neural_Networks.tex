@@ -22,7 +22,7 @@ Roughly speaking, an \gls{ann} is a non-linear function $f:\mathbb{R}^D \rightar
 
 \noindent where $\bs{\phi}:\mathbb{R}^{D+1} \rightarrow \mathbb{R}^M$ is an element-wise function, with $\phi_0:=1$, know as \hl{basis function}, $h:\mathbb{R} \rightarrow \mathbb{R}$ is a function know as \hl{activation function} and $\bs{w}\in\mathbb{R}^M$ is the parameter vector. The parameters $w_j$, with $j\in\{1,\dots M-1\}$ are known as \hl{weights}, while the parameter $w_0$ is know as \hl{bias}.
 
-Then, an \gls{ann} is composition of functions of the same form as \ref{eq:basics:slp}, with non-linear \hl{activation functions}, and where the basis functions are also of the same form as \ref{eq:basics:slp} (\cite{bishop2006pattern})
+Then, an \gls{ann} is composition of functions of the same form as \ref{eq:basics:slp}, with non-linear \hl{activation functions}, and where the basis functions are also of the same form as \ref{eq:basics:slp} \cite{bishop2006pattern}
 
 \begin{equation}
   F(\bs{x}, \bs{W}) :=
@@ -57,7 +57,7 @@ Figure \ref{fig:basics:ann:ann} shows a graphical representation of a \gls{ann}.
   \label{fig:basics:ann:ann}
 \end{figure}
 
-Strictly speaking, equation \ref{eq:basics:ann} and figure \ref{fig:basics:ann:ann} represent a \hl{fully connected feedforward neural network}. However, in this work we will refer to it just as \gls{ann}, which in some literature is also known as \gls{mlp}.
+Strictly speaking, equation \ref{eq:basics:ann} and figure \ref{fig:basics:ann:ann} represent a \hl{fully connected feedforward neural network}. However, in this work we will refer to it just as \gls{ann}, which in some literature is also known as \gls{mlp}. Also, hidden layers are also known as \hl{Dense layers}.
 
 \subsubsection{Update rule}
 
@@ -76,7 +76,11 @@ Then, we can fit the values of $\bs{W}$, by minimizing the loss function $\mathc
 
 \noindent where $\alpha \in \mathbb{R}^+$ (known as \hl{learning rate}) controls how much we move in the direction of $-\nabla_{\bs{W}} \mathcal{L}(\bs{W}_{old})$ on every step.
 
-The iterative method in which \ref{eq:basics:ann:learn_rule} is applied over elements of $\bs{X}$ to optimize $\bs{W}$ is known as \gls{gd} \cite{bishop2006pattern}. However, in practice \ref{eq:basics:ann:learn_rule} is not applied for a single element of $\bs{X}$ every time, but to a random subset of $\bs{X}$ (known as a \hl{Batch}) instead. This process is known as \gls{sgd} and computationally is less  expensive than \gls{gd}.
+The iterative method in which \ref{eq:basics:ann:learn_rule} is applied over elements of $\bs{X}$ to optimize $\bs{W}$ is known as \gls{gd} \cite{bishop2006pattern}.
+However, in practice \ref{eq:basics:ann:learn_rule} is not applied for a single element of $\bs{X}$ every time, but to a random subset of $\bs{X}$ (known as a \hl{Batch}) instead.
+The number of elements in batch is fixed over all the iteration (training), and is an hyperparameter known as \hl{Batch Size} $bs$\footnote{Normally the training data is separated in disjoint batches, which means that it could happen that last batch to be smaller than the selected $bs$.}.
+As a rule of thumb, $bs$ should be no less than 30 (for the selected sample to be representative of $\bs{X}$). In practice $bs$ is usually chosen as a power of 2.
+This process is known as \gls{sgd} and computationally is less  expensive than \gls{gd}.
 
 However, \gls{gd} (\gls{sgd}) has a downside, the choice of its hyperparameter $\alpha$ (learning rate). In practice, it has been shown that the correct choice of $\alpha$ is essential to train an \gls{ann} successfully. Therefore, other algorithms (\hl{optimizers}) have been proposed to mitigate this problem. The revision of these optimizers is out of the scope to this work. However, all of them follow the same idea proposed by \gls{gd}. For example, instead of having a fixed learning rate $\alpha$ as in \gls{gd}, the \gls{adam} optimizer adapts its learning rate dynamically during training depending on the mean and variance of the loss function \cite{kingma2014adam}.
 

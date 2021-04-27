@@ -1,0 +1,46 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+%\glsresetall
+
+\graphicspath{{./Sections/Methodology/Resources/}}
+
+% experiment
+%LM_RIV2_test7.json
+
+As we already mentioned, the objective of this work is to explain cell expression using spatial information in multichannel images of cell nucleus.
+
+To compare the performance of the \glspl{cnn}, and have an idea about how much pixel intensity information was still contained in the data, we also fitted a  \hl{linear model}
+
+\begin{equation}
+  y = w_0 + w_1x_1 + \cdots + w_{33}x_{33}
+\end{equation}
+
+\noindent where $x_i, \in \mathbb{R}$, for $i \in \{1, \cdots, 33\}$, is the average pixel intensity corresponding to channel $i$ and $w_i, \in \mathbb{R}$, for $i \in \{0, \cdots, 33\}$ are the model coefficients.
+
+The linear model architecture is specified in table \ref{table:metho:models:lm}. The rows of the table represent each layer of the model, which are evaluated from top to bottom. This model has only $34$ free (learnable) parameters in total.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.35\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.25\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.18\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{m{\mylengtha} | m{\mylengthb} | m{\mylengthc}}
+    \hline
+    Layer & Output Shape & Number of parameters \\
+    \hline
+    Input & $(bs, 224, 224, 38)$ & 0 \\
+    \hline
+    Channel filtering & $(bs, 224, 224, 33)$ & 0 \\
+    \hline
+    Global Average Pooling & $(bs, 33)$ & 0 \\
+    \hline
+    Dense & $(bs, 1)$ & 34 \\
+    \hline
+  \caption{Linear model architecture. The rows represent each layer of the model. The flow of the model is from top to bottom. The $bs$ on the \hl{Output Shape} column stands for \hl{Batch size}.}
+  \label{table:metho:models:lm}
+\end{longtable}
+
+The learning rate used to train the baseline model was $0.1$.

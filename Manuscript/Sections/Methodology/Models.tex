@@ -5,10 +5,63 @@
 \glsresetall
 \graphicspath{{./Sections/Methodology/Resources/}}
 
-In this section talk about the models in general. For example, here you should mention that a channel filter layer is added at the beginning of the model to remove unwanted layers, included the cell mask.
+In this section we introduce the models, and its architecture, used in this work. We also specify all the used hyperparameters. Appendix \ref{sec:appendix:Model_training_IN} explains briefly how to train and evaluate all the models introduced here.
 
-We are using the Adpative .... adam optimizer, mention the used parameters.
+In general, all the models where trained using $ReLU$ as activation function for the hidden layers. Also, the identity was used as activation function for the last layer. Table \ref{table:methodology:model:general_hyper}, shows the other general hyperparameters.
 
-kernel size and stride
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.35\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.55\mylinewidth-2\arraycolsep}%
 
-we are using the hubber loss function.
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | >{\centering\arraybackslash}m{\mylengthb}}
+    \hline
+    Parameter & Description \\
+    \hline
+    Number of epochs & 800 \\
+    \hline
+    Early stopping patience & 100 \\
+    \hline
+    Batch size & 64 \\
+    \hline
+    TFDS name & \texttt{mpp\_ds\_normal\_dmso\_z\_score} \\
+    \hline
+    Random seed & 123 \\
+    \hline
+    Input Channels & all channels such that its TFDS id is in $\{0, \cdots, 32\}$ (see appendix \ref{sec:appendix:tfds}, table \ref{table:tfds_in:channels}) \\
+    \hline
+  \caption{Hyperparameters used in the training of all the models.}
+  \label{table:methodology:model:general_hyper}
+\end{longtable}
+
+Even though that the number of epochs is specified in table \ref{table:methodology:model:general_hyper}, if the loss function does not improve (decrease) for more than 100 (i.e. \hl{Early stopping patience}) epochs during training, then the training stops.
+
+Table \ref{table:methodology:model:general_hyper} also indicate the input channels to by used by the model as predictors.
+In section \ref{sec:dataset:data_pp:dataset_creation} we mentioned that all the image channels (with the exception of channel \texttt{00\_EU}) were kept during the creation of the \gls{tfds}.
+Moreover, since the data augmentation techniques are only applied to the measured pixels of the cell images, the cell mask was added to the image as the last channel.
+For this reason the channel filtering process is made inside the model.
+This means that after the input layer, the models have a \hl{channel filtering layer}, which basically remove the non-selected channels, by projecting the input image from a space of shape $(bs, 224, 224, 38)$ into a lower one of shape $(bs, 224, 224, 33)$.
+This is done just by performing a matrix multiplication between the input batch $B \in \mathbb{R}^{bs \times 224 \times 224 \times 38}$ and a projection matrix $P \in \{0,1\}^{38 \times 33}$ (a zero matrix with ones on the diagonal elements corresponding with to the input channels), i.e. $B_{filterd}=BP$.
+
+All the model in this work were trained using the \hl{Huber} loss function
+
+\begin{equation}
+  \mathcal{L}_{\delta}(y,f(x)) =
+    \begin{cases}
+      \frac{1}{2}(y - f(x))^2, & \text{for } |y-f(x)|\leq \delta \\
+      \delta |y-f(x)| - \frac{1}{2} \delta^2, & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+\noindent where $\delta>0$ is the value where the Huber loss function changes from a quadratic to linear. The hyperparameter $\delta$ was set to 1 for all the models.
+
+Huber loss function is quadratic when the error $a=|y - f(x)|$ is below the threshold $\delta$ (like the \gls{mse}), but linear when it is above it. This makes Huber loss less susceptible to outliers. Figure \ref{fig:meth:huber_plot} shows a comparison between the Huber (in green) and the \gls{mse} (in blue) loss functions.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.5\linewidth]{Diagrams/Huber_loss.png}
+  \caption{Huber (green) and the \gls{mse} (blue) loss functions. Image source \cite{huberplot}.}
+  \label{fig:meth:huber_plot}
+\end{figure}
+
+In section \ref{sec:basics:ANN} we mentioned that we choose the \gls{adam} optimizer to fit the model parameters. With the exception of the \hl{learning rate}, the used parameters were $\beta_1=0.9$, $\beta_2=0.999$ and $\epsilon=1e-07$, which are the default TensorFlow hyperparameters\footnote{For more information pleases refer to the TensorFlow \href{https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam}{official documentation}.}. The learning rate is specified in the section corresponding to each model.

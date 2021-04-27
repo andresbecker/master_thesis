@@ -1,0 +1,52 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+%\glsresetall
+
+\graphicspath{{./Sections/Methodology/Resources/}}
+
+% experiment:
+% RN_RIV2_test7.json
+
+Besides the \hl{Baseline} \gls{cnn}, we also tried the \hl{ResNet50V2} \gls{cnn}, which is a more complex (deeper) architectures than the \hl{Baseline} model. The ResNet50V2 architecture is basically several residual blocks (see section \ref{sec:basics:ANN}), composed with convolution and pooling layers (see section \ref{sec:basics:CNN}) stacked one after another.
+There is a lot of literature on the ResNet50V2 architecture (\cite{he2015deep}, \cite{he2016identity}), so we will not dive into details here. However, the model architecture is shown in table \ref{table:metho:models:RN50V2}.
+The raw \hl{ResNet50V2 feature extraction}, represent the feature extraction layers (i.e., all the layers containing convolution and/or pooling layers) of the ResNet50V2\footnote{For this work, we did not implement the ResNet50V2 architecture from scratch, instead we used the pre-built model that is provided in the Keras library. For more information pleases refer to the \href{https://www.tensorflow.org/api_docs/python/tf/keras/applications/ResNet50V2}{official documentation}.}, while the remaining rows represent the layers intended to make the final prediction. The layers are evaluated from top to bottom. This model has $24,171,777$ free (learnable) parameters in total.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.4\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.25\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.18\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{m{\mylengtha} | m{\mylengthb} | m{\mylengthc}}
+    \hline
+    Layer & Output Shape & Number of parameters \\
+    \hline
+    Input & $(bs, 224, 224, 38)$ & 0 \\
+    \hline
+    Channel filtering & $(bs, 224, 224, 33)$ & 0 \\
+    \hline
+    ResNet50V2 feature extraction & $(bs, 7, 7, 2048)$ & 23,612,672 \\
+    \hline
+    Global Average Pooling & $(bs, 2048)$ & 0 \\
+    \hline
+    Dense & $(bs, 256)$ & 524544 \\
+    \hline
+    Batch Normalization & $(bs, 256)$ & 1024 \\
+    \hline
+    ReLU & $(bs, 256)$ & 0 \\
+    \hline
+    Dense & $(bs, 128)$ & 32896 \\
+    \hline
+    Batch Normalization & $(bs, 128)$ & 512 \\
+    \hline
+    ReLU & $(bs, 128)$ & 0 \\
+    \hline
+    Dense & $(bs, 1)$ & 129 \\
+    \hline
+  \caption{ResNet50V2 \gls{cnn} architecture. The rows represent each layer of the model. The flow of the model is from top to bottom. The $bs$ on the \hl{Output Shape} column stands for \hl{Batch size}.}
+  \label{table:metho:models:RN50V2}
+\end{longtable}
+
+The learning rate used to train the baseline model was $0.0005$.

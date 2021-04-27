@@ -110,7 +110,8 @@
 \newacronym{vgig}{VGIG}{VarGrad Integrated Gradient}
 \newacronym{tfds}{TFDS}{TensorFlow Dataset}
 % Metrics
-\newacronym{mae}{MAE}{mean absolute error}
+\newacronym{mae}{MAE}{Mean Absolute Error}
+\newacronym{mse}{MSE}{Mean Squared Error}
 % Models
 \newacronym{dnn}{DNN}{Deep Neural Network}
 \newacronym{svm}{SVM}{Support Vector Machine}
@@ -200,9 +201,10 @@
 
 \section{Machine Learning}
 \input{Sections/Basics/Machine_Learning}
-\label{sec:basics:ANN}
+\label{sec:basics:ML}
 \subsection{Artificial Neural Networks}
 \input{Sections/Basics/Artificial_Neural_Networks}
+\label{sec:basics:ANN}
 
 \subsection{Convolutional Neural Networks}
 \label{sec:basics:CNN}
@@ -220,8 +222,8 @@
 \label{sec:basics:VarGrad}
 \input{Sections/Basics/VarGrad}
 
-\section{Interpretability Methods Evaluation}
-\label{sec:basics:vgig_eval}
+%\section{Interpretability Methods Evaluation}
+%\label{sec:basics:vgig_eval}
 
 %% =============================================================================
 %% Dataset chapter
@@ -263,26 +265,35 @@
 
 \subsection{Linear Model}
 \label{sec:methodology:lm}
+\input{Sections/Methodology/Linear_Model}
 
+\newpage
 \subsection{Baseline CNN}
 \label{sec:methodology:BL_CNN}
+\input{Sections/Methodology/Baseline_CNN}
 
 \subsection{ResNet50V2}
 \label{sec:methodology:RN50V2}
+\input{Sections/Methodology/ResNet50V2}
+
+\subsection{Xception}
+\label{sec:methodology:XC}
+\input{Sections/Methodology/Xception}
 
 \subsection{Model Metrics}
 \label{sec:methodology:metrics}
+\input{Sections/Methodology/Model_Metrics}
 
 \section{Interpretability Methods}
 \label{sec:methodology:interpretability_methods}
 \input{Sections/Methodology/VarGrad_IG_Experimental_Setup}
 
-%\subsection{Experimental Setup}
-%\label{sec:methodology:VarGrad_IG_Experimental_Setup}
-%\input{Sections/Methodology/VarGrad_IG_Experimental_Setup}
+%\section{Interpretability Methods Evaluation}
+%\label{sec:methodology:vgig_eval}
 
-\section{Interpretability Methods Evaluation}
-\label{sec:methodology:vgig_eval}
+\subsection{Discussion}
+\label{sec:methodology:discussion}
+\input{Sections/Methodology/Discussion}
 
 %% =============================================================================
 %% Results chapter
@@ -313,8 +324,8 @@
 \section{Model Interpretation}
 \label{sec:results:model_interpretation}
 
-\section{Model Interpretation Evaluation}
-\label{sec:results:model_inter_eval}
+%\section{Model Interpretation Evaluation}
+%\label{sec:results:model_inter_eval}
 
 \section{Discussion}
 
@@ -344,7 +355,7 @@
 
 \section{Model training implementation notes}
 \label{sec:appendix:Model_training_IN}
-%\input{Sections/Appendix/Model_training_implementation_notes}
+\input{Sections/Appendix/Model_training_implementation_notes}
 
 \section{VarGrad IG implementation notes}
 \label{sec:appendix:VarGrad_IG_Experimental_Setup}

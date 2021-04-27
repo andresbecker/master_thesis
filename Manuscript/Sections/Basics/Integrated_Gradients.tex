@@ -1,9 +1,16 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
 
-% what it IG
-%\glsresetall
+%% Reset glossary to show long gls names
+\glsresetall
+
+%% Set path to look for the images
+\graphicspath{{./Sections/Basics/Resources/}}
+
 \glsfirst{ig} is an interpretability technique (attribution method) proposed by Sundararajan et al. \cite{sundararajan2017axiomatic}, aimed to assign an importance to the input features (in our case pixels from a cell image) with respect to the model prediction. The attribution problem have been studied before in other papers \cite{JMLR:v11:baehrens10a}, \cite{SimonyanVZ13}, \cite{ShrikumarGSK16}, \cite{BinderMBMS16} and \cite{Springenberg}.
 
-In our case, we seek to predict \gls{tr} given a cell image $x \in \mathbb{R}^{d \times d \times c}$, where $d$ is the height and width of the image and $c$ is the number of channels. Therefore, our \gls{dnn} would be a function $f:\mathbb{R}^{d \times d \times c} \rightarrow \mathbb{R}$ and an attribution method should be a function $\phi:\mathbb{R}^{d \times d \times c} \rightarrow \mathbb{R}^{d \times d \times c}$ having an input and output of the same shape as the model's input image.
+In our case, we seek to predict \gls{tr} given a cell image $x \in \mathbb{R}^{d \times d \times c}$, where $d$ is the height and width of the image and $c$ is the number of channels.
+Therefore, our \gls{dnn} would be a function $f:\mathbb{R}^{d \times d \times c} \rightarrow \mathbb{R}$ and an attribution method should be a function $\phi:\mathbb{R}^{d \times d \times c} \rightarrow \mathbb{R}^{d \times d \times c}$ having an input and output of the same shape as the model's input image.
 
 Early interpretability methods only use gradients to assign importance to each input feature
 
@@ -14,7 +21,9 @@ Early interpretability methods only use gradients to assign importance to each i
   \end{split}
 \end{equation}
 
-Mathematically speaking, $\phi_i(f,x)$ assign an importance score to the pixel $i$ (out of the $d \times d \times c$ there are), representing how much it adds or subtract from the model output. However, this score maps have some drawback when they are used to interpret deep neural networks \cite{sturmfels2020visualizing}. Recall that the gradient with respect to the input indicate us the pixels that have the steepest local slope with respect to the model's output. This means that it only describes local changes in the input, and not the whole prediction model. Another mayor problem is saturation\footnote{In the context of artificial neural networks, a neuron is said to be saturated when the predominant output value of a neuron is close to the asymptotic ends of the bounded activation function. This behavior can potentially damage the learning capacity of a neural network.}.
+Mathematically speaking, $\phi_i(f,x)$ assign an importance score to the pixel $i$ (out of the $d \times d \times c$ there are), representing how much it adds or subtract from the model output.
+However, this score maps have some drawback when they are used to interpret deep neural networks \cite{sturmfels2020visualizing}. Recall that the gradient with respect to the input indicate us the pixels that have the steepest local slope with respect to the model's output.
+This means that it only describes local changes in the input, and not the whole prediction model. Another mayor problem is saturation\footnote{In the context of artificial neural networks, a neuron is said to be saturated when the predominant output value of a neuron is close to the asymptotic ends of the bounded activation function. This behavior can potentially damage the learning capacity of a neural network.}.
 As the model learns the relationship between an input image and its \gls{tr}, the gradient of the most important pixels will approximate to 0, i.e. the pixel's gradient saturates.
 
 To overcome this problems, Sundararajan et al. proposed \gls{ig} as an attribution method, where the importance of the input feature $i$ is defined as follow
@@ -23,7 +32,14 @@ To overcome this problems, Sundararajan et al. proposed \gls{ig} as an attributi
   \label{eq:ig:definition}
 \end{equation}
 
-Intuitively speaking, \gls{ig} accumulates the input gradient when it goes from a baseline $x'$, which should represents \textit{absence} of information, to the actual input image $x$. With this, we avoid losing information about relevant pixels for the model's prediction in the importance map, even if they saturate eventually.
+Intuitively speaking, \gls{ig} accumulates the input gradient when it goes from a baseline $x'$, which should represents \textit{absence} of information, to the actual input image $x$. With this, we avoid losing information about relevant pixels for the model's prediction in the importance map, even if they saturate eventually. Figure \ref{fig:basics:IG_image_prog} shows an example of the image progression fed into IG. Note that the amount of information in the images is parameterized by $\alpha \in [0,1]$, and that the \hl{absence} of information is interpreted as a black image.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=\linewidth]{IG_alpha.png}
+  \caption{Progression from an image with no information (back image) to a normal one parameterized by $\alpha$.}
+  \label{fig:basics:IG_image_prog}
+\end{figure}
 
 For a better understanding, we can divide the \gls{ig} definition as follow
 \begin{equation}

@@ -1,19 +1,16 @@
 %% Magic command to compile root document
 % !TEX root = ../../thesis.tex
 
+\graphicspath{{./Sections/Methodology/Resources/}}
+
 %% Reset glossary to show long gls names
 \glsresetall
 
+This chapter provides the experimental setups for each element of the workflow shown in figure \ref{fig:meth:pipeline}. This includes the raw data processing (selected raw data and the quality control), the \gls{tfds} parameters, the data augmentation techniques (as well as their hyperparameters), the used models (architecture, loss function, optimizer and hyperparameters), the metrics used to evaluate the performance of the models and the hyperparameters corresponding to the interpretability methods.
 
-This part should contain:
-\begin{itemize}
-  \item An overview of this chapter
-  \item A diagram showing the pipeline: Preprocessing -> TDFS -> CNN
-\end{itemize}
-
-In this chapter we will describe the models used to predict transcription rate, as well as their experimental setups. We will also provide the experimental setups for the interpretability methods.
-
-Hannah's recommendations:
-\begin{itemize}
-  \item Give implementation details and hyperparameters
-\end{itemize}
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=\linewidth]{Diagrams/Pipeline.png}
+  \caption{Workflow.}
+  \label{fig:meth:pipeline}
+\end{figure}
