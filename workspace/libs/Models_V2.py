@@ -322,7 +322,7 @@ class Individual_Model_Training():
         return self._add_prediction_leyers(base_model(x))
 
 
-    def _get_Xception(self):
+    def _get_Xception(self, x):
         """
         Xception + Dense layers on the top.
         Architecture:
