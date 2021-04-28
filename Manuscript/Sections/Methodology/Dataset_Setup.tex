@@ -121,7 +121,7 @@ The Python script that builds the custom \gls{tfds}, also returns a file with th
 \subsection{Data augmentation}
 \label{sec:methodology:data:augm}
 
-In this section we specify the hyperparameters used for the data agumentation techniques introduced in section \ref{sec:dataset:data_augmentation}. Recall that the techniques are either aimed to remove non-relevant characteristics of the data (color shifting, central zoom in/out) or to improve model generalization (horizontal flipping, 90 degree rotations). Table \ref{table:methodology:dataset:augm} shows the used hyperparameters grouped by objective and technique.
+In this section we specify the data augmentation techniques (see section \ref{sec:dataset:data_augmentation}) and its hyperparameters used to train all the models of this work. Recall that the techniques are either aimed to remove non-relevant characteristics of the data (color shifting, central zoom in/out) or to improve model generalization (horizontal flipping, 90 degree rotations). Table \ref{table:methodology:dataset:augm} shows this techniques and its hyperparameters grouped by objective and technique. In practice, the augmentation techniques are applied as shown in table \ref{table:methodology:dataset:augm} from top to bottom.
 
 % set table lengths
 \setlength{\mylinewidth}{\linewidth-7pt}%
@@ -134,28 +134,20 @@ In this section we specify the hyperparameters used for the data agumentation te
     \hline
     Objective & Technique & Hyperparameter & Description \\
     \hline
-    \multirow{6}{\mylengtha}{\centering Remove non-relevant features} & \multirow{4}{\mylengthb}{\centering color shifting} & flag & 1 \\
-    \cline{3-4}
-     & & distribution & uniform \\
-    \cline{3-4}
-     & & distribution mean & 0 \\
-    \cline{3-4}
-     & & distribution standard deviation & 1 \\
+    \multirow{2}{\mylengtha}{\centering Remove non-relevant features} & random color shifting & distribution & $U(-3,3)$ \\
     \cline{2-4}
-     & \multirow{2}{\mylengthb}{\centering central zoom in/out} & flag & 1 \\
-    \cline{3-4}
-     & & mode & \texttt{random\_normal}\footnotemark \\
+     & random central zoom in/out & distribution\footnotemark & $N(\mu=0.6, \sigma=0.1)$ \\
     \hline
-     \multirow{2}{\mylengtha}{\centering Improve generalization} & horizontal flipping & flag & 1 \\
+     \multirow{2}{\mylengtha}{\centering Improve generalization} & random horizontal flipping & NA & NA \\
     \cline{2-4}
-     & 90 degrees rotations & flag & 1 \\
+     & random 90 degrees rotations & NA & NA \\
     \hline
-  \caption{Parameters used for data augmentation techniques.}
+  \caption{Parameters used for data augmentation techniques. The NA means that there are no hyperparameters for this technique or that there is no further description.}
   \label{table:methodology:dataset:augm}
 \end{longtable}
 
-\footnotetext{This means that the random variable \hl{cell nucleus size ratio} $S_{ratio}$ (see section \ref{sec:dataset:data_aug:zoom}) will be sampled from a normal distribution. However, the user does not specify the parameters (mean and standard deviation). Instead, they are estimated using the information in column \texttt{cell\_size\_ratio} of the \gls{tfds} metadata file. Therefore, the \texttt{return\_cell\_size\_ratio} flag must be set to 1 (True) during raw data processing, so this column is created (see section \ref{sec:dataset:data_pp:raw_data_p} and appendix \ref{sec:appendix:raw_data}).}
+\footnotetext{This distribution is used to sample the \hl{cell nucleus size ratio} $S_{ratio}$ (see section \ref{sec:dataset:data_aug:zoom}) of each cell. However, the parameters for this distribution (mean and standard deviation) were not provided by us. Instead, they were estimated using the information in column \texttt{cell\_size\_ratio} of the \gls{tfds} metadata file. Therefore, the \texttt{return\_cell\_size\_ratio} flag must be set to 1 (True) during raw data processing, so this column is created (see section \ref{sec:dataset:data_pp:raw_data_p} and appendix \ref{sec:appendix:raw_data}).}
 
-Even thought we specify the data augmentation hyperparameters here, in practice these are set for each model and applied during training time. However, all the models showed in this work were trained using these values. A complementary explanation can be found in appendix \ref{sec:appendix:Model_training_IN}.
+Even thought we specify the data augmentation hyperparameters here, in practice these are selected for each model and applied during training. However, all the models showed in this work were trained using the techniques and values shown in table \ref{table:methodology:dataset:augm}. A complementary explanation can be found in appendix \ref{sec:appendix:Model_training_IN}.
 
-In section \ref{sec:dataset:data_augmentation} we mentioned that data augmentation techniques can be applied to both the training set and the validation set. However, we also mentioned that only horizontal flips and 90 degree rotations are applied for the validation set. Furthermore, for the training set these techniques are applied randomly, while for the validation set they are applied deterministically. Therefore, the hyperparameters specified in table \ref{table:methodology:dataset:augm} only apply to the training set.
+In section \ref{sec:dataset:data_augmentation} we mentioned that data augmentation techniques can be applied to both the training set and the validation set. However, we also mentioned that only horizontal flips and 90 degree rotations are applied for the validation set. Furthermore, for the training set these techniques are applied randomly, while for the validation set they are applied deterministically. Therefore, table \ref{table:methodology:dataset:augm} only applies to the training set.

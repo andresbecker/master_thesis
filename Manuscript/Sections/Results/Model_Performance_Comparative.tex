@@ -1,7 +1,18 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+
 \begin{table}[!ht]
   \centering
   \begin{tabular}{c|c|c|c|c|c|c|c}
+    \hline
     Model & Dataset Properties & Bias & Std & R2 & MAE & MSE & Huber \\
+    \ChangeRT{1pt}
+    Baseline & targets average & 0 & 0 & 0 & 46.81 & 3685.75 & 46.31 \\
     \hline
     \multirow{2}{*}{Linear} & color and structure & -0.63 & 44.68 & 0.49 & 33.08 & 1991.45 & 32.58 \\
     \cline{2-8}
@@ -11,10 +22,58 @@
      \cline{2-8}
       & structure & -2.72 & 44.84 & 0.48 & 32.84 & 2012.85 & 32.35 \\
       \hline
-      Baseline & targets average & 0 & 0 & 0 & 46.81 & 3685.75 & 46.31 \\
   \end{tabular}
   \caption{Model performance comparative. Row \textit{Dataset Properties} indicate what information was preserved in the dataset during training. \textit{structure} indicates that per-channel random color shifting was applied as data augmentation technique, to reduce information contained in the cell image colors. \textit{color and structure} indicate that no random color shifting was applied. The row indicated as \textit{baseline} contains the values for the metrics, when the model always return the average value  of the targets (on the training set).}
   \label{table:results:model_performance_comparative}
+\end{table}
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.17\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.2\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthd}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthe}{0.08\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthf}{0.09\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthg}{0.11\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthh}{0.1\mylinewidth-2\arraycolsep}%
+
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{m{\mylengtha} |
+                  >{\centering\arraybackslash}m{\mylengthb} |
+                  >{\centering\arraybackslash}m{\mylengthc} |
+                  >{\centering\arraybackslash}m{\mylengthd} |
+                  >{\centering\arraybackslash}m{\mylengthe} |
+                  >{\centering\arraybackslash}m{\mylengthf} |
+                  >{\centering\arraybackslash}m{\mylengthg} |
+                  >{\centering\arraybackslash}m{\mylengthh}
+                  }
+    \hline
+    \centering Model & Dataset Properties & $\bar{e}$ & $s(e)$ & R2 & MAE & MSE & Huber \\
+    \ChangeRT{1pt}
+    \centering $\bar{y}$ & targets avg & 0 & 0 & 0 & 46.81 & 3685.75 & 46.31 \\
+    \hline
+    \multirow{2}{\mylengtha}{\centering Linear} & color-structure & -0.63 & 44.68 & 0.49 & 33.08 & 1991.45 & 32.58 \\
+    \cline{2-8}
+     & structure & -2.45 & 54.99 & 0.22 & 41.54 & 3022.32 & 41.04 \\
+    \hline
+    \multirow{2}{\mylengtha}{\centering Baseline CNN} & color-structure & -1.44 & 42.25 & 0.54 & 31.81 & 1782.90 & 31.32 \\
+    \cline{2-8}
+     & structure & -2.72 & 44.84 & 0.48 & 32.84 & 2012.85 & 32.35 \\
+    \hline
+    \multirow{2}{\mylengtha}{\centering ResNet50V2} & color-structure & -1.44 & 42.25 & 0.54 & 31.81 & 1782.90 & 31.32 \\
+    \cline{2-8}
+     & structure & -2.72 & 44.84 & 0.48 & 32.84 & 2012.85 & 32.35 \\
+    \hline
+    \multirow{2}{\mylengtha}{\centering Xception} & color-structure & -1.44 & 42.25 & 0.54 & 31.81 & 1782.90 & 31.32 \\
+    \cline{2-8}
+     & structure & -2.72 & 44.84 & 0.48 & 32.84 & 2012.85 & 32.35 \\
+    \hline
+  \end{tabular}
+  \caption{Test}
+  \label{table:results:model_performance_comparative_test}
 \end{table}
 
 \fxnote{Add the ResNet50V2 info to the table \ref{table:results:model_performance_comparative}.}
