@@ -1,5 +1,5 @@
 # execute only one job
-PARAMS_NAME='BL_RIV2'; sbatch --job-name $PARAMS_NAME --export=ALL,PARAMS=$PARAMS_NAME sbatch_script_template.sbatch
+PARAMS_NAME='BL_RIV2'; PARAMS_DIR='BL'; sbatch --job-name $PARAMS_NAME --export=ALL,PARAMS=$PARAMS_NAME,PARAMS_DIR=$PARAMS_DIR sbatch_script_template.sbatch
 
 # create slurm jobs for all the files in Parameters dir
 PARAMS_FILES=$(ls Parameters | awk 'BEGIN{FS="."}{print $1}')
