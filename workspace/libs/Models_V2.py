@@ -9,7 +9,6 @@ import pandas as pd
 import copy
 import os
 import time
-#from tensorflow.python.keras.engine import data_adapter
 
 class CustomModel(tf.keras.Model):
     """
@@ -312,11 +311,11 @@ class Individual_Model_Training():
         )
 
         # load pretrained weights and biases
-        #if self.pre_training:
-        #    base_model = self._set_ResNet50V2_pretrained_w_and_b(base_model, arch_input_shape)
+        if self.pre_training:
+            base_model = self._set_ResNet50V2_pretrained_w_and_b(base_model, arch_input_shape)
 
         # For testing
-        #base_model = self._apply_regularization_to_prebuilt_model(base_model, 2)
+        base_model = self._apply_regularization_to_prebuilt_model(base_model, 2)
 
         # Add prediction layers to predict the TR:
         return self._add_prediction_leyers(base_model(x))
@@ -341,16 +340,16 @@ class Individual_Model_Training():
         base_model = tf.keras.applications.Xception(
             include_top=False,
             weights=None,
-            input_tensor=arch_input_shape,
+            input_tensor=arch_input_layer,
             pooling=None,
             classifier_activation=None
         )
 
-        #if self.pre_training:
-        #    base_model = self._set_Xception_pretrained_w_and_b(base_model, arch_input_shape)
+        if self.pre_training:
+            base_model = self._set_Xception_pretrained_w_and_b(base_model, arch_input_shape)
 
         # For testing
-        #base_model = self._apply_regularization_to_prebuilt_model(base_model, 1)
+        base_model = self._apply_regularization_to_prebuilt_model(base_model, 1)
 
         # Add prediction layers to predict the TR:
         return self._add_prediction_leyers(base_model(x))
