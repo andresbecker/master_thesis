@@ -126,7 +126,7 @@ class Individual_Model_Training():
         # Filter unwanted channels
         x = self._filter_channels(self.input_layer)
 
-        if arch_name == 'baseline_CNN':
+        if (arch_name == 'baseline_CNN') or (arch_name == 'simple_CNN'):
             prediction = self._get_baseline_CNN(x)
 
         elif arch_name == 'ResNet50V2':
