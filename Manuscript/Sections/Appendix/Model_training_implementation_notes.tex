@@ -11,7 +11,7 @@ Since data augmentation techniques can be selected independently for each traine
 The Jupyter Notebook responsible for training the models is the one that requires the largest number of parameters. However, the function \texttt{set\_model\_default\_parameters} (in the \texttt{Utils.py} library) provides default values for all the parameters. Therefore, if some hyperparameter is not specified here or in section \ref{sec:methodology:models}, then the value used was the one specified in that function.
 
 To train a model, one has to open the Python Jupyter Notebook \\
-\noindent\texttt{Model\_training\_class.ipynb} and replace the variable \texttt{PARAMETERS\_FILE} with the absolute path and name of the input parameters file before running the notebook. A sample parameter file (\texttt{Train\_model\_sample.json}) is provided along with this work. It contains the parameters used to train the \hl{Baseline} \gls{cnn} (see section \ref{sec:methodology:BL_CNN}), using the data augmentation techniques specified in section \ref{sec:methodology:data:augm}.
+\noindent\texttt{Model\_training\_class.ipynb} and replace the variable \texttt{PARAMETERS\_FILE} with the absolute path and name of the input parameters file before running the notebook. A sample parameter file (\texttt{Train\_model\_sample.json}) is provided along with this work. It contains the parameters used to train the \hl{Simple} \gls{cnn} (see section \ref{sec:methodology:simple_CNN}), using the data augmentation techniques specified in section \ref{sec:methodology:data:augm}.
 Table \ref{table:model_train_in:params} provides an explanation of some of the model training parameters, while table \ref{table:model_train_in:params_da} an explanation of some of the data augmentation parameters. Although the training and data augmentation parameters are specified in separate tables, they must be in the same \texttt{JSON} parameter file (and also as items in the same dictionary).
 
 % set table lengths
@@ -23,7 +23,7 @@ Table \ref{table:model_train_in:params} provides an explanation of some of the m
     \hline
     JSON variable name & Description \\
     \hline
-    \texttt{model\_name} & Name of the architecture to be trained. Available: \texttt{baseline\_CNN}, \texttt{ResNet50V2}, \texttt{Xception}, \texttt{Linear\_Regression} \\
+    \texttt{model\_name} & Name of the architecture to be trained. Available: \texttt{simple\_CNN}, \texttt{ResNet50V2}, \texttt{Xception}, \texttt{Linear\_Regression} \\
     \hline
     \texttt{pre\_training} & Binary, whether or not use pretrained weights and biases as initial parameters. Only available for \texttt{ResNet50V2} or \texttt{Xception} architectures \\
     \hline

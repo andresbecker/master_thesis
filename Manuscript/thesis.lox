@@ -13,5 +13,3 @@
 \contentsline {fixme}{Note: Should I mention than half of the cells are in $G_1$ phase, which means that cell in $G_1$ phase apply more pressure on the optimization of the model parameters during training, while the cells in the $G_2$ phase will not? And/Or should I mention this in the conclusions as a future work?}{37}{table.caption.47}%
 \defcounter {refsection}{0}\relax 
 \contentsline {fixme}{Note: after finishing, check that the baseline model is still called baseline}{60}{table.caption.65}%
-\defcounter {refsection}{0}\relax 
-\contentsline {fixme}{Note: Add the ResNet50V2 info to the table \ref {table:results:model_performance_comparative}.}{62}{table.caption.69}%

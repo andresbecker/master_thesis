@@ -1,0 +1,25 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+poner aqui los mismos plots que en la precentacion de scott pero para el validation!!! esto no debe de tomarte mas de 1 hora!!!
+
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{.9\linewidth}
+    \includegraphics[width=\linewidth]{train_comp_c_and_s.jpg}
+    \caption{test.}
+    \label{fig:results:lm_performance:test}
+  \end{subfigure}%
+  \vspace{3mm}
+  \begin{subfigure}[b]{.9\linewidth}
+    \includegraphics[width=\linewidth]{train_comp_structure.jpg}
+    \caption{test}
+    \label{fig:results:lm_performance:test2}
+  \end{subfigure}
+  \caption{test.}
+  \label{fig:results:lm_performance}
+\end{figure}

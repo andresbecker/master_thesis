@@ -23,6 +23,8 @@
 %        theoremtitle = break: If set to "nobreak", the title of a theorem is typeset next to its name; If set to "break", it is typeset on the next line.
 %        biblatexBackend: see parameter "backend" of package "biblatex", default: biber.
 %
+\RequirePackage[table]{xcolor} % moved from tumcolors2.sty to avoid error:
+% https://tex.stackexchange.com/questions/83101/option-clash-for-package-xcolor
 \RequirePackage{kvoptions}
 \DeclareStringOption[]{titlepicture}
 \DeclareStringOption[0 mm]{titlepictureX}

@@ -8,10 +8,9 @@
 
 % experiment
 %LM_RIV2_test7.json
+%LM_RIV2_test4.json without rch
 
-As we already mentioned, the objective of this work is to explain cell expression using spatial information in multichannel images of cell nucleus.
-
-To compare the performance of the \glspl{cnn}, and have an idea about how much pixel intensity information was still contained in the data, we also fitted a  \hl{linear model}
+As we already mentioned, the objective of this work is to explain cell expression using spatial information in multichannel images of cell nucleus. To compare the performance of the \glspl{cnn}, and have an idea of how much pixel intensity information was still contained in the data, we also fitted a  \hl{linear model}
 
 \begin{equation}
   y = w_0 + w_1x_1 + \cdots + w_{33}x_{33}
@@ -19,7 +18,7 @@ To compare the performance of the \glspl{cnn}, and have an idea about how much p
 
 \noindent where $x_i, \in \mathbb{R}$, for $i \in \{1, \cdots, 33\}$, is the average pixel intensity corresponding to channel $i$ and $w_i, \in \mathbb{R}$, for $i \in \{0, \cdots, 33\}$ are the model coefficients.
 
-The linear model architecture is specified in table \ref{table:metho:models:lm}. The rows of the table represent each layer of the model, which are evaluated from top to bottom. This model has only $34$ free (learnable) parameters in total.
+The linear model architecture is specified in table \ref{table:metho:models:lm}. The rows of the table represent each layer of the model, which are evaluated from top to bottom. This model has only $34$ free (learnable) parameters in total and was trained with a learning rate of $0.1$.
 
 % set table lengths
 \setlength{\mylinewidth}{\linewidth-7pt}%
@@ -42,5 +41,3 @@ The linear model architecture is specified in table \ref{table:metho:models:lm}.
   \caption{Linear model architecture. The rows represent each layer of the model. The flow of the model is from top to bottom. The $bs$ on the \hl{Output Shape} column stands for \hl{Batch size}.}
   \label{table:metho:models:lm}
 \end{longtable}
-
-The learning rate used to train the baseline model was $0.1$.

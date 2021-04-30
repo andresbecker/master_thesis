@@ -1,0 +1,37 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+\graphicspath{{./Sections/Methodology/Resources/}}
+
+To evaluate and compare the performance of the models, besides the loss function (\hl{Huber loss}), we also used 2 other error measures
+
+\begin{itemize}
+  \item The \acrfull{mse}
+    \begin{equation}
+      E_{MSE}(Y,\hat{Y}) := \frac{1}{N} \sum_{n=1}^N (y_i-\hat{y}_i)^2
+    \end{equation}
+  \item The \acrfull{mae}
+    \begin{equation}
+      E_{MAE}(Y,\hat{Y}) := \frac{1}{N} \sum_{n=1}^N |y_i-\hat{y}_i|^2
+    \end{equation}
+\end{itemize}
+
+\noindent where $Y, \hat{Y} \in \mathbb{R}^N$ are the true and predicted \gls{tr} values respectively.
+
+Besides the error measures, we also used the \hl{Coefficient of determination}\footnote{Intuitively, the \hl{Coefficient of determination} $R^2$ represents how much of the variance in the target variable $y$ is explained by the model when it is compared to $\bar{y}$ \cite{steel1960principles}.} $R^2$, as well as the mean and standard deviation of the model error ($\bar{e}$ and $s(e)$ respectively), as a performance measures
+
+\begin{equation}
+  \begin{split}
+    R^2 &:= 1 - \frac{SS_{res}}{SS_{tot}} \\
+    &:= 1- \frac{\sum_{n=1}^N (y_i-\hat{y}_i)^2}{\sum_{n=1}^N (y_i-\bar{y})^2} \\
+    \\
+    \bar{e} &:= \frac{1}{N} \sum_{n=1}^N (y_i-\hat{y}_i) \\
+    &:= \frac{1}{N} \sum_{n=1}^N e_i \\
+    \\
+    s(e) &:= \sqrt{\frac{1}{N-1} \sum_{n=1}^N (e_i-\bar{e})^2} \\
+  \end{split}
+\end{equation}
+
+\noindent where $SS_{res}$ and $SS_{tot}$ are the \hl{Residual sum of squares} and the \hl{Total sum of squares} respectively.

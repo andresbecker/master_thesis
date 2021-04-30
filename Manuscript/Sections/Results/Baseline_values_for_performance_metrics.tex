@@ -1,0 +1,42 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+%\glsresetall
+
+\graphicspath{{./Sections/Results/Resources/}}
+
+If we assume that there is no information in the training data $\bs{X}_{train}$ that can be used to explain the independent variable $y$ (i.e. the \gls{tr}), then a model $f$ should not be able to make (learn) a better predictions than the average of the target values in the training set, i,e,
+
+\begin{equation}
+  f(\bs{x}_i)=\bar{y}_{train}
+  \label{eq:results:metric_bl:ybar}
+\end{equation}
+
+\noindent for all $\bs{x}_i \in \bs{X}_{train}$ and where $\bar{y}_{train}=\frac{1}{N_{train}}\sum_{i=1}^{N_{train}}y_i$.
+
+This idea is similar to the \hl{Coefficient of determination} $R^2$, which represents how much of the variance in the target variable $y$ is explained by the model when compared to $\bar{y}$.
+Thus, a model that always returns $\bar{y}$, will have a $R^2=0$. On the other hand, if the model gives better predictions than $\bar{y}$, then $0 < R^2 \leq 1$, otherwise $R^2 < 0$.
+
+Table \ref{table:results:metric_bl_vals} shows the value of the performance measures (see section \ref{sec:methodology:metrics}), when they are evaluated in the validation set assuming that equation \ref{eq:results:metric_bl:ybar} holds.
+
+% metrics computed in notebook Preprocessing_resources.ipynb
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{c|c|c|c|c|c}
+    \hline
+    $\bar{e}$ & $s(e)$ & $R^2$ & MAE & MSE & Huber \\
+    \hline
+     -2.36 & 62.27 & 0 & 48.24 & 3883 & 47.74 \\
+    \hline
+  \end{tabular}
+  \caption{Baseline values for performance metrics evaluated in the validation set.}
+  \label{table:results:metric_bl_vals}
+\end{table}
+
+As we already mentioned, the objective of this work is to explain cell expression using spatial information in multichannel images of cell nucleus.
+Therefore, it is important to somehow estimate how much information related with the pixel intensities (color information) remains in the data after preprocessing and augmentation techniques.
+Since the linear model cannot take advantage of spatial information, we can use the performance of the linear model and the information in table \ref{table:results:metric_bl_vals} to estimate this.
+Then, if the linear model can reach a lower value in the loss function than the one shown in the table \ref{table:results:metric_bl_vals}, this means that there is still color information in the data that can be used to predict the \gls{tr}.
+
+On the other hand, we can also use the information provided in table \ref{table:results:metric_bl_vals} to validate that the \glspl{cnn} are actually capable of predicting the \gls{tr} based only on spatial information.

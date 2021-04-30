@@ -1,0 +1,8 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+\graphicspath{{./Sections/Results/Resources/}}
+
+Since the models were trained on computer cluster\footnote{reference to the HMGU} where the resources of each node are shared among all users (GPUs, CPUs, storage), the training time depended on the node assigned by the job scheduling system (SLURM) and the concurrence of users in the cluster. For this reason, it is not possible to provide a a fair comparison for training time between models.

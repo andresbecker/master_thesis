@@ -1,0 +1,65 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+%\glsresetall
+
+\graphicspath{{./Sections/Methodology/Resources/}}
+
+% experiment:
+%BL_RIV2_test4.json
+%BL_RIV2_test8.json wo RCI
+
+The \hl{Simple} \gls{cnn} architecture is specified in table \ref{table:metho:models:simple}. The rows of the table represent each layer of the model, which are evaluated from top to bottom. This model has $160,129$ free (learnable) parameters in total and it was trained with a learning rate of $0.0005$.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.35\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.25\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.18\mylinewidth-2\arraycolsep}%
+
+\begin{longtable}{m{\mylengtha} | m{\mylengthb} | m{\mylengthc}}
+    \hline
+    Layer & Output Shape & Number of parameters \\
+    \hline
+    Input & $(bs, 224, 224, 38)$ & 0 \\
+    \hline
+    Channel filtering & $(bs, 224, 224, 33)$ & 0 \\
+    \hline
+    Convolution & $(bs, 224, 224, 64)$ & 19072 \\
+    \hline
+    Batch Normalization & $(bs, 224, 224, 64)$ & 256 \\
+    \hline
+    ReLU & $(bs, 224, 224, 64)$ & 0 \\
+    \hline
+    Max Pooling & $(bs, 112, 112, 64)$ & 0 \\
+    \hline
+    Convolution & $(bs, 112, 112, 128)$ & 73856 \\
+    \hline
+    Batch Normalization & $(bs, 112, 112, 128)$ & 512 \\
+    \hline
+    ReLU & $(bs, 112, 112, 128)$ & 0 \\
+    \hline
+    Max Pooling & $(bs, 56, 56, 128)$ & 0 \\
+    \hline
+    Global Average Pooling & $(bs, 128)$ & 0 \\
+    \hline
+    Dense & $(bs, 256)$ & 33024 \\
+    \hline
+    Batch Normalization & $(bs, 256)$ & 1024 \\
+    \hline
+    ReLU & $(bs, 256)$ & 0 \\
+    \hline
+    Dense & $(bs, 128)$ & 32896 \\
+    \hline
+    Batch Normalization & $(bs, 128)$ & 512 \\
+    \hline
+    ReLU & $(bs, 128)$ & 0 \\
+    \hline
+    Dense & $(bs, 1)$ & 129 \\
+    \hline
+  \caption{Simple \gls{cnn} architecture. The rows represent each layer of the model. The flow of the model is from top to bottom. The $bs$ on the \hl{Output Shape} column stands for \hl{Batch size}.}
+  \label{table:metho:models:simple}
+\end{longtable}
+
+All convolution layers specified in table \ref{table:metho:models:simple} used kernels of size 3 by 3 and stride of 1. Besides that, all pooling layers used a kernel of size 2 by 2 and stride of 2.

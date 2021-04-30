@@ -3,7 +3,7 @@
 \ProvidesPackage{tumcolors2}[2016/03/10, TUM-Farben und Logos zur Verwendung in
 anderen Paketen/Dateien nach Styleguide 2016, Zentrum Mathematik, TU Muenchen]
 
-\RequirePackage{xcolor}
+%\RequirePackage{xcolor} % moved to tumthesis.cls to avoid error
 \RequirePackage{tikz}
 \usetikzlibrary{calc}% Used for tumlogo
 \RequirePackage{keyval}% Used for the tumlogo command
@@ -93,7 +93,7 @@ anderen Paketen/Dateien nach Styleguide 2016, Zentrum Mathematik, TU Muenchen]
 	\@ifundefined{tumlogo@color}{%
 		\def\tumlogo@color{tumblue}%
 	}{}%
-	
+
 %
 	% Start a TikZ picture with apropriate scaling
 	\begin{tikzpicture}[x=\tumlogo@size, y=\tumlogo@size]
@@ -139,8 +139,8 @@ anderen Paketen/Dateien nach Styleguide 2016, Zentrum Mathematik, TU Muenchen]
 }
 \define@key{tumlogo}{height}{%
   \@ifundefined{tumlogo@size}{%
-    \@ifundefined{tumlogo@protect}{%    
-      \def\tumlogo@size{1.89256020882682390558992908288*#1}%      
+    \@ifundefined{tumlogo@protect}{%
+      \def\tumlogo@size{1.89256020882682390558992908288*#1}%
     }{%
       \def\tumlogo@size{0.33333*1.89256020882682390558992908288*#1}%
     }
@@ -187,7 +187,7 @@ anderen Paketen/Dateien nach Styleguide 2016, Zentrum Mathematik, TU Muenchen]
 	\@ifundefined{mathlogo@color}{%
 		\def\mathlogo@color{tumblue}%
 	}{}%
-	
+
 %
 	% Start a TikZ picture with apropriate scaling
 	\begin{tikzpicture}[x=\mathlogo@size, y=\mathlogo@size]
@@ -223,4 +223,3 @@ anderen Paketen/Dateien nach Styleguide 2016, Zentrum Mathematik, TU Muenchen]
 \define@key{mathlogo}{color}{%
   \def\mathlogo@color{#1}%
 }
-

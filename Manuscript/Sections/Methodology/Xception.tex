@@ -13,7 +13,7 @@ As we saw in section \ref{sec:basics:ANN}, each kernel in a regular convolution 
 
 The Xception architecture combines the idea behind the Inception module and the residual blocks (see section \ref{sec:basics:ANN}).
 We will not dive into details about the Xception here. However, the model architecture is shown in table \ref{table:metho:models:XC}.
-The raw \hl{Xception feature extraction}, represent the feature extraction layers (i.e., all the layers containing convolution and/or pooling layers) of the Xception\footnote{For this work, we did not implement the Xception architecture from scratch, instead we used the pre-built model that is provided in the Keras library. For more information pleases refer to the \href{https://www.tensorflow.org/api_docs/python/tf/keras/applications/xception}{official documentation}.}, while the remaining rows represent the layers intended to make the final prediction. The layers are evaluated from top to bottom. This model has $21,373,929$ free (learnable) parameters in total.
+The raw \hl{Xception feature extraction}, represent the feature extraction layers (i.e., all the layers containing convolution and/or pooling layers) of the Xception\footnote{For this work, we did not implement the Xception architecture from scratch, instead we used the pre-built model that is provided in the Keras library. For more information pleases refer to the \href{https://www.tensorflow.org/api_docs/python/tf/keras/applications/xception}{official documentation}.}, while the remaining rows represent the layers intended to make the final prediction. The layers are evaluated from top to bottom. This model has $21,373,929$ free (learnable) parameters in total and it was trained with a learning rate of $0.0005$.
 
 % set table lengths
 \setlength{\mylinewidth}{\linewidth-7pt}%
@@ -50,5 +50,3 @@ The raw \hl{Xception feature extraction}, represent the feature extraction layer
   \caption{Xception \gls{cnn} architecture. The rows represent each layer of the model. The flow of the model is from top to bottom. The $bs$ on the \hl{Output Shape} column stands for \hl{Batch size}.}
   \label{table:metho:models:XC}
 \end{longtable}
-
-The learning rate used to train the baseline model was $0.001$.
