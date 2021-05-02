@@ -5,21 +5,39 @@
 % define where the images are
 \graphicspath{{./Sections/Results/Resources/}}
 
-poner aqui los mismos plots que en la precentacion de scott pero para el validation!!! esto no debe de tomarte mas de 1 hora!!!
+% Experiments parameter files:
+%LM_RIV2_test7.json
+%LM_RIV2_test4.json without rch
+
+Figure \ref{fig:results:lm_performance} provides a more in-depth look at what was mentioned in section \ref{sec:model_performance}, with respect to the linear model. All the subfigures in \ref{fig:results:lm_performance} correspond to the validation set and are divided/colored by cell cycle.
 
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[b]{.9\linewidth}
-    \includegraphics[width=\linewidth]{train_comp_c_and_s.jpg}
-    \caption{test.}
-    \label{fig:results:lm_performance:test}
+  \begin{subfigure}[b]{.5\linewidth}
+    \includegraphics[width=\linewidth]{lm_cs_y_dist.png}
+    \caption{Distribution of $y$ and $\hat{y}$ (boxplots) for data with color and structure.}
+    \label{fig:results:lm_performance:cs_dist}
+  \end{subfigure}
+  \begin{subfigure}[b]{.27\linewidth}
+    \includegraphics[width=\linewidth]{lm_cs_y_vs_y_hat.png}
+    \caption{$y$ vs. $\hat{y}$ for data with color and structure.}
+    \label{fig:results:lm_performance:cs_y_vs_y_hat}
   \end{subfigure}%
   \vspace{3mm}
-  \begin{subfigure}[b]{.9\linewidth}
-    \includegraphics[width=\linewidth]{train_comp_structure.jpg}
-    \caption{test}
-    \label{fig:results:lm_performance:test2}
+  \begin{subfigure}[b]{.5\linewidth}
+    \includegraphics[width=\linewidth]{lm_s_y_dist.png}
+    \caption{Distribution of $y$ and $\hat{y}$ (boxplots) for data with spatial information (structure only).}
+    \label{fig:results:lm_performance:s_dist}
   \end{subfigure}
-  \caption{test.}
+  \begin{subfigure}[b]{.27\linewidth}
+    \includegraphics[width=\linewidth]{lm_s_y_vs_y_hat.png}
+    \caption{$y$ vs. $\hat{y}$ for data with spatial information.}
+    \label{fig:results:lm_performance:s_y_vs_y_hat}
+  \end{subfigure}
+  \caption{Comparative between the true and predicted \gls{tr} ($y$ and $\hat{y}$ respectively) for the linear model on the validation set, divided by cell cycle. The first row of figures corresponds to the linear model trained with data containing pixel intensity and spatial information (color and structure), while the second row to the linear model trained with spatial data only (structure). The boxes in figures \subref{fig:results:lm_performance:cs_dist} and \subref{fig:results:lm_performance:s_dist} show the first and third quartiles of the data ($25\%$ and $75\%$ respectively), while the whiskers extend to show the rest of the distribution, except for points that are determined to be \hl{outliers} using a function of the inter-quartile range. The line inside the boxes shows the second quartile (median) of the data. Figures \subref{fig:results:lm_performance:cs_y_vs_y_hat} and \subref{fig:results:lm_performance:s_y_vs_y_hat} shows the true vs. predicted \gls{tr}.}
   \label{fig:results:lm_performance}
 \end{figure}
+
+Subfigures \ref{fig:results:lm_performance:cs_y_vs_y_hat} and \ref{fig:results:lm_performance:s_y_vs_y_hat} show that after removing the pixel intensity information from the training data (by applying per-channel random color shifting, see section \ref{sec:dataset:data_augmentation}), the linear model is unable to use the remaining spatial information, so it practically learns a constant function (similar to the average \gls{tr} of the training set, see section \ref{sec:results:bl_values}).
+This can also be seen in subfigures \ref{fig:results:lm_performance:cs_dist} and \ref{fig:results:lm_performance:s_dist}, which show a comparison between the true and predicted \gls{tr} distributions.
+However, subfigures \ref{fig:results:lm_performance:cs_dist} and \ref{fig:results:lm_performance:s_dist} also show that even after reducing the pixel intensity information, the model was still able to learn slightly different average \glspl{tr} for each cell cycle, which explains why the prediction of the linear linear model trained only with structure data is still slightly better than the baseline value (see table \ref{table:results:model_performance_comparative}).

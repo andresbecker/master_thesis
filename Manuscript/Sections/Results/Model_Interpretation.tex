@@ -1,0 +1,137 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+Introduce, describe, interpret and conclude.
+
+Primero selecciona las images que vas a poner, luego escribe y al final deside si las separas por archivo!
+
+usa las mismas celulas que en la presentacion! muestra el top 10!
+
+luego ve con lo de la importancia
+di que es
+muestra el plot primero del simple, luego di que puedes ver como esto cambia dependiendo de los datos (con y sin colors)
+luego muestra el dividido por cell level
+luego ve con lo de similitud!
+
+Road map:
+\begin{enumerate}
+  \item Agrega lo de la divicion de celulas por TR level
+  \item Pon unos score maps que vallan con las observaciones (i.e. que tengan los canales en los que nos vamos a centrar) y con porcentaje
+  \item Pon el importance channel plot dividido por Tr level
+  \item introduce la similitud entre sm y canales
+  \item pon el plot de los mas parecidos dividido por TR level
+  \item has las observacion y linkea algunas con el importaqnce map
+  \item termina con el clustering sobre las similitudes y menciona 3 clusters que se centran en los splicing speakles y el nucleolus (como sugiere el plot de la importance)
+\end{enumerate}
+
+In section \ref{sec:basics:interpretability_methods} and \ref{sec:methodology:interpretability_methods} we explained the interpretability methods \gls{ig} and \gls{vg} and how we can combine them to generate \hl{score maps}, which can be used to identify important pixels for the model prediction for a given input image. These score maps not only depend on the input image, but also on the model.
+However, in this section we will only show the score maps corresponding to the \hl{simple CNN} model, since this was the CNN model that produced the most interesting score maps.
+
+This section also explore the dynamics of the score maps with respect to the level of TR i.e., how the score maps cells change when they have a low or high TR.
+
+\subsection{Transcription rate level cell division}
+\label{sec:results:tr_cell_div}
+
+To make a more in-depth analysis, we analyze the score maps depending on the level of \gls{tr} of its corresponding cells. To do this, we divide the cells into 3 groups (low, medium, high) depending on the relationship of their \gls{tr} with the average \gls{tr} $\bar{y}$ and the standard deviation $s(y)$. The division criterion is shown in table \ref{table:results:model_int:cell_tr_group}.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.17\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.29\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.23\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthd}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthe}{0.18\mylinewidth-2\arraycolsep}%
+
+% values computed in notebook VarGrad_channel_importance_no_git.ipynb
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{>{\centering\arraybackslash}m{\mylengtha} |
+                  >{\centering\arraybackslash}m{\mylengthb} |
+                  >{\centering\arraybackslash}m{\mylengthc} |
+                  >{\centering\arraybackslash}m{\mylengthd} |
+                  >{\centering\arraybackslash}m{\mylengthe}
+                  }
+    \hline
+    Group & Grouping criterion & Criterion values & Group size & Group percentage \\
+    \hline
+    Low TR & $y \leq \bar{y} - s(y)$ & $y \leq 316.56$ & 532 & $14.3\%$ \\
+    \hline
+    Medium TR & $\bar{y} - s(y) < y < \bar{y} + s(y)$ & $316.56 < y < 438$ & 2627 & $71\%$ \\
+    \hline
+    High TR & $\bar{y} + s(y) \leq y$ & $438 \leq y$ & 544 & $14.7\%$ \\
+    \hline
+  \end{tabular}
+  \caption{Cell grouping criteria with respect to their \gls{tr}. The \gls{tr} of each cell is denoted by $y$, while the mean \gls{tr} and standard deviation by $\bar{y}$ and $s(y)$ respectively.}
+  \label{table:results:model_int:cell_tr_group}
+\end{table}
+
+Table \ref{table:results:model_int:cell_tr_group} also shows the number of cells and the percentage of data belonging to each group. Figure \ref{fig:results:model_int:tr_dist} shows the distribution of the \glspl{tr}, as well as the division lines of each group (in red) and the average \gls{tr} (in gray).
+
+% plot done in notebook VarGrad_channel_importance_no_git.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.7\linewidth]{Model_Interpretation/TR_dist.jpg}
+  \caption{\gls{tr} distribution. The red lines show the division between \gls{tr} level groups. The gray line shows the mean \gls{tr}.}
+  \label{fig:results:model_int:tr_dist}
+\end{figure}
+
+\subsection{Simple CNN model score maps}
+
+In this section we show the score maps corresponding to 3 cell nucleus images, randomly sampled from each of the 3 \gls{tr} groups shown in section \ref{sec:results:tr_cell_div}. Each of the cells also corresponds to one of the 3 cell phases ($G_1,\ S,\ G_2$). Figure \ref{fig:results:model_inter_cell_samp} shows the selected cells from lowest to highest \gls{tr} (from left to right).
+The images shown are the composition of channels \hl{RB1\_pS807\_S811}, \hl{PABPN1} and \hl{PCNA} (for more information about this immunofluorescence markers, please see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers})\fxnote{Add information to this channels to table \ref{table:apendix:if_markers}.}.
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Model_Interpretation/258520.jpg}
+    \caption{Sample cell 1, $y=169.75$, \gls{tr} group: \hl{Low TR}, cell phase: $G_1$.}
+    \label{fig:results:model_inter_cell_samp:cell_1}
+  \end{subfigure}
+  \begin{subfigure}[b]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Model_Interpretation/261399.jpg}
+    \caption{Sample cell 2, $y=377.26$, \gls{tr} group: \hl{Medium TR}, cell phase: $S$.}
+    \label{fig:results:model_inter_cell_samp:cell_2}
+  \end{subfigure}
+  \begin{subfigure}[b]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Model_Interpretation/280733.jpg}
+    \caption{Sample cell 3, $y=546.58$, \gls{tr} group: \hl{High TR}, cell phase: $G_2$.}
+    \label{fig:results:model_inter_cell_samp:cell_3}
+  \end{subfigure}
+  \caption{Cell nucleus images sample. The images are the composition of channels \hl{RB1\_pS807\_S811}, \hl{PABPN1} and \hl{PCNA}. For each image, the \gls{tr} is denoted by $y$.}
+  \label{fig:results:model_inter_cell_samp}
+\end{figure}
+
+Figure \ref{fig:results:model_inter:sm} shows channels \hl{POL2RA\_pS2, GTF2B, SRRM2, NCL, SON, SP100} and \hl{CDK9\_pT186} (see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}) of the score maps corresponding to the cells shown in figure \ref{fig:results:model_inter_cell_samp} and the \hl{simple CNN model} (see section \ref{sec:methodology:simple_CNN}).
+Figure \ref{fig:results:model_inter:sm} also shows the same channels of the cell nucleus image and the overlap between the original image and its score map.
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+\afterpage{%
+  \thispagestyle{empty}
+  \begin{figure}[!ht]
+    \centering
+    \begin{subfigure}[b]{\linewidth}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_258520.png}
+      \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_1}.}
+      \label{fig:results:model_inter:sm:cell_1}
+    \end{subfigure}%
+    \vspace{3mm}
+    \begin{subfigure}[b]{\linewidth}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_261399.png}
+      \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_2}.}
+      \label{fig:results:model_inter:sm:cell_2}
+    \end{subfigure}%
+    \vspace{3mm}
+    \begin{subfigure}[b]{\linewidth}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_280733.png}
+      \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_3}.}
+      \label{fig:results:model_inter:sm:cell_3}
+    \end{subfigure}
+    \caption{Channels 25, 4, 7, 18, 13, 17 and 2 of score maps and cell images (shown in figure \ref{fig:results:model_inter_cell_samp}). First row (in blue) shows the cell nucleus image, second row (in red) shows the score map and third row (blue and red) shows the overlapping of the previous rows. The score maps correspond to the \hl{simple CNN model}.}
+    \label{fig:results:model_inter:sm}
+  \end{figure}
+}
