@@ -2,7 +2,7 @@
     "_comment": "Tensorflow datasets parameters-------------------------------",
     "local_tf_datasets": "/storage/groups/ml01/workspace/andres.becker/datasets/tensorflow_datasets",
     "tf_ds_name": "mpp_ds_normal_dmso_z_score",
-    "ds_partitions": ["train", "val"],
+    "ds_partitions": ["train", "val", "test"],
 
     "_comment": "Absolute path where score maps are saved---------------------",
     "output_data_dir": "/storage/groups/ml01/workspace/andres.becker/datasets/Score_Maps/VarGrad_IG",
