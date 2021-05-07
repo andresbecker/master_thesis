@@ -5,38 +5,14 @@
 % define where the images are
 \graphicspath{{./Sections/Results/Resources/}}
 
-Introduce, describe, interpret and conclude.
+In section \ref{sec:basics:interpretability_methods} and \ref{sec:methodology:interpretability_methods} we explained the interpretability methods \gls{ig} and \gls{vg} and how we can combine them to generate \hl{score maps}, which can be used to identify important pixels for the model prediction for a given input image. These score maps are not only dependent on the input image, but also on the model.
 
-Primero selecciona las images que vas a poner, luego escribe y al final deside si las separas por archivo!
-
-usa las mismas celulas que en la presentacion! muestra el top 10!
-
-luego ve con lo de la importancia
-di que es
-muestra el plot primero del simple, luego di que puedes ver como esto cambia dependiendo de los datos (con y sin colors)
-luego muestra el dividido por cell level
-luego ve con lo de similitud!
-
-Road map:
-\begin{enumerate}
-  \item Agrega lo de la divicion de celulas por TR level
-  \item Pon unos score maps que vallan con las observaciones (i.e. que tengan los canales en los que nos vamos a centrar) y con porcentaje
-  \item Pon el importance channel plot dividido por Tr level
-  \item introduce la similitud entre sm y canales
-  \item pon el plot de los mas parecidos dividido por TR level
-  \item has las observacion y linkea algunas con el importaqnce map
-  \item termina con el clustering sobre las similitudes y menciona 3 clusters que se centran en los splicing speakles y el nucleolus (como sugiere el plot de la importance)
-\end{enumerate}
-
-In section \ref{sec:basics:interpretability_methods} and \ref{sec:methodology:interpretability_methods} we explained the interpretability methods \gls{ig} and \gls{vg} and how we can combine them to generate \hl{score maps}, which can be used to identify important pixels for the model prediction for a given input image. These score maps not only depend on the input image, but also on the model.
-However, in this section we will only show the score maps corresponding to the \hl{simple CNN} model, since this was the CNN model that produced the most interesting score maps.
-
-This section also explore the dynamics of the score maps with respect to the level of TR i.e., how the score maps cells change when they have a low or high TR.
+In this section we will analyze the score maps corresponding to the \hl{simple CNN} model, since this was the model that produced the most interesting score maps. As part of this analysis, the dynamics of the score maps with respect to the increase in \gls{tr} is also studied. This results in the formulation of hypotheses about the most relevant markers (proteins) for predicting \gls{tr}.
 
 \subsection{Transcription rate level cell division}
 \label{sec:results:tr_cell_div}
 
-To make a more in-depth analysis, we analyze the score maps depending on the level of \gls{tr} of its corresponding cells. To do this, we divide the cells into 3 groups (low, medium, high) depending on the relationship of their \gls{tr} with the average \gls{tr} $\bar{y}$ and the standard deviation $s(y)$. The division criterion is shown in table \ref{table:results:model_int:cell_tr_group}.
+In this section we will not only investigate the areas of the input image that the model looks at when predicting \gls{tr}, we will also analyze how this areas changes as a function of the \gls{tr}. In order to do this, we use one standard deviation away from the mean \gls{tr} the classify the cells as low, medium or high transcription level. This is shown in table \ref{table:results:model_int:cell_tr_group}.
 
 % set table lengths
 \setlength{\mylinewidth}{\linewidth-7pt}%
@@ -79,59 +55,157 @@ Table \ref{table:results:model_int:cell_tr_group} also shows the number of cells
   \label{fig:results:model_int:tr_dist}
 \end{figure}
 
-\subsection{Simple CNN model score maps}
-
-In this section we show the score maps corresponding to 3 cell nucleus images, randomly sampled from each of the 3 \gls{tr} groups shown in section \ref{sec:results:tr_cell_div}. Each of the cells also corresponds to one of the 3 cell phases ($G_1,\ S,\ G_2$). Figure \ref{fig:results:model_inter_cell_samp} shows the selected cells from lowest to highest \gls{tr} (from left to right).
-The images shown are the composition of channels \hl{RB1\_pS807\_S811}, \hl{PABPN1} and \hl{PCNA} (for more information about this immunofluorescence markers, please see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers})\fxnote{Add information to this channels to table \ref{table:apendix:if_markers}.}.
+Figure \ref{fig:results:model_inter_cell_samp} shows 3 cell nucleus images from the test set, randomly sampled from each of the 3 transcription groups. Each of the cells also corresponds to one of the 3 cell phases ($G_1,\ S,\ G_2$).
+The cells are shown from lowest to highest \gls{tr} (from left to right).
+The images are the composition of channels \hl{RB1\_pS807\_S811, PABPN1} and \hl{PCNA} (for more information about this markers, please see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}).
 
 % fures created in notebook VarGrad_channel_similarity_mae.ipynb
 \begin{figure}[!ht]
   \centering
   \begin{subfigure}[b]{.3\linewidth}
-    \includegraphics[width=\linewidth]{Model_Interpretation/258520.jpg}
-    \caption{Sample cell 1, $y=169.75$, \gls{tr} group: \hl{Low TR}, cell phase: $G_1$.}
+    \includegraphics[width=\linewidth]{Model_Interpretation/277417.jpg}
+    \caption{Sample cell 1 (cell id 277417), $y=133.04$, \gls{tr} group: \hl{Low TR}, cell phase: $G_1$.}
     \label{fig:results:model_inter_cell_samp:cell_1}
   \end{subfigure}
   \begin{subfigure}[b]{.3\linewidth}
-    \includegraphics[width=\linewidth]{Model_Interpretation/261399.jpg}
-    \caption{Sample cell 2, $y=377.26$, \gls{tr} group: \hl{Medium TR}, cell phase: $S$.}
+    \includegraphics[width=\linewidth]{Model_Interpretation/321001.jpg}
+    \caption{Sample cell 2 (cell id 321001), $y=378.19$, \gls{tr} group: \hl{Medium TR}, cell phase: $S$.}
     \label{fig:results:model_inter_cell_samp:cell_2}
   \end{subfigure}
   \begin{subfigure}[b]{.3\linewidth}
-    \includegraphics[width=\linewidth]{Model_Interpretation/280733.jpg}
-    \caption{Sample cell 3, $y=546.58$, \gls{tr} group: \hl{High TR}, cell phase: $G_2$.}
+    \includegraphics[width=\linewidth]{Model_Interpretation/195536.jpg}
+    \caption{Sample cell 3 (cell id 195536), $y=540.09$, \gls{tr} group: \hl{High TR}, cell phase: $G_2$.}
     \label{fig:results:model_inter_cell_samp:cell_3}
   \end{subfigure}
   \caption{Cell nucleus images sample. The images are the composition of channels \hl{RB1\_pS807\_S811}, \hl{PABPN1} and \hl{PCNA}. For each image, the \gls{tr} is denoted by $y$.}
   \label{fig:results:model_inter_cell_samp}
 \end{figure}
 
-Figure \ref{fig:results:model_inter:sm} shows channels \hl{POL2RA\_pS2, GTF2B, SRRM2, NCL, SON, SP100} and \hl{CDK9\_pT186} (see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}) of the score maps corresponding to the cells shown in figure \ref{fig:results:model_inter_cell_samp} and the \hl{simple CNN model} (see section \ref{sec:methodology:simple_CNN}).
-Figure \ref{fig:results:model_inter:sm} also shows the same channels of the cell nucleus image and the overlap between the original image and its score map.
+\subsection{Simple CNN model score maps}
+
+In this section we analyze the score maps corresponding to the \hl{simple CNN} model trained using the data with spatial information (structure) only.
+
+Figure \ref{fig:results:model_inter:sm} show the score maps corresponding to the cells in figure \ref{fig:results:model_inter_cell_samp}. This figure shows the channels \hl{POL2RA\_pS2, GTF2B, SRRM2, NCL, PABPN1, SETD1A, SON} and \hl{SP100} (see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}) corresponding to the the score maps and the original cell nucleus images.
+Figure \ref{fig:results:model_inter:sm} also shows the overlap between the original image and its score map.\fxnote{After finishing move this image to fit correctly in the document.}
 
 % fures created in notebook VarGrad_channel_similarity_mae.ipynb
-\afterpage{%
-  \thispagestyle{empty}
-  \begin{figure}[!ht]
+%\afterpage{%
+%  \thispagestyle{empty}
+  \begin{figure}
     \centering
     \begin{subfigure}[b]{\linewidth}
-      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_258520.png}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_277417.png}
       \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_1}.}
       \label{fig:results:model_inter:sm:cell_1}
     \end{subfigure}%
     \vspace{3mm}
     \begin{subfigure}[b]{\linewidth}
-      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_261399.png}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_321001.png}
       \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_2}.}
       \label{fig:results:model_inter:sm:cell_2}
     \end{subfigure}%
     \vspace{3mm}
     \begin{subfigure}[b]{\linewidth}
-      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_280733.png}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_195536.png}
       \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_3}.}
       \label{fig:results:model_inter:sm:cell_3}
     \end{subfigure}
-    \caption{Channels 25, 4, 7, 18, 13, 17 and 2 of score maps and cell images (shown in figure \ref{fig:results:model_inter_cell_samp}). First row (in blue) shows the cell nucleus image, second row (in red) shows the score map and third row (blue and red) shows the overlapping of the previous rows. The score maps correspond to the \hl{simple CNN model}.}
+    \caption{Channels 25, 4, 7, 18, 11, 5, 13, 17and 32 of score maps (corresponding to the \hl{simple CNN model}) and cell images (shown in figure \ref{fig:results:model_inter_cell_samp}). First row (in blue) shows the cell image, second row (in red) the score map (with the per-channel importance scores) and third row (blue and red) the overlap of the previous rows.}
     \label{fig:results:model_inter:sm}
   \end{figure}
-}
+%}
+
+As we explained in section \ref{sec:basics:interpretability_methods}, a score map shows how important a pixel is to the output of the model with respect to the input image. Since the score map has the same shape as the input, we can see how important is a pixel at a per-channel level.
+We can generalize this idea of importance from a per-pixel-channel level to a per-channel level only, by summing all the pixel values corresponding to each channel.
+
+To make the channel scores comparable between images, we normalize the scores by dividing them by the sum of all the pixels corresponding to the image score map. Therefore, the score of each channel will be a number between 0 and 1, and their sum will be always equal to 1. For the score maps shown in figure \ref{fig:results:model_inter:sm}, the importance of each channel is indicated as a percentage at the top of the second row.
+
+Figure \ref{fig:results:model_int:channel_imp} shows the average scores of the channels divided by level of transcription. The data correspond to the images belonging to the test set and the \hl{simple CNN} model trained with spatial data only.
+
+% plot done in notebook VarGrad_channel_importance_no_git.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{Model_Interpretation/channel_imp.jpg}
+  \caption{Mean channel importance divided by transcription level corresponding to the \hl{simple CNN model} trained with spatial data only. The data of the plot correspond to the images belonging to the test set.}
+  \label{fig:results:model_int:channel_imp}
+\end{figure}
+
+In figure \ref{fig:results:model_int:channel_imp} we can see that the most important channels are the \hl{POL2RA\_ps2, GTF2B, SRRM2, NCL, PABPN1, COIL} and \hl{SETD1A}, which accumulate more than $30\%$ of the per-channel importance.
+Accordingly to table \ref{table:apendix:if_markers} (in appendix \ref{sec:appendix:if_markers}), the markers corresponding to these channels are aimed to
+
+\begin{enumerate}
+  \item POL2RA\_ps2: is an antibody that binds to the largest subunit of the RNA polymerase II (which is the enzyme responsible for transcribing DNA into \gls{pmrna}) \cite{POLR2ApS2}.
+  \item GTF2B: is an antibody that binds to the general transcription factor involved in the formation of the RNA polymerase II preinitiation complex \cite{lewin2004genes}.
+  \item SRRM2: is an antibody that binds to a protein that in humans is required for pre-mRNA splicing as component of the \hl{spliceosome}\footnote{A spliceosome is a large ribonucleoprotein complex found primarily within the nucleus of eukaryotic cells. The spliceosome removes introns from a transcribed \gls{pmrna} (see figure \ref{fig:BB:splicing} on section \ref{sec:basics:transcription_process}) \cite{will2011spliceosome}.}. Along with the protein SON, SRRM2 is essential for \gls{ns}\footnote{The \gls{ns} (also known as \hl{Splicing speckles}) are structures inside the cell nucleus in which the \gls{pmrna} is transformed into a mature \gls{mrna} (see section \ref{sec:basics:transcription_process}) \cite{spector2011nuclear}.} formation \cite{ilik2020and}.
+  \item NCL: is an antibody that binds to a protein that in humans is involved in the synthesis and maturation of ribosomes. It is located mainly in dense fibrillar regions of the nucleolus \cite{erard1988major}.
+  \item PABPN1: is an antibody that binds to a protein involved in the addition of a Poly-A tail to the \gls{pmrna} during the splicing process (see figure \ref{fig:BB:splicing} on section \ref{sec:basics:transcription_process}) \cite{muniz2015poly}.
+  \item COIL: is an antibody that binds to a protein that is an integral component of \hl{Cajal bodies}, which are nuclear suborganelles involved in the post-transcriptional modification of small nuclear and small nucleolar RNAs\cite{COIL}.
+  \item SETD1A: is an antibody that binds to a protein which is a component of a \hl{histone}\footnote{A histone is a protein that provides structural support to a chromosome, so very long DNA molecules can fit into the cell nucleus. DNA molecules wrap around complexes of histone proteins, giving the chromosome a more compact shape \cite{youngson2006collins}. For a nice visualization of histone proteins, take a look at \href{https://www.genome.gov/genetics-glossary/histone}{this link}.} methyltransferase (HMT) complex that produces mono-, di-, and trimethylated histone H3 at Lys4. Trimethylation of histone H3 at lysine 4 (H3K4me3) is a chromatin modification known to generally \textbf{marks the transcription start sites} of active genes \cite{SETD1A}.
+\end{enumerate}
+
+This means that these top channels are directly, or indirectly, related to the transcription process. Particularly, the channels \hl{POL2RA\_ps2} and \hl{GTF2B} are related to an early stage of the transcription process (i.e. the enzyme \hl{RNA polymerase II}, which is essential to start the transcription process), while the channels \hl{SRRM2} and \hl{PABPN1} with the transcription process itself (the \hl{splicing} process or maturation of \gls{pmrna}). The channel \hl{SETD1A} is related to both pre-transcription and transcription processes, as this marks the transcription start sites of active genes. The channels \hl{NCL} and \hl{COIL} are not directly related with the transcription process. However, in figure \ref{fig:results:model_inter_cell_samp} we can see that channel \hl{NCL} indicates the nucleolus areas.
+
+However, in figure \ref{fig:results:model_int:channel_imp} we can also see that as the \gls{tr} grows, the top channels related to an early stage of the transcription process (\hl{POL2RA\_ps2} and \hl{GTF2B}) lose relevance\footnote{The loss of relevance of channel \hl{POL2RA\_ps2} is not very clear in the plot \ref{fig:results:model_int:channel_imp} (corresponding to the test set). However, this trend is more noticeable in the plots corresponding to the training and validation sets.}, while the top channels related to the splicing process (\hl{SRRM2} and \hl{PABPN1}) gain relevance.
+This suggests that the model relies on information with biological significance when predicting \gls{tr}. Moreover, this suggests that as \gls{tr} grows, the \gls{cnn} goes from focusing on the synthesis of \gls{pmrna} to the synthesis of mature \gls{mrna}.
+
+This statement is reinforced by looking at the score maps in figure \ref{fig:results:model_inter:sm}.
+There we can see that as the \gls{tr} increases (from figure \ref{fig:results:model_inter:sm:cell_1} to \ref{fig:results:model_inter:sm:cell_3}), the score maps corresponding to channels \hl{POL2RA\_ps2, SRRM2, PABPN1, SETD1A} and \hl{SON} become more similar to the original \hl{SRRM2} channel (corresponding to the areas where the \gls{ns} are).
+
+\subsection{Similarity between Score Maps and Cell image}
+\label{sec:results:sim_sc_ci}
+
+As we can see in figure \ref{fig:results:model_inter:sm}, there are similarities between the score maps and the cell image channels. As we already mentioned, this suggest that the \gls{cnn} is looking for specific information within the different image channels. Therefore, it is natural to ask ourselves which are the most \hl{popular} (similar) cell image channels among the score maps.
+
+To answer this question, for each cell image and its respective score map in the test set ($\bs{x}, \bs{s} \in X_{test} \subset \mathbb{R}^{D \times D \times C}$, respectively), we measure the similarity between the score map and the cell image channels. Then, for each score map channel we take its most similar cell image channel ($\bs{s}^i, \bs{x}^j \in \mathbb{R}^{D \times D}$, for $i,j \in \{1, \dots C\}$, respectively).
+Mathematically speaking, the cell image channel most similar to the score map channel $i \in \{1 \dots, C\}$ (denoted by $S_{min}(\bs{s}^i, \bs{x})$) is computed as follow
+
+\begin{equation}
+  S_{min}(\bs{s}^i, \bs{x}) := \underset{j \in \{1 \dots, C\}}{\text{arg min}} \{MAE(\bs{s}^i, \bs{x}^j)\}
+  \label{eq:results:sim_sc_ci:sim_measure}
+\end{equation}
+
+\noindent where $MAE(\bs{s}^i, \bs{x}^j):=\frac{1}{D^2} \sum_{d_1=1}^D \sum_{d_2=1}^D |s^i_{d_1, d_2}-x^j_{d_1, d_2}|$ is the per-pixel mean absolute error between the score map channel $i$ and a cell image channel $j$, with $i, j \in \{1 \dots, C\}$.
+Note that $S_{min}$ always returns an index in $\{1 \dots, C\}$.
+
+Since we are only interested in measuring the similarity between score map channels and cell image channels at a spatial level (this means, not at a color or pixel intensity level), before applying \ref{eq:results:sim_sc_ci:sim_measure} to the cell image and its respective score map, both are standardized first at a per-channel level\footnote{Unlike as it was explained in section \ref{sec:dataset:data_pp}, where the standardization was done using parameters extracted from the training set, in this case the standardization parameters are calculated using the measured pixels of each channel (either from the cell image or its respective score map).}.
+
+Figure \ref{fig:results:sm_ci_sim:most} shows the channels of the original images, divided by transcription level, which were selected as the most similar to the channels of the score maps.
+
+The label above each bar represent the cumulative percentage of time (from left to right), the channels were selected as the most similar to one of the score maps channels. This cumulative percentage is also divided by transcription level.
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{Model_Interpretation/ci_sim_percent.jpg}
+  \caption{Top 10 most similar cell image channels to the score map channels divided by transcription level. The label above each bar represent the cumulative percentage of time that the channels were selected as the most similar.}
+  \label{fig:results:sm_ci_sim:most}
+\end{figure}
+
+In figure \ref{fig:results:sm_ci_sim:most} we can see that around $98\%$ of the times, only 6 (\hl{SON, SP100, SRRM2, NCL, PABPC1} and \hl{PML}) channels from the cell images are the most similar to the score maps channels, and half of this channels (\hl{SRRM2, NCL} and \hl{PABPC1}) are also in the top most active channels (see figure \ref{fig:results:model_int:channel_imp}).
+Furthermore, figure \ref{fig:results:sm_ci_sim:most} shows the same trend as that observed in figure \ref{fig:results:model_int:channel_imp}, i.e. as the \gls{tr} increases, the channels related to the splicing process gain importance (\hl{SON} and \hl{SRRM2}), while the others lose it.
+
+However, figure \ref{fig:results:sm_ci_sim:most} only tell us the image channels that were the most similar to the score map channels in general. But, what if we would like to know this information at a per-channel level?
+Image \ref{fig:results:sm_ci_sim:top} shows the cell images channels (columns) most similar to each score map channel (rows).
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{Model_Interpretation/sm_ic_sim.jpg}
+  \caption{Most similar cell image channels to score map channels divided by transcription level.}
+  \label{fig:results:sm_ci_sim:top}
+\end{figure}
+
+As it was expected, figure \ref{fig:results:sm_ci_sim:top} shows that most of the score map channels are similar to 6 cell image channels only (\hl{SON, SP100, SRRM2, NCL, PABPC1} and \hl{PML}).
+However, this figure also shows that there are notable differences between the score map channels. Furthermore, it can be observed that as the \gls{tr} increases, the score map channels become more similar to the \hl{SON} and \hl{SRRM2} channels of the cell images (which are similar in shape, see figure \ref{fig:results:model_inter:sm}), which indicates the areas where \gls{ns} are.
+For example, the score map channel \hl{POL2RA\_ps2}, which is the most active during the \gls{tr} prediction (see figure \ref{fig:results:model_int:channel_imp}), goes from being similar to the image channel \hl{SP100} $22\%$ of the time when the \gls{tr} is low, to only $3.5\%$ when the \gls{tr} is high.
+
+But what about the cell image channel \hl{SP100}, which is very popular among score maps channels when the \gls{tr} is low, but loses relevance when the \gls{tr} is high?
+In figure \ref{fig:results:sm_ci_sim:top} it is observed that the score map channel \hl{SP100} is similar to its equivalent in cell image $90\%$ of the time when the \gls{tr} is low. However, as the \gls{tr} increases, the cell image channel \hl{SP100} becomes the most similar $100\%$ of the time.
+This agrees with what is observed in image \ref{fig:results:model_int:channel_imp}, which shows that this channel gains relevance in the prediction of \gls{tr} as it increases.
+
+Similarly, in figure \ref{fig:results:model_inter:sm} it can be seen that as the \gls{tr} increases, the \hl{SP100} channel shows more defined subnuclear organelles. Furthermore, it can be observed that these organelles are formed in the regions where the \glspl{ns} are (indicated by channels \hl{SRRM2} and \hl{SON}). This is very interesting as it suggests that the \hl{SP100} channel (which is closely related to the \hl{PML} channel, see table \ref{table:apendix:if_markers}) has a high influence on the \gls{tr}. It also suggests that cells with a high number of these structures in the cell nucleus are indicative of a high level of transcription.
+
+Again, figures \ref{fig:results:sm_ci_sim:most} and \ref{fig:results:sm_ci_sim:top} reinforce our hypothesis that as the \gls{tr} increases, the \gls{cnn} goes from focusing on the synthesis of \gls{pmrna} to the synthesis of mature \gls{mrna}.
+Furthermore, figure \ref{fig:results:sm_ci_sim:top} indicates that as the \gls{tr} grows, the channels of the score maps tend to be more similar to the \hl{SRRM2} and \hl{SON} cell image channel, which means that the \gls{cnn} is simply looking for splicing signals in all the channels.
+
+\subsection{Similarity between Score Maps channels}

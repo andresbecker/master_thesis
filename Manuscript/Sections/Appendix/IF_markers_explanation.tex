@@ -4,30 +4,62 @@
 %% Reset glossary to show long gls names
 \glsresetall
 
-In order to capture the distribution and amount of proteins inside a cell nucleus, the \gls{mpm} protocol use a set of fluorescent markers called \gls{if}. Table \ref{table:apendix:if_markers} shows the name of some of this marker, its identifier used in the parameters files for the implementation, and a small description of it.
+In order to capture the distribution and amount of proteins inside a cell nucleus, the \gls{mpm} protocol use a set of fluorescent markers called \gls{if}. Table \ref{table:apendix:if_markers} shows a description of the most relevant markers. The identifiers and ids corresponding to the markers described in table \ref{table:apendix:if_markers} can be consulted in table \ref{table:tfds_in:channels}.
 
-Pon aqui una nota del RNA polymerase! linkealo con lo visto en la seccion de basics donde se ven los 3 pasos del pre-messenger RNA genesis. Esto es importante ya que todos los canales POL2RA se basan en el RNA polymerase! Despues de agregar esta nota, ya pon las entradas en la tabla.
+Some of the markers used in the \gls{mpm} protocol are strongly related with the \hl{RNA polymerase} enzyme\footnote{An enzyme is a proteins that act as biological catalysts to accelerate chemical reactions.}. As it was explained in section \ref{sec:basics:bio_back} (see figure \ref{fig:BB:premrna_synth}), the RNA polymerase it the enzyme responsible for starting the transcription process of genes (i.e., copping a sequence from a section of the DNA into a \gls{pmrna} strand).
 
 % set table lengths
 \setlength{\mylinewidth}{\linewidth-7pt}%
-\setlength{\mylengtha}{0.12\mylinewidth-2\arraycolsep}%
-\setlength{\mylengthb}{0.15\mylinewidth-2\arraycolsep}%
-\setlength{\mylengthc}{0.73\mylinewidth-2\arraycolsep}%
+\setlength{\mylengtha}{0.24\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.76\mylinewidth-2\arraycolsep}%
 
-\begin{table}[!ht]
-  \centering
-  \begin{tabular}{>{\centering\arraybackslash}m{\mylengtha}|>{\centering\arraybackslash}m{\mylengthb}|m{\mylengthc}} % m stands for middle (p:top, b:bottom)
+%\begin{table}[!ht]
+%  \centering
+%  \begin{tabular}{>{\centering\arraybackslash}m{\mylengtha}|m{\mylengthb}} % m stands for middle (p:top, b:bottom)
+\begin{longtable}{>{\centering\arraybackslash}m{\mylengtha} | m{\mylengthb}}
     \hline
-    Marker name & Marker identifier & Description \\
+    Marker name & Description \\
     \hline
-    DAPI & \texttt{00\_DAPI} & \hl{4',6-Diamidino-2-Phenylindole}, or DAPI, is a fluorescent stain that binds strongly to adenine–thymine-rich regions in DNA \cite{kapuscinski1995dapi} \\
+    DAPI & \hl{4',6-Diamidino-2-Phenylindole}, or DAPI, is a fluorescent stain that binds strongly to adenine–thymine-rich regions in DNA \cite{kapuscinski1995dapi} \\
     \hline
-    PCNA & \texttt{14\_PCNA} & \hl{Proliferating Cell Nuclear Antigen}, or PCNA, is a DNA clamp that acts as a processivity factor for \hl{DNA polymerase} $\delta$\footnotemark in eukaryotic cells and is essential for replication \cite{kisielewska2005gfp} \\
+    GTF2B & \hl{Transcription factor II B}, or TFIIB (also known as GTF2B), is an antibody that binds to the general transcription factor involved in the formation of the RNA polymerase II preinitiation complex \cite{lewin2004genes} \\
     \hline
-    EU & \texttt{00\_EU} & \hl{5-Ethynyl Uridine}, or EU, is a molecule that binds to newly transcribed RNA \cite{jao2008exploring}. This means that EU can be used to detect RNA synthesis in cells and/or predict \gls{tr} \\
+    SRRM2 & \hl{Serine/arginine repetitive matrix protein 2}, or SRRM2, is an antibody that binds to the protein that in humans is encoded by the SRRM2 gene and which is required for pre-mRNA splicing as component of the spliceosome. Along with the protein SON, SRRM2 is essential for \gls{ns}\footnotemark formation \cite{ilik2020and} \\
     \hline
-  \end{tabular}
+    SON & SON is protein that in humans is encoded by the SON gene. The protein binds to RNA and promotes pre-mRNA splicing, particularly of transcripts with poor splice sites. Along with the protein SRRM2, SON is essential for \gls{ns} formation \cite{ilik2020and} \\
+    \hline
+    SP100 & \hl{SP100 nuclear antigen\footnotemark}, or SP100, is a gene that encodes a subnuclear organelle and major component of the PML (promyelocytic leukemia)-SP100 nuclear bodies \cite{sp100} \\
+    \hline
+    PML & \hl{Promyelocytic Leukemia}, or PML, is a protein encoded by the PML gene. PML is a nuclear body involved in oncogenesis (tumor suppressor) and viral infection. This subnuclear domain has been reported to be rich in RNA and a site of nascent RNA synthesis, implicating its direct involvement in the regulation of gene expression \cite{boisvert2000promyelocytic} \\
+    \hline
+    PCNA & \hl{Proliferating Cell Nuclear Antigen}, or PCNA, is a DNA clamp that acts as a processivity factor for \hl{DNA polymerase} $\delta$\footnotemark in eukaryotic cells and is essential for replication \cite{kisielewska2005gfp} \\
+    \hline
+    NCL & \hl{Nucleolin}, or NCL, is an antibody that binds to a protein that in humans is encoded by the NCL gene. The protein is involved in the synthesis and maturation of ribosomes. It is located mainly in dense fibrillar regions of the nucleolus \cite{erard1988major} \\
+    \hline
+    POL2RA\_pS2 & \hl{RNA Polymerase II Phosphospecific (Ser2)}, or POL2RA\_pS2, is an antibody that binds to the largest subunit of the RNA polymerase II (which is the enzyme responsible for transcribing DNA into \gls{pmrna}) \cite{POLR2ApS2} \\
+    \hline
+    CDK9 & \hl{Cyclin-dependent kinase 9}, or CDK9, is a protein encoded by the CDK9 gene and is involved in the regulation of transcription. CDK9 is a member of the cyclin-dependent kinase (CDK) family, which includes two main subgroups of kinases, those that mainly regulate cell cycle progression (including CDK1, CDK2, and CDK4/6) and those that control transcriptional processes (including CDK7, CDK8, CDK9, CDK12, and CDK13) \cite{cassandri2020cdk9} \\
+    \hline
+    CDK9\_pT186 & \hl{Cyclin Dependent Kinase 9 Phospho-Thr186 Antibody}, or CDK9\_pT186, is a molecule derived from human CDK9 around the phosphorylation site of T186 \cite{CDK9pT186} \\
+    \hline
+    RB1\_pS807\_S811 & \hl{Retinoblastoma Protein pS807/pS811 Antibody}, or RB1\_pS807\_S811. Retinoblastoma Protein (RB1 or just RB) is a tumor suppressor protein, which prevents excessive cell growth by inhibiting cell cycle progression until the cell is ready to divide.  \cite{murphree1984retinoblastoma} \\
+    \hline
+    PABPN1 & \hl{Polyadenylate-Binding Nuclear Protein 1}, or PABPN1 (also known as PABP-2), is a protein encoded by the PABPN1 gene, which is involved in the addition of a Poly-A tail to the \gls{pmrna} during the splicing process (see figure \ref{fig:BB:splicing} on section \ref{sec:basics:transcription_process}) \cite{muniz2015poly} \\
+    \hline
+    SETD1A & \hl{SET Domain Containing 1A, Histone Lysine Methyltransferase}, or SETD1A. The protein encoded by this gene is a component of a histone methyltransferase (HMT) complex that produces mono-, di-, and trimethylated histone H3 at Lys4. Trimethylation of histone H3 at lysine 4 (H3K4me3) is a chromatin modification known to generally mark the transcription start sites of active genes \cite{SETD1A} \\
+    \hline
+    COIL & \hl{Coilin}, or COIL. The protein encoded by this gene is an integral component of Cajal bodies, which are nuclear suborganelles involved in the post-transcriptional modification of small nuclear and small nucleolar RNAs \cite{COIL} \\
+    \hline
+    EU & \hl{5-Ethynyl Uridine}, or EU, is a molecule that binds to newly transcribed RNA \cite{jao2008exploring}. This means that EU can be used to detect RNA synthesis in cells and/or predict \gls{tr} \\
+    \hline
+%  \end{tabular}
   \caption{\Acrlong{if} markers description. The first column shows the markers name, the second the identifier used on the implementation (parameters file) and the third a brief description of it.}
   \label{table:apendix:if_markers}
-\end{table}
-\footnotetext{DNA polymerase delta, or DNA Pol $\delta$, is an enzyme complex found in eukaryotes that is involved in DNA replication and repair.}
+%\end{table}
+\end{longtable}
+
+\footnotetext[2]{The \gls{ns} (also known as \hl{Splicing speckles}) are structures inside the cell nucleus in which the \gls{pmrna} is transformed into a mature \gls{mrna} (see section \ref{sec:basics:transcription_process}) \cite{spector2011nuclear}.}
+
+\footnotetext[3]{An \hl{antigen} is a molecule that triggers the formation of antibodies (by bounding to its specific antibody or B-cell antigen receptor) and can cause an immune response.}
+
+\footnotetext[4]{DNA polymerase delta, or DNA Pol $\delta$, is an enzyme complex found in eukaryotes that is involved in DNA replication and repair.}
