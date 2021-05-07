@@ -1,0 +1,75 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+To divide the cells into different transcription level groups, we use one standard deviation away from the mean \gls{tr} to classify a cell as low, medium or high transcription level. This is shown in table \ref{table:results:model_int:cell_tr_group}.
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.17\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.29\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.23\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthd}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthe}{0.18\mylinewidth-2\arraycolsep}%
+
+% values computed in notebook VarGrad_channel_importance_no_git.ipynb
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{>{\centering\arraybackslash}m{\mylengtha} |
+                  >{\centering\arraybackslash}m{\mylengthb} |
+                  >{\centering\arraybackslash}m{\mylengthc} |
+                  >{\centering\arraybackslash}m{\mylengthd} |
+                  >{\centering\arraybackslash}m{\mylengthe}
+                  }
+    \hline
+    Group & Grouping criterion & Criterion values & Group size & Group percentage \\
+    \hline
+    Low TR & $y \leq \bar{y} - s(y)$ & $y \leq 316.56$ & 532 & $14.3\%$ \\
+    \hline
+    Medium TR & $\bar{y} - s(y) < y < \bar{y} + s(y)$ & $316.56 < y < 438$ & 2627 & $71\%$ \\
+    \hline
+    High TR & $\bar{y} + s(y) \leq y$ & $438 \leq y$ & 544 & $14.7\%$ \\
+    \hline
+  \end{tabular}
+  \caption{Cell grouping criteria with respect to their \gls{tr}. The \gls{tr} of each cell is denoted by $y$, while the mean \gls{tr} and standard deviation by $\bar{y}$ and $s(y)$, respectively.}
+  \label{table:results:model_int:cell_tr_group}
+\end{table}
+
+Table \ref{table:results:model_int:cell_tr_group} also shows the number of cells and the percentage of data belonging to each group. Figure \ref{fig:results:model_int:tr_dist} shows the distribution of the \glspl{tr}, as well as the division lines of each group (in red) and the average \gls{tr} (in gray).
+
+% plot done in notebook VarGrad_channel_importance_no_git.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.7\linewidth]{Model_Interpretation/TR_dist.jpg}
+  \caption{\gls{tr} distribution. The red lines show the division between \gls{tr} level groups. The gray line shows the mean \gls{tr}.}
+  \label{fig:results:model_int:tr_dist}
+\end{figure}
+
+Figure \ref{fig:results:model_inter_cell_samp} shows 3 cell nucleus images from the test set, randomly sampled from each of the 3 transcription groups. Each of the cells also corresponds to one of the 3 cell phases ($G_1$, $S$ and $G_2$).
+The cells are shown from lowest to highest \gls{tr} (from left to right).
+The images are the composition of channels \hl{RB1\_pS807\_S811, PABPN1} and \hl{PCNA} (for more information about this markers, please see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}).
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Model_Interpretation/277417.jpg}
+    \caption{Sample cell 1 (cell id 277417); $y=133.04$; \gls{tr} group: \hl{Low TR}; cell phase: $G_1$.}
+    \label{fig:results:model_inter_cell_samp:cell_1}
+  \end{subfigure}
+  \begin{subfigure}[b]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Model_Interpretation/321001.jpg}
+    \caption{Sample cell 2 (cell id 321001); $y=378.19$; \gls{tr} group: \hl{Medium TR}; cell phase: $S$.}
+    \label{fig:results:model_inter_cell_samp:cell_2}
+  \end{subfigure}
+  \begin{subfigure}[b]{.3\linewidth}
+    \includegraphics[width=\linewidth]{Model_Interpretation/195536.jpg}
+    \caption{Sample cell 3 (cell id 195536); $y=540.09$; \gls{tr} group: \hl{High TR}; cell phase: $G_2$.}
+    \label{fig:results:model_inter_cell_samp:cell_3}
+  \end{subfigure}
+  \caption{Cell nucleus images sample. The images are the composition of channels \hl{RB1\_pS807\_S811}, \hl{PABPN1} and \hl{PCNA}. For each image, the \gls{tr} is denoted by $y$.}
+  \label{fig:results:model_inter_cell_samp}
+\end{figure}

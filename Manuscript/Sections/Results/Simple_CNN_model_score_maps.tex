@@ -1,0 +1,74 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+In this section we analyze the score maps corresponding to the \hl{simple CNN} model trained using the data with spatial information (structure) only.
+
+Figure \ref{fig:results:model_inter:sm} show the score maps corresponding to the cells in figure \ref{fig:results:model_inter_cell_samp}. This figure shows the channels \hl{POL2RA\_pS2, GTF2B, SRRM2, NCL, PABPN1, SETD1A, SON} and \hl{SP100} (see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}) corresponding to the the score maps and the original cell nucleus images.
+Figure \ref{fig:results:model_inter:sm} also shows the overlap between the original image and its score map.\fxnote{After finishing move this image to fit correctly in the document.}
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+%\afterpage{%
+%  \thispagestyle{empty}
+  \begin{figure}
+    \centering
+    \begin{subfigure}[b]{\linewidth}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_277417.png}
+      \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_1}.}
+      \label{fig:results:model_inter:sm:cell_1}
+    \end{subfigure}%
+    \vspace{3mm}
+    \begin{subfigure}[b]{\linewidth}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_321001.png}
+      \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_2}.}
+      \label{fig:results:model_inter:sm:cell_2}
+    \end{subfigure}%
+    \vspace{3mm}
+    \begin{subfigure}[b]{\linewidth}
+      \includegraphics[width=\linewidth]{Model_Interpretation/BL_VarGrad_195536.png}
+      \caption{Separate channels of the cell nucleus image and their score map corresponding to \ref{fig:results:model_inter_cell_samp:cell_3}.}
+      \label{fig:results:model_inter:sm:cell_3}
+    \end{subfigure}
+    \caption{Channels 25, 4, 7, 18, 11, 5, 13, 17 and 32 of score maps (corresponding to the \hl{simple CNN model}) and cell images shown in figure \ref{fig:results:model_inter_cell_samp}. First row (in blue) shows the cell image, second row (in red) the score map (with the per-channel importance scores) and third row (blue and red) the overlap of the previous rows.}
+    \label{fig:results:model_inter:sm}
+  \end{figure}
+%}
+
+As we explained in section \ref{sec:basics:interpretability_methods}, a score map shows how important a pixel is to the output of the model with respect to the input image. Since the score map has the same shape as the input, we can see how important is a pixel at a per-channel level.
+We can generalize this idea of importance from a per-pixel-channel level to a per-channel level only, by summing all the pixel values corresponding to each channel.
+
+To make the channel scores comparable between images, we normalize the scores by dividing them by the sum of all the pixels corresponding to the image score map. Therefore, the score of each channel will be a number between 0 and 1, and their sum will be always equal to 1. For the score maps shown in figure \ref{fig:results:model_inter:sm}, the importance of each channel is indicated as a percentage at the top of the second row.
+
+Figure \ref{fig:results:model_int:channel_imp} shows the average scores of the channels divided by level of transcription. The data correspond to the images belonging to the test set and the \hl{simple CNN} model trained with spatial data only. The line at the top of each bar shows the $99\%$ confidence interval for the mean channel importance.
+
+% plot done in notebook VarGrad_channel_importance_no_git.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{Model_Interpretation/channel_imp.jpg}
+  \caption{Average channel importance divided by transcription level corresponding to the \hl{simple CNN model} trained with spatial data only. The data of the plot correspond to the images belonging to the test set. The $99\%$ confidence interval for the mean channel importance is shown at the top of each bar.}
+  \label{fig:results:model_int:channel_imp}
+\end{figure}
+
+In figure \ref{fig:results:model_int:channel_imp} we can see that the most important channels are the \hl{POL2RA\_ps2, GTF2B, SRRM2, NCL, PABPN1, COIL} and \hl{SETD1A}, which accumulate more than $30\%$ of the per-channel importance.
+Accordingly to table \ref{table:apendix:if_markers} (in appendix \ref{sec:appendix:if_markers}), the markers corresponding to these channels are aimed to
+
+\begin{enumerate}
+  \item POL2RA\_ps2: is an antibody that binds to the largest subunit of the RNA polymerase II (which is the enzyme responsible for transcribing DNA into \gls{pmrna}) \cite{POLR2ApS2}.
+  \item GTF2B: is an antibody that binds to the general transcription factor involved in the formation of the RNA polymerase II preinitiation complex \cite{lewin2004genes}.
+  \item SRRM2: is an antibody that binds to a protein that in humans is required for pre-mRNA splicing as component of the \hl{spliceosome}\footnote{A spliceosome is a large ribonucleoprotein complex found primarily within the nucleus of eukaryotic cells. The spliceosome removes introns from a transcribed \gls{pmrna} (see figure \ref{fig:BB:splicing} on section \ref{sec:basics:transcription_process}) \cite{will2011spliceosome}.}. Along with the protein SON, SRRM2 is essential for \gls{ns}\footnote{The \gls{ns} (also known as \hl{Splicing speckles}) are structures inside the cell nucleus in which the \gls{pmrna} is transformed into a mature \gls{mrna} (see section \ref{sec:basics:transcription_process}) \cite{spector2011nuclear}.} formation \cite{ilik2020and}.
+  \item NCL: is an antibody that binds to a protein that in humans is involved in the synthesis and maturation of ribosomes. It is located mainly in dense fibrillar regions of the nucleolus \cite{erard1988major}.
+  \item PABPN1: is an antibody that binds to a protein involved in the addition of a Poly-A tail to the \gls{pmrna} during the splicing process (see figure \ref{fig:BB:splicing} on section \ref{sec:basics:transcription_process}) \cite{muniz2015poly}.
+  \item COIL: is an antibody that binds to a protein that is an integral component of \hl{Cajal bodies}, which are nuclear suborganelles involved in the post-transcriptional modification of small nuclear and small nucleolar RNAs\cite{COIL}.
+  \item SETD1A: is an antibody that binds to a protein which is a component of a \hl{histone}\footnote{A histone is a protein that provides structural support to a chromosome, so very long DNA molecules can fit into the cell nucleus. DNA molecules wrap around complexes of histone proteins, giving the chromosome a more compact shape \cite{youngson2006collins}. For a nice visualization of histone proteins, take a look at \href{https://www.genome.gov/genetics-glossary/histone}{this link}.} methyltransferase (HMT) complex that produces mono-, di-, and trimethylated histone H3 at Lys4. Trimethylation of histone H3 at lysine 4 (H3K4me3) is a chromatin modification known to generally \textbf{marks the transcription start sites} of active genes \cite{SETD1A}.
+\end{enumerate}
+
+This means that these top channels are directly, or indirectly, related to the transcription process. Particularly, the channels \hl{POL2RA\_ps2} and \hl{GTF2B} are related to an early stage of the transcription process (i.e. the enzyme \hl{RNA polymerase II}, which is essential to start the transcription process), while the channels \hl{SRRM2} and \hl{PABPN1} with the transcription process itself (the \hl{splicing} process or maturation of \gls{pmrna}). The channel \hl{SETD1A} is related to both pre-transcription and transcription processes, as this marks the transcription start sites of active genes. The channels \hl{NCL} and \hl{COIL} are not directly related with the transcription process. However, in figure \ref{fig:results:model_inter_cell_samp} we can see that channel \hl{NCL} indicates the nucleolus areas.
+
+However, in figure \ref{fig:results:model_int:channel_imp} we can also see that as the \gls{tr} grows, the top channels related to an early stage of the transcription process (\hl{POL2RA\_ps2} and \hl{GTF2B}) lose relevance\footnote{The loss of relevance of channel \hl{POL2RA\_ps2} is not very clear in the plot \ref{fig:results:model_int:channel_imp} (corresponding to the test set). However, this trend is more noticeable in the plots corresponding to the training and validation sets.}, while the top channels related to the splicing process (\hl{SRRM2} and \hl{PABPN1}) gain relevance.
+This suggests that the model relies on information with biological significance when predicting \gls{tr}. Moreover, this suggests that as \gls{tr} grows, the \gls{cnn} goes from focusing on the synthesis of \gls{pmrna} to the synthesis of mature \gls{mrna}.
+
+This statement is reinforced by looking at the score maps in figure \ref{fig:results:model_inter:sm}.
+There we can see that as the \gls{tr} increases (from figure \ref{fig:results:model_inter:sm:cell_1} to \ref{fig:results:model_inter:sm:cell_3}), the score maps corresponding to channels \hl{POL2RA\_ps2, SRRM2, PABPN1, SETD1A} and \hl{SON} become more similar to the original \hl{SRRM2} channel (which indicates the areas where the \gls{ns} are).

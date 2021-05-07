@@ -1,0 +1,12 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+In section \ref{sec:basics:interpretability_methods} and \ref{sec:methodology:interpretability_methods} we explained the interpretability methods \gls{ig} and \gls{vg} and how we can combine them to generate \hl{score maps}, which can be used to identify model-important pixels in the input image.
+
+In this section we will analyze the results of the \hl{simple CNN} model, which produced the most interesting score maps. However, we will not only investigate the areas of the input image that the model looks at to make a prediction, we will also analyze the dynamics of the score maps with respect to changes in the \gls{tr}. In order to do this, we first introduce the methodology used to group cells by level of transcription.
+
+This analysis results in the formulation of hypotheses about what the model focuses on to make its prediction as the transcription level increases, which can potentially indicate unknown biological factors that influence a cell's transcription.

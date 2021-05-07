@@ -1,0 +1,62 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+As we can see in figure \ref{fig:results:model_inter:sm}, there are similarities between the score maps and the cell image channels. As we already mentioned, this suggest that the \gls{cnn} is looking for specific information within the different image channels. Therefore, it is natural to ask ourselves which are the most \hl{popular} (similar) cell image channels among the score maps.
+
+To answer this question, for each cell image and its respective score map in the test set ($\bs{x}, \bs{s} \in X_{test} \subset \mathbb{R}^{D \times D \times C}$, respectively), we measure the similarity between the score map and the cell image channels. Then, for each score map channel we take its most similar cell image channel ($\bs{s}^i, \bs{x}^j \in \mathbb{R}^{D \times D}$, for $i,j \in \{1, \dots C\}$, respectively).
+Mathematically speaking, the cell image channel most similar to the score map channel $i \in \{1 \dots, C\}$ (denoted by $S_{min}(\bs{s}^i, \bs{x})$) is computed as follow
+
+\begin{equation}
+  S_{min}(\bs{s}^i, \bs{x}) := \underset{j \in \{1 \dots, C\}}{\text{arg min}} \{MAE(\bs{s}^i, \bs{x}^j)\}
+  \label{eq:results:sim_sc_ci:sim_measure}
+\end{equation}
+
+\noindent where $MAE(\bs{s}^i, \bs{x}^j):=\frac{1}{D^2} \sum_{d_1=1}^D \sum_{d_2=1}^D |s^i_{d_1, d_2}-x^j_{d_1, d_2}|$ is the per-pixel mean absolute error between the score map channel $i$ and a cell image channel $j$, with $i, j \in \{1 \dots, C\}$.
+Note that $S_{min}$ always returns an index in $\{1 \dots, C\}$.
+
+Since we are only interested in measuring the similarity between score map channels and cell image channels at a spatial level (this means, not at a color or pixel intensity level), before applying \ref{eq:results:sim_sc_ci:sim_measure} to the cell image and its respective score map, both are first standardized at a per-channel level\footnote{Unlike as it was explained in section \ref{sec:dataset:data_pp}, where the standardization was done using parameters extracted from the training set, in this case the standardization parameters are calculated using the measured pixels of each channel (either from the cell image or its respective score map).}.
+
+Figure \ref{fig:results:sm_ci_sim:most} shows the channels of the original images, divided by transcription level, which were selected as the most similar to the channels of the score maps.
+
+The label above each bar represent the cumulative percentage of time (from left to right), the channels were selected as the most similar to one of the score maps channels. This cumulative percentage is also divided by transcription level.
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{Model_Interpretation/ci_sim_percent.jpg}
+  \caption{Top 10 most similar cell image channels to the score map channels divided by transcription level. The label above each bar represent the cumulative percentage of time that the channels were selected as the most similar.}
+  \label{fig:results:sm_ci_sim:most}
+\end{figure}
+
+In figure \ref{fig:results:sm_ci_sim:most} we can see that around $98\%$ of the times, only 6 channels (\hl{SON, SP100, SRRM2, NCL, PABPC1} and \hl{PML}) from the cell images are the most similar to the score maps channels, and half of this channels (\hl{SRRM2, NCL} and \hl{PABPC1}) are also in the top most active channels (see figure \ref{fig:results:model_int:channel_imp}).
+Furthermore, figure \ref{fig:results:sm_ci_sim:most} shows the same trend as that observed in figure \ref{fig:results:model_int:channel_imp}, i.e. as the \gls{tr} increases, the channels related to the splicing process gain importance (\hl{SON} and \hl{SRRM2}), while the others lose it.
+
+This is even more evident if we aggregate channels that target the same structures. This is, the \hl{SON} and \hl{SRRM2} channels, which indicate the areas where the \gls{ns} are; or the \hl{SP100} and \hl{PML} channels, which indicate the areas where the PML nuclear bodies are.
+
+However, figure \ref{fig:results:sm_ci_sim:most} only tell us the image channels that were the most similar to the score map channels in general. But, what if we would like to know this information at a per-channel level?
+Image \ref{fig:results:sm_ci_sim:top} shows the cell images channels (columns) most similar to each score map channel (rows), divided by transcription level.
+
+% fures created in notebook VarGrad_channel_similarity_mae.ipynb
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=\linewidth]{Model_Interpretation/sm_ic_sim.jpg}
+  \caption{Most similar cell image channels to score map channels divided by transcription level.}
+  \label{fig:results:sm_ci_sim:top}
+\end{figure}
+
+As it was expected, figure \ref{fig:results:sm_ci_sim:top} shows that most of the score map channels are similar to the same 6 cell image channels (\hl{SON, SP100, SRRM2, NCL, PABPC1} and \hl{PML}).
+However, this figure also shows that there are notable differences between the score map channels. Furthermore, it can be observed that as the \gls{tr} increases, the score map channels become more similar to the \hl{SON} and \hl{SRRM2} channels of the cell images, which indicates the areas where \gls{ns} are.
+For example, the score map channel \hl{POL2RA\_ps2}, which is the most active during the \gls{tr} prediction (see figure \ref{fig:results:model_int:channel_imp}), goes from being similar to the image channel \hl{SP100} $22\%$ of the time when the \gls{tr} is low, to only $3.5\%$ when the \gls{tr} is high.
+
+But what about the cell image channel \hl{SP100}, which is very popular among score maps channels when the \gls{tr} is low, but loses relevance when the \gls{tr} is high?
+In figure \ref{fig:results:sm_ci_sim:top} it is observed that the score map channel \hl{SP100} is similar to its equivalent in the cell image $90\%$ of the time when the \gls{tr} is low. However, as the \gls{tr} increases, this percentage grows up to $100\%$.
+This agrees with what is observed in image \ref{fig:results:model_int:channel_imp}, which shows that this channel gains relevance in the prediction of \gls{tr} as it increases.
+
+Similarly, in figure \ref{fig:results:model_inter:sm} it can be seen that as the \gls{tr} increases, the \hl{SP100} channel shows more defined subnuclear organelles. Furthermore, it can be observed that these organelles are formed in the regions where the \glspl{ns} are (indicated by channels \hl{SRRM2} and \hl{SON}). This is very interesting as it suggests that for the model the \hl{SP100} channel (which is closely related to the \hl{PML} channel, see table \ref{table:apendix:if_markers}) has a high influence on the \gls{tr} prediction. It also may suggests that cells with a high number of PML bodies in the cell nucleus, could be an indicative of a high transcription transcription. However, this is a hypothesis that would have to be rigorously studied and validated.
+
+Again, figures \ref{fig:results:sm_ci_sim:most} and \ref{fig:results:sm_ci_sim:top} reinforce our hypothesis that as the \gls{tr} increases, the \gls{cnn} goes from focusing on the synthesis of \gls{pmrna} to the synthesis of mature \gls{mrna}.
+Furthermore, figure \ref{fig:results:sm_ci_sim:top} indicates that as the \gls{tr} grows, the channels of the score maps tend to be more similar to the \hl{SRRM2} and \hl{SON} cell image channel, which means that the \gls{cnn} is simply looking for splicing signals in all the channels.
