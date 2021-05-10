@@ -37,17 +37,12 @@ Figure \ref{fig:BB:splicing} illustrates the \gls{pmrna} splicing process.
 
 \subsubsection{Transcription Rate}
 
-NOTE: Solo define aqui el transcription rate en general, la parte de Methodology Dataset
+\gls{tr} contemplates the two steps we already explained; 1) the nascent transcription rate, which measures the in situ \gls{mrna} produced by the RNA polymerase enzyme (\gls{pmrna}), and 2) the rate of synthesis of mature \gls{mrna} (\gls{pmrna} splicing), which measures the contribution of transcription to the \gls{mrna} concentration \cite{what_is_tr}.
 
-Here I should state what is \gls{tr}. In this part I will not mention that we use the average of the channel \texttt{00\_EU}, that will be stated in the methodology part. However, here I should state a definition of \gls{tr} that agrees with what we have in the dataset. Here are some ideas of what \gls{tr} is.
-Since we have images of cell nucleus, this means that we have both \gls{pmrna} and mature \gls{mrna} molecules\footnote{Transcription rate encompasses two related, yet different, concepts: the nascent transcription rate, which measures the in situ mRNA production by RNA polymerase, and the rate of synthesis of mature mRNA, which measures the contribution of transcription to the mRNA concentration \cite{what_is_tr}.}. So, what is \texttt{00\_EU} measuring? both molecules or only one?
-\fxnote{Discuss this with Hannah!}
-As far as I understood, \texttt{00\_EU} captures the RNA molecules that were produced in the last 30 minutes. Therefore, for us \gls{tr} would be the average concentration of \gls{mrna} per unit of time (in this case 30 mins). However if we measure the concentration of pre or mature \gls{mrna} in the nucleus, then in the \gls{tr} definition we should consider either (or both) the rate that pre turns into mature (but if we measure both then we mesure the total and this is not necessary) or the rate at which mature \gls{mrna} escapes the nucleus.
-
-Therefore, accordingly to \cite{what_is_tr} we can define \gls{tr} as the number of \gls{mrna} molecules being synthesized per unit time minus a degradation factor
+Accordingly to Pérez-Ortín et al. \cite{what_is_tr}, we can define the change in the mature \gls{mrna} concentration ([mRNA]), as the number of mature \gls{mrna} molecules being synthesized per unit of time minus a degradation factor
 \begin{equation}
   \frac{d[mRNA]}{dt} = SR - k_d [mRNA]
 \end{equation}
-\noindent where $[mRNA]$ is the mature \gls{mrna} concentration in the cell nucleus, $RN$ the \gls{mrna} synthesis rate and $k_d$ the degradation rate (or in our case, the rate at which mature \gls{mrna} escapes the nucleus).
+\noindent where $[mRNA]$ is the mature \gls{mrna} concentration in the cell nucleus, $SR$ the mature \gls{mrna} synthesis rate and $k_d$ the degradation rate.
 
-\fxnote{If there is time, add here a subsubsection briefly explaining the cell cycle phases.}
+However, the objective of this work is not to model the change in \gls{tr} across time. Instead, we are only interested in estimating the \gls{tr} of a cell, given a snapshot of it at a specific moment of time. For this reason, in this work we will understand \gls{tr} as the amount of nascent \gls{mrna} in a given period of time \cite{wansink1993fluorescent}.
