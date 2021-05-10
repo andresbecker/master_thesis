@@ -1,10 +1,19 @@
-In this chapter we will...
-A small overview. Explain how CNN can be used to predict Transcription Rate and how we can use interpretability methods to learn from this models.
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
 
+%% Reset glossary to show long gls names
+\glsresetall
 
-Hannah's recommendations:
-\begin{itemize}
-  \item explain biological background
-  \item introduce all methods that are used later on
-  \item Experts might skip reading this chapter so don’t include any \item information on your dataset, specific evaluation etc here
-\end{itemize}
+This chapter provides a theoretical explanation of all the elements used in this work.
+It is divided into 3 main sections
+\begin{enumerate}
+    \item The biological background
+    \item The Machine Learning basics
+    \item the Interpretability methods background
+\end{enumerate}
+
+The first part provides a brief explanation of what cell expression is, as well as the transcription process, which is one of its main parts and the central subject of this work.
+The second part is a short explanation of what \glspl{ann} are, specifically \glspl{cnn} and their different components. It also provides a short explanation of the basic concepts needed to understand the idea behind the pre-built architectures used in this work, the ResNet50V2 and the Xception.
+Finally, the third part explains the methods used to interpret the results of the trained models. This interpretability methods are aimed to rank each input feature based on how much they contribute to the output of the model.
+
+The theory behind the dataset used in this work is not provided in this chapter. Instead, a whole chapter was dedicated to it (see chapter \ref{ch:dataset}). Chapter \ref{ch:dataset} also introduces the preprocessing and data augmentation techniques used in this work.
