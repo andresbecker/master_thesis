@@ -1,6 +1,6 @@
 \glsresetall
 % Motivation and problem
-In recent years, \glspl{dnn} have been used to solve a wide variety of problems and gained popularity. Amazing results such as those achieved by Deep Mind's Alpha Fold team, have shown the great potential \gls{dnn} has to solve complex problems. However, the difficulty to interpret \glspl{dnn} has become one of the main obstacles to their acceptance in applications where the interpretability of the model is necessary.
+In recent years, \glspl{dnn} have been used to solve a wide variety of problems and gained popularity. Amazing results such as those achieved by Deep Mind's Alpha Fold team, have shown the great potential \gls{dnn} has to solve complex problems \cite{AlphaFold}. However, the difficulty to interpret \glspl{dnn} has become one of the main obstacles to their acceptance in applications where the interpretability of the model is necessary.
 
 % solution
 To understand how the \glspl{dnn} predict the \gls{tr} of a cell, we use \textit{Attribution Methods}. This methods are meant to measure how much each component of the input image contributes to the model's prediction by creating a \textit{Score Map} (also known as \textit{Importance Map, Sensitivity Map} or \textit{Saliency Map}) of the same shape as the model's input. In particular, in this work we use a combination between \gls{ig} \cite{sundararajan2017axiomatic} and \gls{vg} \cite{adebayo2020sanity} as attribution method. In general we will denote attribution method as $\phi$.
