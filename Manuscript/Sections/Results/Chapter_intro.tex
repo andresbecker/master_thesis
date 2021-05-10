@@ -5,21 +5,16 @@
 % define where the images are
 \graphicspath{{./Sections/Results/Resources/}}
 
-This intro is still under construction....
+This chapter is mainly divided into two parts
 
-Hannah's recommendations:
-\begin{itemize}
-  \item Results for each method/model in subsection
-  \item Discuss results; what does this mean? Does this prove your hypothesis? Disprove it?
-  \item Ideally final paragraph connecting different results
-\end{itemize}
+\begin{enumerate}
+    \item The model performance analysis
+    \item The model interpretation analysis
+\end{enumerate}
 
+In the first part, we show the results of the models introduced in section \ref{sec:methodology:models}, and compare the performance of each model against the others based on the metrics introduced in section \ref{sec:methodology:metrics}. Besides, the performance of each model is compared to the reference values of the metrics, which validate that the models are capable of learning something meaningful from the data. This section ends by analyzing more in-depth the performance of the linear model against one of the \glspl{cnn} models, and shows that the latter is still capable of predicting fairly well the \gls{tr}, even after significantly reducing the pixel intensity information of each channel and the correlation between them (by means of the data augmentation techniques introduced in section \ref{sec:dataset:data_augmentation} and \ref{sec:methodology:tfds}).
 
-%----------------------------------------------------------------------
-In this chapter the results of the models will be presented and analyzed. The main objective is to answer the question
+On the other hand, the Model interpretation section focuses on analyzing the results obtained using the interpretability methods introduced in section \ref{sec:basics:interpretability_methods}. The analysis begins with the division of the cells into three levels of transcription (low, medium and high), and ends by analyzing how the model changes the areas of interest in the input image as the \gls{tr} changes. 
+Furthermore, the analysis shows that as the \gls{tr} increases, the model relies more on regions of the nucleus that are directly related to the genesis of mature \gls{mrna}, which shows that interpretation methods can be used as tools to discover unknown biological relationships when applied to black-box models like \glspl{cnn}.
 
-El prinsipal objetivo de este capitulo es intntar contestar la pregunta de si es posible predecir el TR de una celula basandonos principalmente en informacion espacial del nucleo de la celula.
-
-Este capitulo tambien mustra los resultados obtenidos de los interpretabiliy methods VG and IG (score maps). Estos score maps permiten apreciar los pixeles de alta relevancia para la prediccion del TR. Al ser analizados, descubrimos que la CNN is relaying en lugares muy especificos para hacer su prediccion, especificamente en la zona correspondiente al nucleolus y a las zonas donde se lleva a cabo el proceso de splicing (splicing speakles).
-
-Este capitulo es concluido con analizis que mustra la relacion entre los differentes score maps channel y entre score maps y los canales originales.
+The results of both sections also show that it is possible to predict (to some extent) the \gls{tr} of a cell, based mainly on spatial information within the nucleus.

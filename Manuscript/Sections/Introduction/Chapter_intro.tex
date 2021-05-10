@@ -1,24 +1,31 @@
-A small overview. Explain how CNN can be used to predict Transcription Rate and how we can use interpretability methods to learn from this models.
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
 
-Hannah's recommendations about intro chapter:
-\begin{itemize}
-  \item Problem statement and challenges
-  \item Main objectives / research questions
-  \item List contributions
-  \item last section of intro is important; give summary of content + key impact
-\end{itemize}
+\glsresetall
 
-Hannah's general recommendations:
-\begin{itemize}
-  \item Content: You do not need to include all models you trained and details of all the bugs you fixed, but the thesis should contain a consistent story (detailled in the contributions in the introduction) where every result you show adds something to the story. For every experiment/figure ask yourself: is this necessary to answer the research question? If the answer is no, don’t include it
-  \item Assume that some people will only read the introduction and summary, and look at the figures -> the main points should be understandable from this information alone
-  \item The thesis should be written at a level where a masters student from your course of study can understand it. All concepts that are not know at this level, need to be introduced
-  \item Prefer descriptive section and paragraph headings that ideally tell the reader what this section is about rather than the method that was used
-\end{itemize}
+% why NN
+\gls{ann} are very robust tools widely used in the field of \gls{ml} that can potentially approximate any function \cite{cybenko1989approximation}, \cite{hornik1989multilayer}, \cite{funahashi1989approximate}.
+In the field of biology, \glspl{ann} have proven capable of solving very complex and high-impact problems. 
+One of the best examples in recent years is the three-dimensional prediction of the structure of a protein using amino acid sequences encoded in the genes \cite{AlphaFold}, which is a very important problem since the structure of a protein largely determines its function.
 
-Hannah's recommendations about figures:
-\begin{itemize}
-  \item Give references for every figure you use
-  \item Describe all figures in the main text, but also make sure that each figure has a descriptive caption.
-  \item Captions should help describe what is being shown, i.e. what do the colors stand for etc. They should help the reader to understand the flow of the figure. They shouldn’t contain too much methods stuff (i.e. how this was done -> belongs to the methods) neither should they contain results stuff (how do we interpret these results? what do they mean? -> belongs to the results). The figure and caption should stand alone and be interpretable without the rest of the text. Ideally you should be able to redraw the figure from the caption and recreate the caption from the figure (but that is a very high bar).
-\end{itemize}
+% what is the problem with NN
+However, in many fields of study and industries, the interpretation of the models is essential. For example, in the medical field, \gls{cnn} architectures have achieved remarkable results in the segmentation of brain tumors \cite{saleem2021visual}. However, to successfully implement deep learning models in the diagnosis of patients, it is not enough only to know what the model predicts, but also how it does it.
+
+% How to solve it? Interpretability methods
+Many researchers have proposed different techniques to explain what happens inside black-box models like \glspl{cnn}. 
+The difference between these methods is basically whether they are applicable to any type of model (model-agnostic/model-independent) or only to a specific group (model-specific).
+An example of a model-independent method is the \gls{lime}, which basically aims to approximate the underlying model $f$ (not interpretable) by means of an interpretable model $g$ (e.g. a linear model) for a specific region of the input \cite{ribeiro2016model}. As the name suggest, \gls{lime} provides a local and individual explanation of each input.
+However, there are other methods that provide a general (global) explanation of the model. An example of a global method (and also model-specific) would be the visualization of the learned filters/kernels of a \gls{cnn}, which can indicate the features in the data that are important for the model prediction \cite{zeiler2014visualizing}. 
+
+% Gradient based methods
+However, in this work we use \hl{attribution methods}, which are aimed to rank each input feature based on how much they contribute to the output of the model. 
+These methods create an importance (or score) map for each element of the input data. There are several ways to compute these score maps \cite{JMLR:v11:baehrens10a}, \cite{ShrikumarGSK16}. However, most of these methods base the importance assignment of each input feature on the gradient of the model output with respect to the input (gradient-based methods) \cite{SimonyanVZ13}, \cite{BinderMBMS16} and \cite{Springenberg}.
+
+% why IG
+Nevertheless, just using the gradient as a feature importance designation method is not enough. As a model learns the relationship between an input and its output, the gradient of the model's output with respect to the input features will approximate to 0 (saturation). 
+To alleviate this issue, Sundararajan et al. \cite{sundararajan2017axiomatic} proposed \gls{ig}, which accumulates the gradient of the output with respect to the input when it goes from an uninformative value to the original input.
+
+% why VarGrad
+However, in practice attribution methods like \gls{ig} often produce noisy and diffuse score maps, and in some cases they are not even better than a random designation of feature importance \cite{hooker2018benchmark}. 
+For this reason Smilkov et al. \cite{Smilkov_smoothgrad} proposed an ensemble interpretability method known as \gls{sg}, which in practice reduces noise in score maps and can be easily combined with other attribution methods such as  \gls{ig}. 
+In this work we use a slightly different version proposed by Adebayo et al. \cite{adebayo2018local} known as \gls{vg}, which is inspired by \gls{sg} and has been shown to empirically outperform such a random assignment of importance \cite{hooker2018benchmark}.
