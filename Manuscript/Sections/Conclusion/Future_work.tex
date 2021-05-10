@@ -1,0 +1,24 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+%% Reset glossary to show long gls names
+%\glsresetall
+
+
+% Perturbed dataset
+As we mentioned in chapter \ref{ch:dataset}, for this work only the images corresponding to cells without metabolic or pharmacological perturbations were used. Therefore, it would be interesting to include all the available cells in the dataset and see how the different perturbations change the proteins and/or organelles indicated as important by the score maps.
+
+% Dataset proportions
+In chapter \ref{ch:dataset} we also mentioned that the use of an unbalanced dataset (with respect to the number of cells in the $G_1$, $S$ or $G_2$ phases) during training, could result in a bias model. For this reason, as a future work, a model could be trained using a balanced dataset and compare its performance with current results. Also, it would be interesting to see if this results in different score maps.
+
+% Dataset with less EU incubation time
+Because it has been observed that the \hl{EU} marker could binds to DNA molecules if the incubation time is too long (\cite{jao2008exploring} and \cite{bao2018capturing}), as a future work another \gls{mpm} dataset could be analyzed, either with a shorter or longer incubation time for the \hl{EU} marker. Then, it would be interesting to validate if the results (in performance and score maps) obtained with both datasets (and the current one) are consistent.
+
+% Interpretability methods
+We have seen that interpretability methods can help us understand how \glspl{cnn} makes its predictions, which has the potential to leverage scientific discoveries.
+For this reason, it would be interesting to explore other interpretability methods or investigate more \gls{ig}, for example by using  different baselines and see the impact this has on the score maps.
+
+%ROAR
+As we explained in section \ref{sec:basics:interpretability_methods}, the interpretability methods aim to rank the input pixels based on how much they contribute to the output of the model.
+However, there is no way to prove this mathematically. For this reason, as future work it would be necessary to implement a method that allows validating the veracity of the score maps obtained at least empirically.
+One possible option is the \gls{roar} methodology \cite{hooker2018benchmark}, which would allow us to observe to what extent the performance of the model would be degraded, by replacing the pixels marked as important in the score maps with non-informative pixels. When comparing the increase in error with a random selection of pixels, this would show whether the pixels indicated as important by the interpretability methods were actually better than a simple random guess. This could also help us detect highly correlated features in the data.
