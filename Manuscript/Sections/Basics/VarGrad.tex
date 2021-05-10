@@ -4,7 +4,7 @@
 
 As we can see in figure \ref{fig:vg:img_IG}, \gls{ig} attribution maps can be noisy and diffuse. To improve their empirical quality, Smilkov et al. \cite{Smilkov_smoothgrad} proposed \gls{sg}, which tends to reduce noise in practice and can be combined with other attribution map algorithms (like \gls{ig}). The idea behind \gls{sg} is pretty simple, given an input image $x$, you create a sample of similar images by adding noise, then compute the attribution map for each one of them using the algorithm you prefer (in our case \gls{ig}), and take the average of the attribution maps.
 Although Smilkov et al. do not provide a mathematical proof of why \gls{sg} reduce noise in score maps, they provide a conjecture and empirical evidence.
-For this work we use a slightly difference version called \gls{vg}, proposed by Adebayo et al. \cite{adebayo2018local} but inspired by \gls{sg}, which takes the variance of the attribution maps instead of the mean. The reason for this choice is that Seo et al. \cite{Seo_noise} analyzed theoretically \gls{vg}, and concluded that it is independent to the gradient and capture higher order partial derivatives.
+For this work we use a slightly different version called \gls{vg}, proposed by Adebayo et al. \cite{adebayo2018local} but inspired by \gls{sg}, which takes the variance of the attribution maps instead of the mean. The reason for this choice is that Seo et al. \cite{Seo_noise} analyzed theoretically \gls{vg}, and concluded that it is independent to the gradient and capture higher order partial derivatives.
 
 In general, \gls{vg} is defined as follow
 
