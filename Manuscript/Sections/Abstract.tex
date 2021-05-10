@@ -11,29 +11,19 @@
 % and version 1.3 or later is part of all distributions of LaTeX
 % version 2005/12/01 or later.
 %==================================================
+
+%% Magic command to compile root document
+% !TEX root = ../thesis.tex
+
+%% Reset glossary to show long gls names
+\glsresetall
+
 %\cleardoublepage
 
 \selectlanguage{english}
 \section*{Abstract}
-Here we give a short summary of the project or thesis of length at most a quarter of a page.
 
-\begin{itemize}
-  \item What is the objective of this work
-  \item How did we address it
-  \item What did we obtain
-\end{itemize}
-
-Hannah's recommendations:
-\begin{itemize}
-  \item 1 sentence to set the background: what is currently done
-  \item 1 sentence to capture the issue: why is this an issue/why can we do better?
-  \item 1 sentence to describe your solution: We propose to…
-  \item 1 sentence to give an overview of your results
-  \item 1 sentence to state the impact: what will this allow people to do
-\end{itemize}
-
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "thesis"
-%%% End:
+By means of fluorescent antibodies it is possible to observe the amount of nascent RNA within the nucleus of a cell, and thus estimate its \gls{tr}. But what about the other molecules, proteins, organelles, etc. within the nucleus of the cell? Is it possible to estimate the TR using only the shape and distribution of these subnuclear components? By means of multichannel images of single cell nucleus (obtained through the \gls{mpm} protocol \cite{Guteaar7042}) and \glspl{cnn}, we show that this is possible. 
+Applying pre-processing and data augmentation techniques, we reduce the information contained in the intensity of the pixels and the correlation of these between the different channels. This allowed the \gls{cnn} to focus mainly on the information provided by the location, size and distribution of elements within the cell nucleus.
+For this task different architectures were tried, from a simple \gls{cnn} (with only 160k parameters), to more complex architectures such as the ResNet50V2 or the Xception (with more than 20m parameters).
+Furthermore, through the interpretability methods \gls{ig} and \gls{vg}, we could obtain score maps that allowed us to observe the pixels that the \gls{cnn} considered as relevant to predict the \gls{tr} for each cell nucleus input image. The analysis of these score maps reveals how as the \gls{tr} changes, the \gls{cnn} focuses on different proteins and areas of the nucleus. This shows that interpretability methods can help us to understand how a \gls{cnn} make its predictions and learn from it, which has the potential to provide guidance for new discoveries in the field of biology.
