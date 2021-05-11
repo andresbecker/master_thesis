@@ -4,7 +4,6 @@
 %% Reset glossary to show long gls names
 %\glsresetall
 
-
 % Perturbed dataset
 As we mentioned in chapter \ref{ch:dataset}, for this work only the images corresponding to cells without metabolic or pharmacological perturbations were used. Therefore, it would be interesting to include all the available cells in the dataset and see how the different perturbations change the proteins and/or organelles indicated as important by the score maps.
 
@@ -17,6 +16,9 @@ Because it has been observed that the \hl{EU} marker could binds to DNA molecule
 % Interpretability methods
 We have seen that interpretability methods can help us understand how \glspl{cnn} makes its predictions, which has the potential to leverage scientific discoveries.
 For this reason, it would be interesting to explore other interpretability methods or investigate more \gls{ig}, for example by using  different baselines and see the impact this has on the score maps.
+
+% Correlation between amount and distribution of proteins
+As we saw in chapter \ref{ch:results}, the \gls{tr} can be predicted using only localization information of proteins within the cell nucleus, and not just their overall abundance. Therefore, it would be interesting to study to what extent the information on the amount of proteins and their spatial information complement each other in the prediction of the \gls{tr}, or to what extent they are correlated.
 
 %ROAR
 As we explained in section \ref{sec:basics:interpretability_methods}, the interpretability methods aim to rank the input pixels based on how much they contribute to the output of the model.

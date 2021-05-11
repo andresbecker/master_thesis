@@ -15,8 +15,8 @@
 
 % ------------------------------------------------------------------------------
 %FixMe-Status: final (no FixMe comments) or draft (comments visible)
-\fxsetup{draft}
-%\fxsetup{final}
+%\fxsetup{draft}
+\fxsetup{final}
 % ------------------------------------------------------------------------------
 
 % ------------------------------------------------------------------------------
@@ -177,15 +177,20 @@
 %% =============================================================================
 \chapter{Introduction}
 \label{ch:introduction}
-\input{Sections/Introduction/Chapter_intro}
 
 \section{Motivation}
 \label{sec:intro:motivation}
 \input{Sections/Introduction/Motivation}
 
-\section{Goal of this Thesis}
+\section{Goal of this thesis}
 \label{sec:intro:goals}
 \input{Sections/Introduction/Thesis_Goals}
+
+\section{Literature review}
+\label{ch:literature_review}
+\input{Sections/Introduction/Literature_review}
+
+
 
 %% =============================================================================
 %% Basics chapter
@@ -194,29 +199,29 @@
 \label{ch:basics}
 \input{Sections/Basics/Chapter_intro}
 
-\section{Biology Background}
+\section{Biological Background}
 \label{sec:basics:bio_back}
 \input{Sections/Basics/Biology_Background}
-\subsection{Transcription Process}
+\subsection{Transcription process}
 \label{sec:basics:transcription_process}
 \input{Sections/Basics/Transcription_process}
 
-\section{Machine Learning}
+\section{Machine learning}
 \input{Sections/Basics/Machine_Learning}
 \label{sec:basics:ML}
-\subsection{Artificial Neural Networks}
+\subsection{Artificial neural networks}
 \input{Sections/Basics/Artificial_Neural_Networks}
 \label{sec:basics:ANN}
 
-\subsection{Convolutional Neural Networks}
+\subsection{Convolutional neural networks}
 \label{sec:basics:CNN}
 \input{Sections/Basics/Convolutional_Neural_Networks}
 
-\section{Interpretability Methods}
+\section{Interpretability methods}
 \label{sec:basics:interpretability_methods}
 \input{Sections/Basics/Interpretability_Methods}
 
-\subsection{Integrated Gradients}
+\subsection{Integrated gradients}
 \label{sec:basics:IG}
 \input{Sections/Basics/Integrated_Gradients}
 
@@ -230,11 +235,11 @@
 %% =============================================================================
 %% Dataset chapter
 %% =============================================================================
-\chapter{The Dataset}
+\chapter{Dataset}
 \label{ch:dataset}
 \input{Sections/Dataset/Chapter_intro}
 
-\section{Multiplexed Protein Maps}
+\section{Multiplexed protein maps}
 \label{sec:dataset:multiplexed_protein_maps}
 \input{Sections/Dataset/Multiplexed_Protein_Maps}
 
@@ -282,11 +287,11 @@
 \label{sec:methodology:XC}
 \input{Sections/Methodology/Xception}
 
-\subsection{Performance Metrics}
+\subsection{Performance metrics}
 \label{sec:methodology:metrics}
 \input{Sections/Methodology/Performance_Metrics}
 
-\section{Interpretability Methods}
+\section{Interpretability methods}
 \label{sec:methodology:interpretability_methods}
 \input{Sections/Methodology/VarGrad_IG_Experimental_Setup}
 
@@ -304,7 +309,7 @@
 \label{ch:results}
 \input{Sections/Results/Chapter_intro}
 
-\section{Model Performance}
+\section{Model performance}
 \label{sec:model_performance}
 \input{Sections/Results/Model_Performance}
 
@@ -312,11 +317,11 @@
 \label{sec:results:bl_values}
 \input{Sections/Results/Baseline_values_for_performance_metrics}
 
-\subsection{Model Performance Comparative}
+\subsection{Model performance comparison}
 \label{sec:results:comparative}
-\input{Sections/Results/Model_Performance_Comparative}
+\input{Sections/Results/Model_Performance_Comparison}
 
-\subsection{Linear Model}
+\subsection{Linear model}
 \label{sec:results:lm}
 \input{Sections/Results/Linear_Model}
 
@@ -324,7 +329,7 @@
 \label{sec:results:simple_cnn}
 \input{Sections/Results/Simple_CNN}
 
-\section{Model Interpretation}
+\section{Model interpretation}
 \label{sec:results:model_interpretation}
 \input{Sections/Results/Model_Interpretation_intro}
 
@@ -336,7 +341,7 @@
 \label{sec:results:simple_cnn_sm}
 \input{Sections/Results/Simple_CNN_model_score_maps}
 
-\subsection{Similarity between Score Maps and Cell image}
+\subsection{Similarity between score maps and cell image}
 \label{sec:results:sim_sc_ci}
 \input{Sections/Results/Similarity_between_Score_Maps_and_Cell_image}
 
@@ -347,7 +352,7 @@
 %% conclusion chapter
 %% =============================================================================
 \newpage
-\chapter{Conclusion and Future work}
+\chapter{Conclusion and future work}
 
 \section{Conclusion}
 \input{Sections/Conclusion/Conclusion}
@@ -360,7 +365,7 @@
 %% =============================================================================
 \appendix
 
-\chapter{Remarks on Implementation}
+\chapter{Remarks on implementation}
 \label{Appendix-Implementation}
 \input{Sections/Appendix/Remarks_on_Implementation}
 
@@ -368,7 +373,7 @@
 \label{sec:appendix:raw_data}
 \input{Sections/Appendix/Raw_data_processing_and_QC_Implementation_Notes}
 
-\section{TensorFlow Dataset and image preprocessing implementation notes}
+\section{TensorFlow dataset and image preprocessing implementation notes}
 \label{sec:appendix:tfds}
 \input{Sections/Appendix/TensorFlow_Dataset_and_image_preprocessing_Implementation_Notes}
 
@@ -380,11 +385,11 @@
 \label{sec:appendix:VarGrad_IG_Experimental_Setup}
 \input{Sections/Appendix/VarGrad_IG_Implementation_Notes}
 
-\chapter{General Remarks}
+\chapter{General remarks}
 \label{Appendix-general-remarks}
 \input{Sections/Appendix/General_Remarks}
 
-\section{Indirect Immunofluorescence markers description}
+\section{Indirect immunofluorescence markers description}
 \label{sec:appendix:if_markers}
 \input{Sections/Appendix/IF_markers_explanation}
 

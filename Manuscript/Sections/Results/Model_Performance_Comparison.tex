@@ -1,0 +1,110 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
+\glsresetall
+% define where the images are
+\graphicspath{{./Sections/Results/Resources/}}
+
+Table \ref{table:results:model_performance_comparative} shows a comparison of the performance of each model on the test set. Column \textit{Data type} specifies the information contained in the training data; \textit{structure} indicates only spatial information (which means that per-channel random color shifting was applied as augmentation technique to reduce pixel intensity information), while \textit{color and structure} indicate spatial and pixel intensity information (which means that no random color shifting was applied). The row $\bar{y}$ (in the \hl{Model} column) contains the baseline values for the performance metrics (see section \ref{sec:results:bl_values}). The numbers in bold indicate the models with the best overall performance (i.e., trained using data with and without pixel intensity information) per metric, while the shaded cells indicate the models with the best performance using only spatial data (structure).
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.17\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.2\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthd}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthe}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthf}{0.09\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthg}{0.1\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthh}{0.1\mylinewidth-2\arraycolsep}%
+
+% table data created in notebook Preprocessing_resources.ipynb
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{m{\mylengtha} |
+                  >{\centering\arraybackslash}m{\mylengthb} |
+                  >{\centering\arraybackslash}m{\mylengthc} |
+                  >{\centering\arraybackslash}m{\mylengthd} |
+                  >{\centering\arraybackslash}m{\mylengthe} |
+                  >{\centering\arraybackslash}m{\mylengthf} |
+                  >{\centering\arraybackslash}m{\mylengthg} |
+                  >{\centering\arraybackslash}m{\mylengthh}
+                  }
+    \hline
+    \centering Model & Data type & $\bar{e}$ & $s(e)$ & $R^2$ & MAE & MSE & Huber \\
+    \ChangeRT{1pt}
+    \centering $\bar{y}$ (baseline) & targets avg & 4.86 & 59.99 & -0.01 & 45.56 & 3622 & 45.07 \\
+    \hline
+    \multirow{2}{\mylengtha}{\centering Linear} & color-structure & 4.06 & 46.83 & 0.38 & 35.26 & 2203 & 34.77 \\
+    \cline{2-8}
+     & structure & 4.03 & 54.15 & 0.18 & 40.52 & 2941 & 40.02 \\
+     \hline
+    \multirow{2}{\mylengtha}{\centering Simple CNN} & color-structure & 3.00 & \textbf{41.27} & \textbf{0.52} & \textbf{30.68} & \textbf{1708} & \textbf{30.18} \\
+    \cline{2-8}
+     & structure & 0.77 & 43.94 & 0.46 & 33.08 & 1926 & 32.59 \\
+     \hline
+    \multirow{2}{\mylengtha}{\centering ResNet50V2} & color-structure & 1.49 & 42.81 & 0.49 & 32.73 & 1830 & 32.24 \\
+    \cline{2-8}
+     & structure & \cellcolor[HTML]{d9d9d9}\textbf{0.45} & \cellcolor[HTML]{d9d9d9}43.38 & \cellcolor[HTML]{d9d9d9}0.47 & \cellcolor[HTML]{d9d9d9}31.83 & \cellcolor[HTML]{d9d9d9}1877 & \cellcolor[HTML]{d9d9d9}31.33 \\
+     \hline
+    \multirow{2}{\mylengtha}{\centering Xception} & color-structure & 6.69 & 41.57 & 0.50 & 31.66 & 1768 & 31.16 \\
+    \cline{2-8}
+     & structure & 7.23 & 45.50 & 0.41 & 33.92 & 2117 & 33.42 \\
+     \hline
+  \end{tabular}
+  \caption{Model performance comparison. Performance measures where taken from the test set, with and without pixel intensity information (color-structure and structure respectively). Bold cells indicate the model-metric with best general performance. Shaded cells indicate the model-metric with best performance using only spatial (structure) data.}
+  \label{table:results:model_performance_comparative}
+\end{table}
+
+Figure \ref{fig:results:performance_comp} shows a graphical representation of the \gls{mae} and $R^2$ values shown in table \ref{table:results:model_performance_comparative}.
+
+% Figures created in notebook Preprocessing_resources.ipynb
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{MAE_comparison.jpg}
+    \caption{Model \gls{mae} comparison divided by data type.}
+    \label{fig:results:performance_comp:mae}
+  \end{subfigure}%
+  \vspace{3mm}
+  \begin{subfigure}[b]{.45\linewidth}
+    \includegraphics[width=\linewidth]{R2_comparison.jpg}
+    \caption{Model $R^2$ coefficient comparison divided by data type.}
+    \label{fig:results:performance_comp:r2}
+  \end{subfigure}
+  \caption{Graphic representation of the data shown in table \ref{table:results:model_performance_comparative}, for the \gls{mae} and $R^2$ performance measures. Each group of bars represent a different model. The bar colors represent the data type used to train the models. The horizontal red line shows the baseline value.}
+  \label{fig:results:performance_comp}
+\end{figure}
+
+Table \ref{table:results:model_performance_comparative} shows that, as expected, for both types of training data (color-structure and structure) all the \gls{cnn} models performed better than the linear model in all the performance measures, except for average error $\bar{e}$.
+Also, for all the error measures and the $R^2$ coefficient, both the linear model and the \gls{cnn} models performed better than $\bar{y}$ (baseline values), which means that the models were able to learn something meaningful from both types of data. Surprisingly, the \hl{ResNet50V2} model was the only one that had a better performance in the structure data.
+
+In general the \hl{simple CNN} was the model with the best performance, while the \hl{ResNet50V2} was the model with the best performance in the structure data. However, it is worth mentioning that the \hl{simple CNN} model stayed behind the \hl{ResNet50V2} model in the structure data, surpassing the \hl{Xception} mode. Nevertheless, the performance of the \hl{simple CNN} model was similar to that of the more complex models during training.
+This can be seen in figures \ref{fig:results:train_per_com:cs} and \ref{fig:results:train_per_com:s}, which show the validation \gls{mae} of each model during training.
+In these figures we can see that the simple model has visibly less variance than the other two \gls{cnn} models, especially in figure \ref{fig:results:train_per_com:cs}.
+
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{.9\linewidth}
+    \includegraphics[width=\linewidth]{train_comp_c_and_s.jpg}
+    \caption{Validation \gls{mae} using data with color and structure.}
+    \label{fig:results:train_per_com:cs}
+  \end{subfigure}%
+  \vspace{3mm}
+  \begin{subfigure}[b]{.9\linewidth}
+    \includegraphics[width=\linewidth]{train_comp_structure.jpg}
+    \caption{Validation \gls{mae} using data only with structure.}
+    \label{fig:results:train_per_com:s}
+  \end{subfigure}
+  \caption{Validation \gls{mae} during training using data with (figure \ref{fig:results:train_per_com:cs}) and without (figure \ref{fig:results:train_per_com:s}) pixel intensity information (color-structure and structure respectively). Each color represent a different model. The dot indicates the epoch in which the model reached its lowest validation \gls{mae}. The gray line indicates the baseline \gls{mae} in the validation set.}
+  \label{fig:results:train_per_com}
+\end{figure}
+
+The dots in figure \ref{fig:results:train_per_com} indicate the epochs with the best performance with respect to the validation \gls{mae} of each model.
+The gray horizontal line corresponds to the \gls{mae} of the baseline evaluated in the validation set (see section \ref{sec:results:bl_values}). Due to early stopping, the number of epochs is not the same for all the models.
+
+Figure \ref{fig:results:train_per_com:s} shows that the \gls{mae} of the linear model was generally higher than the \glspl{mae} of the \gls{cnn} models, which reinforces our hypothesis that to some extent it is possible to describe cell expression, using only spatial information within the cell nucleus.
+
+The \hl{ResNet50V2} and \hl{Xception} models have more than 24m and 21m of parameters respectively, while the \hl{simple CNN} model has only around 160k. Therefore, the training of these two models require way more computational resources and time than the \hl{simple CNN} model.
+However, table \ref{table:results:model_performance_comparative} and figure \ref{fig:results:train_per_com} show that the performance of the \hl{simple CNN} model is similar to the \hl{ResNet50V2} and \hl{Xception}.
+Moreover, we observe that the importance maps of the \hl{simple CNN} model (shown in section \ref{sec:results:model_interpretation}), were less noisy and informative than those obtained with the more complex models. For this reason, in subsequent sections we will focus on the \hl{simple CNN} model only.

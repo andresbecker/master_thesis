@@ -1,3 +1,6 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
 \glsresetall
 \graphicspath{{./Sections/Methodology/Resources/}}
 
@@ -5,7 +8,7 @@ There are several hyper-parameters that need to be chosen in order to compute th
 
 For the \gls{ig} attribution map, recall that in practice computing $\phi^{IG}$ could be unfeasible or computationally very expensive. However, we can approximate $\phi^{IG}$ by means of $\phi^{Approx\ IG}$ (see equation \ref{eq:ig:approx}). Therefore, we need to define the number of steps $m$ for the Riemann sum approximation. In section \ref{sec:basics:IG} we also mentioned the necessity to set a baseline image $x'$, which should contain no information about the image, in order to compute the \gls{ig}. There are several options that can be used, each one of them with different advantages and disadvantages. However, for this work we only implemented two of them: 1) a simple black image (image containing only zeros) and 2) an image filled with Gaussian noise ($\mu=0,\ \sigma=1$). A very good analysis on the choice of the baseline can be found in this reference \cite{sturmfels2020visualizing}.
 
-In section \ref{sec:basics:VarGrad} we saw that for \gls{vg} we need to define 2 parameters, the number of noisy images $n$ (sample size) and the standard deviation $\sigma$ for the the noise distribution.
+In section \ref{sec:basics:VarGrad} we saw that for \gls{vg} we need to define two parameters, the number of noisy images $n$ (sample size) and the standard deviation $\sigma$ for the the noise distribution.
 
 As a rule of thumbs, a sample should not be smaller than 30, so this could be a feasible option. However, since Smilkov et al. \cite{Smilkov_smoothgrad} showed empirically that no further improvemnt (less noise) in score maps is observed for sample sizes greater than 50, we chose this bound as sample size.
 
@@ -30,7 +33,7 @@ Table \ref{table:VGIG_exp_set:params} shows a summary of the parameters chosen t
   \label{table:VGIG_exp_set:params}
 \end{table}
 
-In section \ref{sec:basics:IG}, we mentioned that the \gls{ig} algorithm holds the \textit{Completeness Axiom}, which means that the sum of all the components of the \gls{ig} attribution map must be equal to the difference between the model's output evaluated at the image and the model's output evaluated at the baseline (see equation \ref{eq:ig_completeness}). This property allow us to check empirically if the number of steps $m$ selected for the Riemann sum approximation is sufficiently large. Figure \ref{fig:VGIG_exp_set:m_sanity} shows that for our baseline\fxnote{after finishing, check that the baseline model is still called baseline} model, a random image and $m=70$, the  completeness axiom is satisfied sufficiently well.
+In section \ref{sec:basics:IG}, we mentioned that the \gls{ig} algorithm holds the \textit{Completeness Axiom}, which means that the sum of all the components of the \gls{ig} attribution map must be equal to the difference between the model's output evaluated at the image and the model's output evaluated at the baseline (see equation \ref{eq:ig_completeness}). This property allow us to check empirically if the number of steps $m$ selected for the Riemann sum approximation is sufficiently large. Figure \ref{fig:VGIG_exp_set:m_sanity} shows that for the \hl{simple CNN} model, a random image and $m=70$, the  completeness axiom is satisfied sufficiently well.
 
 \begin{figure}[!ht]
   \centering

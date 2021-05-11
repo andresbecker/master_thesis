@@ -5,13 +5,7 @@
 \glsresetall
 \graphicspath{{./Sections/Methodology/Resources/}}
 
-In this section we specify all the hyperparameters needed to execute the process explained on chapter \ref{ch:dataset}. This contemplates the raw data processing, the quality control, the \gls{tfds} creation, the image preprocessing, as well as data augmentation. Here we also specify some of the experimental setups used in the \gls{mpm} protocol.
-
-\subsection{Multiplexed Protein Maps}
-
-As we explained in section \ref{sec:dataset:multiplexed_protein_maps}, the \gls{mpm} protocol is capable of capturing up to 40 different proteins and molecules within a cell nucleus using fluorescent markers. The \gls{mpm} data provided for this work contains 38 channels, .i.e., readouts of 38 different proteins and molecules. Table \ref{table:tfds_in:channels} in appendix \ref{sec:appendix:tfds}, shows the marker used for each channel. Table \ref{table:apendix:if_markers} (appendix \ref{sec:appendix:if_markers}), shows an explanation of some of these markers.
-
-The \gls{tr} (target variable) was not provided directly with the \gls{mpm} data. For each cell, its \gls{tr} was calculated by averaging the measured pixels of channel 35 (marker \texttt{00\_EU}). For this reason, this channel is not used during model training/prediction. Furthermore, channel 35 contains nuclear readouts of nascent RNA in a given period of time. For the data provided, this time period was the same for each cell (30 minutes) and is specified in the \hl{duration} columns of the metadata.
+In this section we specify all the hyperparameters needed to execute the process explained on chapter \ref{ch:dataset}. This contemplates the raw data processing, the quality control, the \gls{tfds} creation, the image preprocessing, as well as data augmentation.
 
 \subsection{Data preprocessing}
 
@@ -50,7 +44,7 @@ As we explained in section \ref{sec:dataset:data_pp:dataset_creation}, to build 
 
 Another hyperparameter that needs to be specified during the raw data processing, is the size of the output images $I_s$. This size applies to both, the width and height of the image (square images). Since some prebuilt architectures use a standard image size of 224 by 224, we define $I_s$ as 224.
 
-\subsubsection{Quality Control}
+\subsubsection{Quality control}
 
 As it is mentioned in section \ref{sec:dataset:data_pp:qc}, the quality control is meant to exclude cells with undesirable features. In our case we discriminate mitotic and border cells. The information used by the quality control is contained in the metadata of each well. Table \ref{table:methodology:dataset:qc} shows the metadata columns and the discriminated values. If a cell has any of these values, then it is excluded.
 
@@ -114,9 +108,14 @@ As it is explained in section \ref{sec:dataset:data_pp:dataset_creation}, in thi
   \label{table:methodology:dataset:tfds}
 \end{longtable}
 
-The custom \gls{tfds} created with the parameters specified in table \ref{table:methodology:dataset:tfds} is called \texttt{mpp\_ds\_normal\_dmso\_z\_score}.
-
+The custom \gls{tfds} created with the parameters specified in table \ref{table:methodology:dataset:tfds} is called \\
+\texttt{mpp\_ds\_normal\_dmso\_z\_score}.
 The Python script that builds the custom \gls{tfds}, also returns a file with the image preprocessing parameters (\texttt{channels\_df.cvs}) (as this is applied at a per-channel level) and information about the channels (channel name, id, etc.). It also returns another file with the metadata of each cell included in the \gls{tfds} (\texttt{metadata\_df.csv}). These files are stored in the same directory as the \gls{tfds} files.
+
+In table \ref{table:methodology:dataset:tfds} we also specify the channel used to compute the target variable (ground truth), which is the channel corresponding to the marker \hl{EU} (channel id 35, see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}).
+Recall that this channel contains nuclear readouts of nascent RNA (\gls{pmrna}) in a given period of time.
+For the data provided, this time period was the same for all the cells (30 minutes) and is specified in the \hl{duration} columns of the metadata.
+Since channel 35 is used to compute the target variable (ground truth), it is removed from the prediction/input channels.
 
 \subsection{Data augmentation}
 \label{sec:methodology:data:augm}

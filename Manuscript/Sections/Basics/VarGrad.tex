@@ -1,3 +1,6 @@
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
+
 % define where the images are
 \graphicspath{{./Sections/Basics/Resources/}}
 \glsresetall
@@ -22,7 +25,7 @@ Since we use \gls{ig} to get preliminary score maps, in our case \gls{vg} (in th
 
 \noindent where $x' \in \mathbb{R}^{d \times d \times c}$ is a given baseline needed to compute the \gls{ig} score maps.
 
-Figures \ref{fig:vg:img_IG} and \ref{fig:vg:img_VG_IG} show a comparative between \gls{ig} and \gls{vgig} score maps. One can see that \gls{vgig} produces less noisy score maps than vanilla \gls{ig}.
+Figures \ref{fig:vg:img_IG} and \ref{fig:vg:img_VG_IG} show a comparison between \gls{ig} and \gls{vgig} score maps. One can see that \gls{vgig} produces less noisy score maps than vanilla \gls{ig}.
 
 % this plots were created using the notebook ~/Documents/Master_Thesis/Project/workspace/Interpretability/Integrated_Gradient_Sanity_check.ipynb
 \begin{figure}[htb]
@@ -48,6 +51,6 @@ Figures \ref{fig:vg:img_IG} and \ref{fig:vg:img_VG_IG} show a comparative betwee
     \caption{VarGrad with Integrated Gradients.}
     \label{fig:vg:img_VG_IG}
   \end{subfigure}
-  \caption{Comparative between a cell image and the different attribution methods. All the figures show the same 3 channels taken from a cell image. \subref{fig:vg:cell_img}) cell image, i.e. no attribution method. \subref{fig:vg:img_gradients}) score map using only the gradient of the model with respect to the input image. \subref{fig:vg:img_IG}) \acrlong{ig} score map. \subref{fig:vg:img_VG_IG}) \acrlong{vgig} score map.}
+  \caption{Comparison between a cell image and the different attribution methods. All the figures show the same 3 channels taken from a cell image. \subref{fig:vg:cell_img}) cell image, i.e. no attribution method. \subref{fig:vg:img_gradients}) score map using only the gradient of the model with respect to the input image. \subref{fig:vg:img_IG}) \acrlong{ig} score map. \subref{fig:vg:img_VG_IG}) \acrlong{vgig} score map.}
   \label{fig:vg:comparative}
 \end{figure}

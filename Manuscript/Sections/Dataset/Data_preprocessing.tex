@@ -46,7 +46,8 @@ The Python script introduced on appendix \ref{sec:appendix:raw_data} extract the
   \label{fig:data_pp:sample_cell}
 \end{figure}
 
-The raw data processing script saves in a specified directory files containing 3 compressed NumPy arrays; 1) the multichannel image (figure \ref{fig:data_pp:sample_cell:nucleus_pad}), a 3D array contains the protein readouts of the nucleus of a single cell 2) the cell mask (figure \ref{fig:data_pp:sample_cell:cell_mask}), a 2D array that indicates the measured pixels by the \gls{mpm} protocol (ones on the measured $x$ and $y$ coordinates and zeros otherwise) and 3) the channels average, a 1D array containing the average of the measured pixels per channel/protein. Each file is named using the unique id assigned to each single cell nucleus (\texttt{mapobject\_id\_cell}). The script also returns a \texttt{csv} file\footnote{This \texttt{csv} file can be easily opened as a \hl{Pandas DataFrame}. For more information, please refer to the \href{https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{official documentation}.} containing the metadata of each single cell from every processed well (one row per cell and one column per cell feature). Table \ref{table:dataset:metadata} shows the metadata columns that were relevant for this work.
+The raw data processing script saves in a specified directory files containing 3 compressed NumPy arrays; 1) the multichannel image (figure \ref{fig:data_pp:sample_cell:nucleus_pad}), a 3D array contains the protein readouts of the nucleus of a single cell 2) the cell mask (figure \ref{fig:data_pp:sample_cell:cell_mask}), a 2D array that indicates the measured pixels by the \gls{mpm} protocol (ones on the measured $x$ and $y$ coordinates and zeros otherwise) and 3) the channels average, a 1D array containing the average of the measured pixels per channel/protein. Each file is named using the unique id assigned to each single cell nucleus (\texttt{mapobject\_id\_cell}).
+The script also returns a \texttt{csv} file\footnote{This \texttt{csv} file can be easily opened as a \hl{Pandas DataFrame}. For more information, please refer to the \href{https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html}{official documentation}.} containing the metadata of each single cell from every processed well (one row per cell and one column per cell feature). Table \ref{table:dataset:metadata} shows the metadata columns that were relevant for this work.
 
 % set table lengths
 \setlength{\mylinewidth}{\linewidth-7pt}%
@@ -105,7 +106,7 @@ Table \ref{table:tfds_in:channels} (on appendix \ref{sec:appendix:tfds}) shows t
   \centering
   \begin{tabular}{c|c|c}
     \hline
-    Set & Size & Percentage \\
+    Set & Number of elements & Percentage \\
     \ChangeRT{1.7pt}
     Train & 2962 & $80\%$ \\
     \hline
@@ -127,7 +128,7 @@ During the creation of the dataset, the images are also spitted into 3 sets, \hl
   \centering
   \begin{tabular}{c|c|c|c}
     \hline
-    Set & Cell Cycle & Size & Percentage \\
+    Set & Cell Cycle & Number of elements & Percentage \\
     \ChangeRT{1.7pt}
     \multirow{3}{*}{Train} & $G_1$ & 1652 & $55.77\%$ \\
     \cline{2-4}
@@ -163,7 +164,7 @@ During the creation of the dataset, the images are also spitted into 3 sets, \hl
   \centering
   \begin{tabular}{c|c|c|c}
     \hline
-    Set & Perturbation & Size & Percentage \\
+    Set & Perturbation & Number of elements & Percentage \\
     \ChangeRT{1.7pt}
     \multirow{2}{*}{Train} & Normal & 2040 & $68.87\%$ \\
     \cline{2-4}
@@ -186,7 +187,7 @@ During the creation of the dataset, the images are also spitted into 3 sets, \hl
   \label{table:data_pp:dataset_dist_per}
 \end{table}
 
-Since we are dealing with cells in different phases (cell cycles), it is important that the distribution of the 3 phases is kept  in the train, validation and test sets\fxnote{Should I mention than half of the cells are in $G_1$ phase, which means that cell in $G_1$ phase apply more pressure on the optimization of the model parameters during training, while the cells in the $G_2$ phase will not? And/Or should I mention this in the conclusions as a future work?}. The same must happen with the proportion of cells without pharmacological/metabolic perturbation (\hl{Normal} cells) and control cells (\hl{DMSO} cells). Tables \ref{table:data_pp:dataset_dist_cc} and \ref{table:data_pp:dataset_dist_per} show respectively that these proportions are hold across the 3 sets.
+Since we are dealing with cells in different phases (cell cycles), it is important that the distribution of the 3 phases is kept in the train, validation and test sets. The same must happen with the proportion of cells without pharmacological/metabolic perturbation (\hl{Normal} cells) and control cells (\hl{DMSO} cells). Tables \ref{table:data_pp:dataset_dist_cc} and \ref{table:data_pp:dataset_dist_per} show respectively that these proportions are hold across the 3 sets.
 
 \subsection{Image preprocessing}
 

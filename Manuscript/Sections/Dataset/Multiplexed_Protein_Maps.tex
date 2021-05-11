@@ -66,40 +66,25 @@ Once the multichannel images were generated using the \gls{4i} protocol, a serie
   \label{fig:4i:segmentation}
 \end{figure}
 
-\subsubsection{Multiplexed single-pixel analysis framework}
-Even though the cell cultures are now segmented into individual cells and nucleus, there is still one missing part that must be considered, and that is that cells are 3-dimensional objects. Recall that the \gls{4i} protocol saturates the cell culture with a liquid containing fluorescent antibodies. This means that the antibody can either bind to its corresponding protein inside or outside the cell nucleus. Therefore, even though that we segmented a cell into nucleus and cytoplasm, a readout assigned to the nucleus could come from a protein in the cytoplasm under or above the nucleus, and not from inside it. Fortunately, intensity readouts from proteins inside the nucleus are much higher than those in the cytoplasm. Therefore, by means of a two steps clustering approach\footnote{To identify clusters in an unsupervised manner, \hl{Self Organizing Maps} algorithm and \hl{Phenograph} analysis were used over a very large number of pixels sampled from a large number of single cells \cite{Guteaar7042}.}, pixels can be classified accordingly to their intensity profile (figures \ref{fig:mcu:1} and \ref{fig:mcu:2}), so the source of their readout can be identified. This pixel type classification is called \Acrfull{mcu} and is illustrated in figure \ref{fig:mcu:3}. After pixels clusters (intensity profiles) where identified, the pixels whose measurement comes from the cytoplasm and not from the nucleus are removed.
-
-\begin{figure}[htb]
-  \centering
-  \begin{subfigure}[t]{.3\linewidth}
-    \includegraphics[width=\linewidth]{mcu_1.png}
-    \caption{Extraction of pixel intensities.}
-    \label{fig:mcu:1}
-  \end{subfigure}
-  \hspace{4mm}
-  \begin{subfigure}[t]{.3\linewidth}
-    \includegraphics[width=\linewidth]{mcu_2.png}
-    \caption{Pixel clustering by Self Organizing Maps and Phenograph.}
-    \label{fig:mcu:2}
-  \end{subfigure}
-  \hspace{4mm}
-  \begin{subfigure}[t]{.3\linewidth}
-    \includegraphics[width=\linewidth]{mcu_3.png}
-    \caption{Cell subdivision base on the \gls{mcu}.}
-    \label{fig:mcu:3}
-  \end{subfigure}
-  \caption{Figure \subref{fig:mcu:1} shows the pixel intensity extraction for a single cell. The pixel intensity is a vector containing the readout of that 2D location for each protein, one specific protein readout per entrance. Figure \subref{fig:mcu:2} shows the clusters found by Self Organizing Maps algorithm and Phenograph analysis over the pixel intensities. Figure \subref{fig:mcu:3} shows a cell masked with the clusters found by the \gls{mcu} analysis. Images source \cite{Guteaar7042}.}
-  \label{fig:mcu}
-\end{figure}
-
-Finally, the nucleus of each cell is stored separately and identified with a unique id.\fxnote{After you finish writing the dataset section review if this sentence is accurate.}
-
 \subsubsection{Cell cycle phase classification: $G_1,\ S,\ G_2$ and $M$ phase}
 
 The \gls{mpm} protocol is not only capable to capture the concentration and distribution of molecules inside thousands of cells. It can also identify the phase each cell is in, which is tightly related with the abundances and distribution of molecules inside a cell \cite{Guteaar7042}.
 
 Roughly speaking, cell cycle phase was determined by means of a \gls{svm} classifier and k-means clustering. First, a \gls{svm} classifier is trained to identify $M$ phase cells based on the nuclear information in one of the image channels (\hl{DAPI}\footnote{A brief description of this marker can be found on section \ref{sec:appendix:if_markers}.}). Then, based on the nuclear information of channel \hl{PCNA}, a second \gls{svm} classifier is trained to identify cells in phase $S$. Finally, cells in phase $G_1$ and $G_2$ are classified using a k-means algorithm, using the pixel intensity profiles of the DAPI channels excluding the cells in $S$ and $M$ phase. A more detailed explanation of the cell cycle classification process can be found on the dataset paper \cite{Guteaar7042}.
 
-\subsubsection{Pharmacological and metabolic perturbations}
+\subsubsection{Multiplexed protein maps experimental setup}
 
-To further explore the capabilities of the \gls{mpm} protocol, the creators of the dataset (Gabriele Gut et al. \cite{Guteaar7042}) applied the \gls{mpm} protocol to a cell populations that were to nine pharmacological and metabolic perturbations. The analysis reveled expected and unexpected changes in the concentration and distribution of molecules inside the cell. However, this work focused on cells without pharmacological and metabolic perturbations. This means that only cells marked as \hl{normal} (no perturbed cells) and \hl{DMSO}\footnote{Dimethyl sulfoxide, or DMSO, is an organic compound used to dissolve test compounds in in drug discovery and design \cite{cushnie2020bioprospecting}.} (control cells) were used.
+Although the data used for this work were generated largely following the \gls{mpm} protocol, they are not the same as those shown in \cite{Guteaar7042}.
+We warmly thank \textbf{Scott Berry} from Pelkmans Lab (at the University of Zurich), for providing the data for this work.
+
+As we already mentioned, the \gls{mpm} protocol is capable of capturing up to 40 different proteins and molecules within a cell nucleus using fluorescent markers.
+The \gls{mpm} data provided for this work contains 38 channels, .i.e. readouts of 38 different proteins and molecules. Table \ref{table:tfds_in:channels} in appendix \ref{sec:appendix:tfds}, shows the marker used for each channel. Table \ref{table:apendix:if_markers} (appendix \ref{sec:appendix:if_markers}), shows an explanation of some of these markers.
+
+As we mentioned on section \ref{ch:literature_review}, the \gls{mpm} protocol also include the use of pharmacological and metabolic perturbations to some sections of the cell culture. However, this work focused on cells without those perturbations. This means that only cells marked as \hl{normal} (no perturbed cells) and \hl{DMSO}\footnote{Dimethyl sulfoxide, or DMSO, is an organic compound used to dissolve test compounds in in drug discovery and design \cite{cushnie2020bioprospecting}.} (control cells) were used.
+
+As mentioned in this section, the \gls{4i} protocol is applied to cell cultures, which are divided into rectangular sections called \hl{wells}. The results shown in chapter \ref{ch:results} were obtained using the cells belonging to wells \hl{J16, I14, J10, I09, I11} and \hl{J12}, which also correspond to the unperturbed and control cells (\hl{normal} and \hl{DSMO}). These wells provided a total of 3,703 cells.
+
+Recall that one of the objectives of this work is to fit a model capable of estimating the \gls{tr} of a cell, given a snapshot of it at a specific moment of time.
+However, the \gls{tr} is not provided directly with the \gls{mpm} data.
+Instead, for each cell its \gls{tr} is calculated by averaging the measured pixels corresponding to the marker \hl{EU} (in or case channel 35, see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}).
+Marker \texttt{EU} contains nuclear readouts of nascent RNA molecules (\gls{pmrna}) in a given period of time. For the data provided, this time period is 30 minutes, and is the same for all the cells.

@@ -71,4 +71,4 @@ However, luckily we can numerically approximate $\phi(f, x, x')^{IG}$ using a Ri
 
 This is when the completeness axiom comes into scene, which is a good value for the parameter $m$? 10, 100, 500? To answer this question, we can simply apply the completeness axiom as a sanity check for the election of $m$. If $m$ is good enough, then the value of $\sum_i \phi^{Approx\ IG}_i(f, x, x', m)$ should be close to $f(x)-f(x')$, or equivalently, the value of $|\sum_i \phi^{Approx\ IG}_i(f, x, x', m) - (f(x)-f(x'))|$ should be close to 0.
 
-Figures \ref{fig:vg:img_gradients} and \ref{fig:vg:img_IG} show a comparative between the gradient of a model output with respect to a cell image, and the \gls{ig}. One can see that either for score maps computed using \gls{ig} or vanilla gradients, the output is noisy and diffuse.
+Figures \ref{fig:vg:img_gradients} and \ref{fig:vg:img_IG} show a comparison between the gradient of a model output with respect to a cell image, and the \gls{ig}. One can see that either for score maps computed using \gls{ig} or vanilla gradients, the output is noisy and diffuse.

@@ -11,12 +11,17 @@ For this work different architectures were tried. From a \hl{simple CNN} (with o
 Besides, for all the implemented architectures, $L_1$ and $L_2$ regularization was tried for both dense and convolution layers. However, in practice this did not significantly improve the generalization of the models, but rather increased the number of hyperparameters. For this reason the use of regularization was discarded from the final results.
 For the \hl{ResNet50V2} and \hl{Xception} architectures, the use of pre-trained weights and biases to initialize the model parameters (transfer learning) was also tried. However, since this did not significantly improve the performance of the models, its use was also discarded.
 
+Overall, the results showed that it is possible to predict \gls{tr} using only localization information from the cell nucleus, which is an interesting biological finding by itself.
+This means that the distribution of proteins in the nucleus is very important, and not only their overall abundance. This shows the importance of generating data with subnuclear localization information, and the developing of methods to evaluate this data.
+
 However, predicting \gls{tr} was not the only objective of this work.
 Through the interpretability methods \gls{ig} and \gls{vg}, for each cell nucleus image we obtained score maps that allowed us to observe the pixels that the \gls{cnn} considered as relevant to predict the \gls{tr}.
 This allowed us to know which proteins and nuclear bodies were most relevant for the prediction of \gls{tr}, and how this changes as the \gls{tr} decreases or increases.
 This led us to formulate the hypothesis that as the \gls{tr} grows, the \gls{cnn} goes from focusing on the synthesis of \gls{pmrna} to the synthesis of mature \gls{mrna}.
-This shows that interpretability methods can help us to understand how a \gls{cnn} makes its predictions and learn from it, which has the potential to help us make biological discoveries.
+
 In addition to this, the analysis of the dynamics of the score maps showed that for the model the \hl{SP100} channel (which is closely related to the \hl{PML} channel) has a high influence on the prediction of the \gls{tr}. This may suggest that cells with a high number of PML bodies in the cell nucleus, could be an indicative of a high transcription. However, this is a hypothesis that would have to be rigorously studied and validated.
+
+This shows that interpretability methods can help us to understand how \glspl{cnn} makes its predictions. This is very important, as understanding how a model works has the potential to help us make scientific discoveries.
 
 In order to reduce the noise in the score maps, the use of random noise in the input images during model training was also tried. However, this did not show any apparent improvement in the scores more, so its use was discarded.
 

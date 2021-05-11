@@ -3,8 +3,10 @@
 
 \glsresetall
 
-The objective of this work is to predict the RNA concentration within the nucleus of a cell using \glspl{cnn} and multiplexed images of the cell nucleus. These multiplexed images capture the distribution and location of several molecules and proteins, as well as the shape and location of some organelles within a cell nucleus.
+The main objective of this work is to prove that it is possible to predict the \gls{tr} of a cell, using a deep learning model and the spatial information of its nucleus. More specifically, this means to design a \gls{cnn} architecture for regressing the \gls{tr} value of a cell, using only the information encoded in the location, distribution and shape of subnuclear components (like molecules, proteins and nuclear bodies) in multichannel images of cell nucleus.
+In order to do it, we implement preprocessing and data augmentation techniques aimed to reduce the information contained in the intensity of the pixels and its correlation among the channels. This would encourage the model to focus mainly on spatial information.
 
-Nevertheless, this work goes beyond just trying to predict RNA concentration. Through interpretability methods, we can observe the places in the cell nucleus image that were most relevant to the model when making its prediction (score maps). To do this, we implemented preprocessing and data augmentation techniques aimed to improve the model's training performance and prevent overfitting, but most importantly, to remove non-relevant information from images. This encouraged the model to focus mainly on spatial information and allowed us to obtain cleaner score maps, which can potentially help to understand cellular expression better. 
+The second goal of this work is to apply recent gradient-based interpretability methods \cite{adebayo2020sanity}, to understand which molecules/proteins and nuclear bodies were most relevant for the prediction of the mode.
+Understanding how a \gls{cnn} model works gives us the possibility to learn from it, which has the potential to provide guidance for new discoveries in the field of biology.
 
 %Finally, we test the veracity of the information in the score maps, by confronting them with a validation method.

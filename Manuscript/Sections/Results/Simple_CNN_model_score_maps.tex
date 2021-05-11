@@ -8,11 +8,11 @@
 In this section we analyze the score maps corresponding to the \hl{simple CNN} model trained using the data with spatial information (structure) only.
 
 Figure \ref{fig:results:model_inter:sm} show the score maps corresponding to the cells in figure \ref{fig:results:model_inter_cell_samp}. This figure shows the channels \hl{POL2RA\_pS2, GTF2B, SRRM2, NCL, PABPN1, SETD1A, SON} and \hl{SP100} (see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}) corresponding to the the score maps and the original cell nucleus images.
-Figure \ref{fig:results:model_inter:sm} also shows the overlap between the original image and its score map.\fxnote{After finishing move this image to fit correctly in the document.}
+Figure \ref{fig:results:model_inter:sm} also shows the overlap between the original image and its score map.
 
 % fures created in notebook VarGrad_channel_similarity_mae.ipynb
-%\afterpage{%
-%  \thispagestyle{empty}
+\afterpage{%
+  \thispagestyle{empty}
   \begin{figure}
     \centering
     \begin{subfigure}[b]{\linewidth}
@@ -35,7 +35,7 @@ Figure \ref{fig:results:model_inter:sm} also shows the overlap between the origi
     \caption{Channels 25, 4, 7, 18, 11, 5, 13, 17 and 32 of score maps (corresponding to the \hl{simple CNN model}) and cell images shown in figure \ref{fig:results:model_inter_cell_samp}. First row (in blue) shows the cell image, second row (in red) the score map (with the per-channel importance scores) and third row (blue and red) the overlap of the previous rows.}
     \label{fig:results:model_inter:sm}
   \end{figure}
-%}
+}
 
 As we explained in section \ref{sec:basics:interpretability_methods}, a score map shows how important a pixel is to the output of the model with respect to the input image. Since the score map has the same shape as the input, we can see how important is a pixel at a per-channel level.
 We can generalize this idea of importance from a per-pixel-channel level to a per-channel level only, by summing all the pixel values corresponding to each channel.

@@ -1,11 +1,69 @@
-In recent years neural networks...
+%% Magic command to compile root document
+% !TEX root = ../../thesis.tex
 
-% Interpretability part
-However, once we have successfully trained an artificial neural network to make predictions, one may also want to understand how the predictions was
-made. Several approaches have being used to tackle this. In this work we focus in the ones that highlight features in an input that are most responsible for the model's output. We use a composition of two explainable AI techniques, \gls{ig} \cite{sundararajan2017axiomatic} to highlight relevant input components (saliency map) and \gls{vg} \cite{adebayo2020sanity} to enhance the empirical quality the saliency map.
+%% Set path to look for the images
+\graphicspath{{./Sections/Introduction/Resources/}}
 
-Hannah's recommendations:
-\begin{itemize}
-  \item introduce most relevant previous work
-  \item Set it in context: how does this relate to your work?
-\end{itemize}
+\glsresetall
+
+Can we fully describe gene expression using only information about concentration of proteins and/or molecules like RNA inside the cell nucleus? Accordingly to Buxbaum et al. \cite{Buxbaum_2014}, the location of \gls{mrna} within the cell plays an important role in protein synthesis. In \cite{Korolchuk2011}, Korolchuk et al. show that cellular response to nutrient levels is a mechanism that needs to contemplate the position of Lysosomes (dynamic intracellular organelles) in order to be fully understood. However, the need for localization information to explain cellular mechanisms is not only limited to a subcellular level, but also at a subnuclear level. For instance, in \cite{van2019role} van Steensel et al. argue that the spatial organization of subnuclear components can have an important role in the regulation of gene expression. In \cite{vogel2010sequence}, Vogel et al. shows that in human cells the concentration of \gls{mrna} can only explain protein abundance to a certain extent, which could indicate the need to consider spatial information to predict protein expression.
+
+In recent years, the implementation of new imaging technologies has made it possible to access subnuclear spatial information. In \cite{Guteaar7042}, Gut et al. introduce the \gls{4i} protocol, which is a process that allows to efficiently capture thousands of single cell multichannel images from a cell culture without degrading it. The \gls{4i} protocol is part of the \gls{mpm} protocol also introduced in \cite{Guteaar7042}, which allows the segmentation of the tissue images into single cell nucleus images (Multiplexed single cell analysis).
+The \gls{mpm} protocol also introduces two other features that are not used in this work, but are still worth mentioning.
+The first one is the \gls{mcu} analysis, which segments the cell nucleus image into regions.
+These regions can be then used to identify subnuclear bodies or protein complexes. The segmentation is done through two unsupervised clustering algorithms\footnote{To identify clusters in an unsupervised manner, \hl{Self Organizing Maps} algorithm and \hl{Phenograph} analysis are used over a very large number of pixels sampled from all the single cells images.}, applied over the measured pixel intensities. The \gls{mcu} analysis is shown on figure \ref{fig:mcu}.
+
+\begin{figure}[htb]
+  \centering
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{mcu_1.png}
+    \caption{Extraction of pixel intensities.}
+    \label{fig:mcu:1}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{mcu_2.png}
+    \caption{Pixel clustering by Self Organizing Maps and Phenograph.}
+    \label{fig:mcu:2}
+  \end{subfigure}
+  \hspace{4mm}
+  \begin{subfigure}[t]{.3\linewidth}
+    \includegraphics[width=\linewidth]{mcu_3.png}
+    \caption{Cell subdivision base on the \gls{mcu}.}
+    \label{fig:mcu:3}
+  \end{subfigure}
+  \caption{Figure \subref{fig:mcu:1} shows the pixel intensity extraction for a single cell. The pixel intensity is a vector containing the readout of that 2D location for each protein, one specific protein readout per entrance. Figure \subref{fig:mcu:2} shows the clusters found by Self Organizing Maps algorithm and Phenograph analysis over the pixel intensities. Figure \subref{fig:mcu:3} shows a cell masked with the clusters found by the \gls{mcu} analysis. Images source \cite{Guteaar7042}.}
+  \label{fig:mcu}
+\end{figure}
+
+The second feature of the \gls{mpm} protocol that is not discussed here, but could be used in future work, is the application of pharmacological and metabolic perturbations to some sections of the cell culture. The analysis shown in \cite{Guteaar7042} revealed expected and unexpected changes in the concentration and distribution of molecules inside the cell.
+
+% why NN
+\gls{ann} are very robust tools widely used in the field of \gls{ml} that can potentially approximate any function \cite{cybenko1989approximation}, \cite{hornik1989multilayer}, \cite{funahashi1989approximate}.
+In the field of biology, \glspl{ann} have proven capable of solving very complex and high-impact problems.
+One of the best examples in recent years is the three-dimensional prediction of the structure of a protein using amino acid sequences encoded in the genes \cite{AlphaFold}, which is a very important problem since the structure of a protein largely determines its function. In \cite{chen2016gene}, Chen et al. introduced a deep \gls{ann} model known as \hl{D-GEX}, which outperformed previous linear model approaches when trained using gene expression profiling data.
+
+However, in \cite{krizhevsky2012imagenet} Krizhevsky et al. show that \glspl{cnn} are powerful tools in the recognition of spatial patterns, achieving outstanding results in ImageNet LSVRC-2010 contest.
+This makes \glspl{cnn} suitable models to analyze spatial information embedded in images of single cell nucleus, like the ones provided by the \gls{mpm} protocol.
+
+% what is the problem with NN
+However, in many fields of study and industries, the interpretation of the models is essential. For example, in the medical field, \gls{cnn} architectures have achieved remarkable results in the segmentation of brain tumors \cite{saleem2021visual}. However, to successfully implement deep learning models in the diagnosis of patients, it is not enough only to know what the model predicts, but also how it does it.
+
+% How to solve it? Interpretability methods
+Many researchers have proposed different techniques to explain what happens inside black-box models like \glspl{cnn}.
+The difference between these methods is basically whether they are applicable to any type of model (model-agnostic/model-independent) or only to a specific group (model-specific).
+An example of a model-independent method is the \gls{lime}, which basically aims to approximate the underlying model $f$ (not interpretable) by means of an interpretable model $g$ (e.g. a linear model) for a specific region of the input \cite{ribeiro2016model}. As the name suggest, \gls{lime} provides a local and individual explanation of each input.
+However, there are other methods that provide a general (global) explanation of the model. An example of a global method (and also model-specific) would be the visualization of the learned filters/kernels of a \gls{cnn}, which can indicate the features in the data that are important for the model prediction \cite{zeiler2014visualizing}.
+
+% Gradient based methods
+However, in this work we use \hl{attribution methods}, which are aimed to rank each input feature based on how much they contribute to the output of the model.
+These methods create an importance (or score) map for each element of the input data. There are several ways to compute these score maps \cite{JMLR:v11:baehrens10a}, \cite{ShrikumarGSK16}. However, most of these methods base the importance assignment of each input feature on the gradient of the model output with respect to the input (gradient-based methods) \cite{SimonyanVZ13}, \cite{BinderMBMS16} and \cite{Springenberg}.
+
+% why IG
+Nevertheless, just using the gradient as a feature importance designation method is not enough. As a model learns the relationship between an input and its output, the gradient of the model's output with respect to the input features will approximate to 0 (saturation).
+To alleviate this issue, Sundararajan et al. \cite{sundararajan2017axiomatic} proposed \gls{ig}, which accumulates the gradient of the output with respect to the input when it goes from an uninformative value to the original input.
+
+% why VarGrad
+However, in practice attribution methods like \gls{ig} often produce noisy and diffuse score maps, and in some cases they are not even better than a random designation of feature importance \cite{hooker2018benchmark}.
+For this reason Smilkov et al. \cite{Smilkov_smoothgrad} proposed an ensemble interpretability method known as \gls{sg}, which in practice reduces noise in score maps and can be easily combined with other attribution methods such as  \gls{ig}.
+In this work we use a slightly different version proposed by Adebayo et al. \cite{adebayo2018local} known as \gls{vg}, which is inspired by \gls{sg} and has been shown to empirically outperform such a random assignment of importance \cite{hooker2018benchmark}.
