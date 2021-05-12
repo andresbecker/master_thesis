@@ -110,6 +110,8 @@ As it is explained in section \ref{sec:dataset:data_pp:dataset_creation}, in thi
 
 The custom \gls{tfds} created with the parameters specified in table \ref{table:methodology:dataset:tfds} is called \\
 \texttt{mpp\_ds\_normal\_dmso\_z\_score}.
+
+\newpage
 The Python script that builds the custom \gls{tfds}, also returns a file with the image preprocessing parameters (\texttt{channels\_df.cvs}) (as this is applied at a per-channel level) and information about the channels (channel name, id, etc.). It also returns another file with the metadata of each cell included in the \gls{tfds} (\texttt{metadata\_df.csv}). These files are stored in the same directory as the \gls{tfds} files.
 
 In table \ref{table:methodology:dataset:tfds} we also specify the channel used to compute the target variable (ground truth), which is the channel corresponding to the marker \hl{EU} (channel id 35, see tables \ref{table:tfds_in:channels} and \ref{table:apendix:if_markers}).
