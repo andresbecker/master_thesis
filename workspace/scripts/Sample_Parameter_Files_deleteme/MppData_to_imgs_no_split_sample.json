@@ -1,24 +1,32 @@
 {
     "_comment": "where to read data from--------------------------------------",
-    "raw_data_dir": "/data/Master_Thesis_data/Raw_data",
+    "raw_data_dir": "/storage/groups/ml01/datasets/raw/20201020_Pelkmans_NascentRNA_hannah.spitzer",
     "dir_type": "hannah",
 
     "_comment": "Which perturbations and wells to load------------------------",
     "perturbations_and_wells": {
-    "184A1_hannah_unperturbed": ["I09"]
+      "184A1_hannah_CX5461": ["I18", "J22", "J09"],
+      "184A1_hannah_AZD4573": ["I13", "J21", "J14", "I17", "J18"],
+      "184A1_hannah_meayamycin": ["I12", "I20"],
+      "184A1_hannah_DMSO": ["J16", "I14"],
+      "184A1_hannah_triptolide": ["I10", "J15"],
+      "184A1_hannah_TSA": ["J20", "I16", "J13"],
+      "184A1_hannah_unperturbed": ["J10", "I09", "I11", "J18", "J12"]
     },
+    "_comment": "184A1_hannah_meayamycin-J17, 184A1_hannah_unperturbed-I13 are empty",
 
     "_comment": "where to put processed data----------------------------------",
-    "output_pp_data_path": "/data/Master_Thesis_data/datasets/184A1_hannah_imgs_no_split_test",
+    "output_pp_data_path": "/storage/groups/ml01/workspace/andres.becker/datasets/184A1_hannah_imgs_no_split",
     "output_pp_data_dir_name": "data",
 
     "_comment": "log configuration. Levels: DEBUG, INFO, WARNING, ERROR",
-    "log_file": "/home/hhughes/Documents/Master_Thesis/Project/workspace/logs/Convert_data_into_images_test.log",
+    "log_file": "/storage/groups/ml01/code/andres.becker/master_thesis/workspace/logs/Convert_data_into_imgs_no_split.log",
 
     "_comment": "Output image properties--------------------------------------",
     "img_size": 224,
     "images_dtype": "float32",
     "img_saving_mode": "original_img_and_fixed_size",
+    "return_cell_size_ratio": 1,
     "_comment": "img_interpolation_method only relevant if img_saving_mode=fixed_cell_size-------------------------------------------",
     "img_interpolation_method": "nearest",
 

@@ -27,6 +27,8 @@
     "images_dtype": "float32",
     "img_saving_mode": "original_img_and_fixed_size",
     "return_cell_size_ratio": 1,
+    "_comment": "img_interpolation_method only relevant if img_saving_mode=fixed_cell_size-------------------------------------------",
+    "img_interpolation_method": "nearest",
 
     "_comment": "Subtract background------------------------------------------",
     "subtract_background": 1,
