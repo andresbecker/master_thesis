@@ -136,10 +136,9 @@ class MPP_DS_normal_DMSO_z_score(tfds.core.GeneratorBasedBuilder):
 			cell = np.load(images_path.joinpath(fn))
 			cell_id = int(fn.split('.')[0])
 			cell_img = cell['img'][:,:,self.input_ids]
+            cell_img = cell_img.astype(np.float32)
 			cell_mask = cell['mask']
 			cell_target = [cell['targets'][self.output_id]]
-			# Normalize cell image
-			cell_img = cell_img.astype(np.float32)
 
 			# Apply preprocessing to each cell image before saving
 			cell_img = self._apply_preprocessing(cell_img, cell_mask)
