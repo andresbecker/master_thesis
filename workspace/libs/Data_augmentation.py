@@ -76,8 +76,8 @@ def zoom_image(tensor_img, **kwargs):
     # Get image with the cell at its maximum size
     # Warning! function tf.image.central_crop requires frac2crop to be a fraction between 0 and 1!
     # However, this is a tf graph function, which means that all calculations here returns a tensor.
-    # Therefore, you must change the origina library image_ops_impl.py for one from github which
-    # supports a tensor as input:
+    # Therefore, you must change the origina library image_ops_impl.py for one
+    # from github which supports a tensor as input:
     # wget https://raw.githubusercontent.com/tensorflow/tensorflow/b7a7f8d178254d1361d34dfc40a58b8dce48b9d7/tensorflow/python/ops/image_ops_impl.py
     # https://github.com/tensorflow/tensorflow/pull/45613/files
     tensor_img = tf.image.central_crop(tensor_img, frac2crop)
