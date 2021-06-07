@@ -1,0 +1,85 @@
+\documentclass{article}
+\usepackage{blindtext}
+\usepackage[left=0.1in, right=0.1in, bottom=.1in, top=0.1in, paperheight=2.1in, paperwidth=8in]{geometry}
+% Set page margins
+%\usepackage[left=0.1in, right=0.1in, bottom=.8in, top=0.8in, headsep=0in, footskip=.2in]{geometry}
+
+%Remove page number
+\pagenumbering{gobble}
+
+% --- Package imports ---
+\usepackage[table]{xcolor}
+\usepackage{hyperref, enumitem, longtable, amsmath, array}
+\usepackage{multirow}
+\usepackage{calc} % allows for easy manipulation of length arithmetic
+\usepackage{longtable}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+
+% change the thickness of horizontal lines in tables
+\newcommand{\ChangeRT}[1]{\noalign{\hrule height #1}}
+
+\newlength{\mylinewidth}
+\newlength{\mylengtha}
+\newlength{\mylengthb}
+\newlength{\mylengthc}
+\newlength{\mylengthd}
+\newlength{\mylengthe}
+\newlength{\mylengthf}
+\newlength{\mylengthg}
+\newlength{\mylengthh}
+\newlength{\mylengthi}
+
+
+\begin{document}
+
+% set table lengths
+\setlength{\mylinewidth}{\linewidth-7pt}%
+\setlength{\mylengtha}{0.12\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthi}{0.11\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthb}{0.15\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthc}{0.07\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthd}{0.07\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthe}{0.07\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthf}{0.07\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthg}{0.07\mylinewidth-2\arraycolsep}%
+\setlength{\mylengthh}{0.07\mylinewidth-2\arraycolsep}%
+
+% table data created in notebook Preprocessing_resources.ipynb
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{m{\mylengtha} |
+                  >{\centering\arraybackslash}m{\mylengthi} |
+                  >{\centering\arraybackslash}m{\mylengthb} |
+                  >{\centering\arraybackslash}m{\mylengthc} |
+                  >{\centering\arraybackslash}m{\mylengthd} |
+                  >{\centering\arraybackslash}m{\mylengthe} |
+                  >{\centering\arraybackslash}m{\mylengthf} |
+                  >{\centering\arraybackslash}m{\mylengthg} |
+                  >{\centering\arraybackslash}m{\mylengthh}
+                  }
+    \hline
+    \centering Model & Number of parameters & Data type & $\bar{e}$ & $s(e)$ & $R^2$ & MAE & MSE & Huber \\
+    \ChangeRT{1pt}
+    \centering $\bar{y}$ (baseline) & 0 & targets avg & 4.86 & 59.99 & -0.01 & 45.56 & 3622 & 45.07 \\
+    \hline
+    \multirow{2}{\mylengtha}{\centering Linear} & \multirow{2}{\mylengthi}{\centering 34} & color-structure & 4.06 & 46.83 & 0.38 & 35.26 & 2203 & 34.77 \\
+    \cline{3-9}
+     & & structure & 4.03 & 54.15 & 0.18 & 40.52 & 2941 & 40.02 \\
+     \hline
+    \multirow{2}{\mylengtha}{\centering Simple CNN} & \multirow{2}{\mylengthi}{\centering 160k} & color-structure & 3.00 & \textbf{41.27} & \textbf{0.52} & \textbf{30.68} & \textbf{1708} & \textbf{30.18} \\
+    \cline{3-9}
+     & & structure & 0.77 & 43.94 & 0.46 & 33.08 & 1926 & 32.59 \\
+     \hline
+    \multirow{2}{\mylengtha}{\centering ResNet50V2} & \multirow{2}{\mylengthi}{\centering 24m} & color-structure & 1.49 & 42.81 & 0.49 & 32.73 & 1830 & 32.24 \\
+    \cline{3-9}
+     & & structure & \cellcolor[HTML]{8ea7de}\textbf{0.45} & \cellcolor[HTML]{8ea7de}43.38 & \cellcolor[HTML]{8ea7de}0.47 & \cellcolor[HTML]{8ea7de}31.83 & \cellcolor[HTML]{8ea7de}1877 & \cellcolor[HTML]{8ea7de}31.33 \\
+     \hline
+    \multirow{2}{\mylengtha}{\centering Xception} & \multirow{2}{\mylengthi}{\centering 21m} & color-structure & 6.69 & 41.57 & 0.50 & 31.66 & 1768 & 31.16 \\
+    \cline{3-9}
+     & & structure & 7.23 & 45.50 & 0.41 & 33.92 & 2117 & 33.42 \\
+     \hline
+  \end{tabular}
+\end{table}
+
+\end{document}
