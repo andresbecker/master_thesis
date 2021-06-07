@@ -9,17 +9,21 @@ def get_random_cell_size_ratio(mode='random_uniform', mean=0.6, stddev=0.1, lowe
     sample a cell size ratio at random from a given distribution. The idea is to change the size of the cell inside the image as a data augmentation technique.
     """
 
+    mean_tensor = tf.cast(mean, dtype=tf.float32)
+    stddev_tensor = tf.cast(stddev, dtype=tf.float32)
+    lower_bound_tensor = tf.cast(lower_bound, dtype=tf.float32)
+
     if mode == 'random_uniform':
         # Select uniformly random the cell size (between 40% and 100% of the image)
         cell_img_frac = tf.random.uniform(shape=[1], minval=lower_bound, maxval=1, dtype=tf.float32)
     elif mode == 'random_normal':
         # Select uniformly random the cell size (between 40% and 100% of the image)
-        cell_img_frac = tf.random.normal(shape=[1], mean=mean, stddev=stddev, dtype=tf.float32)
+        cell_img_frac = tf.random.normal(shape=[1], mean=mean_tensor, stddev=stddev_tensor, dtype=tf.float32)
 
         # since cell_img_frac is sampled from a normal, contrain its value
         # Lower bound
-        mask_tensor = (cell_img_frac > lower_bound)
-        cell_img_frac = tf.where(mask_tensor, cell_img_frac, lower_bound)
+        mask_tensor = (cell_img_frac > lower_bound_tensor)
+        cell_img_frac = tf.where(mask_tensor, cell_img_frac, lower_bound_tensor)
         # Upper bound
         mask_tensor = (cell_img_frac < 1)
         cell_img_frac = tf.where(mask_tensor, cell_img_frac, 1)
