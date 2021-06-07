@@ -7,6 +7,22 @@ import tensorflow as tf
 import os
 import json
 import sys
+import socket
+
+# Load external libraries
+if socket.gethostname() == 'hughes-machine':
+    external_libs_path = '/home/hhughes/Documents/Master_Thesis/Project/workspace/libs'
+else:
+    external_libs_path= '/storage/groups/ml01/code/andres.becker/master_thesis/workspace/libs'
+print('External libs path: \n'+external_libs_path)
+
+if not os.path.exists(external_libs_path):
+    msg = 'External library path {} does not exist!'.format(external_libs_path)
+    raise Exception(msg)
+
+# Add EXTERNAL_LIBS_PATH to sys paths (for loading libraries)
+sys.path.insert(1, external_libs_path)
+import tfds_utils
 
 _DESCRIPTION = """
 Dataset containing images of Multiplexed protein maps.
@@ -63,19 +79,20 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 		# Get channel ids corresponding to the input and the output
 		self.input_ids, self.output_id = self._get_IO_channel_ids()
 
-		# Get normalization parameters
-		self.normalization_vals = self._get_normalization_values()
+		# Get the train per-channel parameters (percentile, mean, stddev)
+		self.train_params = self._get_train_per_channel_parameters(self.tfds_param['percentile'])
 
-		# Save output of this script
-		self._save_tfds_metadata()
+		# Save extra info into the TDFS metadata (channels_df, metadata_df, input params, etc.)
+		metadata, meta_description = self._create_metadata()
 
 		# To make return more readable
 		img_size = self.pp_param['img_size']
-		n_channels = self.input_ids.shape[0]
+		# since cell mask will be saved in the last channel, we add 1
+		n_channels = self.input_ids.shape[0] + 1
 
 		return tfds.core.DatasetInfo(
 			builder=self,
-			description=_DESCRIPTION,
+			description = _DESCRIPTION + meta_description,
 			features=tfds.features.FeaturesDict({
 				# These are the features of your dataset like images, labels ...
 				'mapobject_id_cell': tfds.features.Text(),
@@ -86,6 +103,7 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 				supervised_keys=('image', 'target'),  # Set to `None` to disable
 				homepage='https://www.helmholtz-muenchen.de/icb',
 				citation=_CITATION,
+				metadata = metadata,
 			)
 
 	def _split_generators(self, dl_manager: tfds.download.DownloadManager):
@@ -97,7 +115,7 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 		"""
 
 		input_data_path = dl_manager.extract(self.data_source_path)
-		images_path = input_data_path / 'data'
+		images_path = input_data_path / self.pp_param['output_pp_data_dir_name']
 
 		# Create 10 sets where each one have a different degradation level
 		# (form 0% degradation to 90% degradation)
@@ -160,32 +178,30 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 	  	generates the examples for each split from the source data. Yields examples.
 	  	"""
 
+		# Get cell ids in metadata, subset and that are available in the FS
+		subset_ids = self._get_partitions_ids(partitions=[subset], data_dir=str(images_path.resolve()))
+
 		# Get file names
-		file_names = [file.name for file in images_path.glob('*.npz')]
-		# take imaes that are in the file system, the filtered_metadata df and
-		# correspond to the desired subset (train, val, test)
-		mask = (self.filtered_metadata.set == subset)
-		filtered_cells = self.filtered_metadata.mapobject_id_cell[mask].values.astype(str)
-		file_names = [cell_id+'.npz' for cell_id in filtered_cells if cell_id+'.npz' in file_names]
+		file_names = [cell_id+'.npz' for cell_id in subset_ids]
 		file_names = np.array(file_names)
 
 		n_channels = self.input_ids.shape[0]
 		n_pixels = n_channels * (self.pp_param['img_size']**2)
 
 		for fn in file_names:
-			cell_id = int(fn.split('.')[0])
 			# Load cell data
 			cell = np.load(images_path.joinpath(fn))
+			cell_id = int(fn.split('.')[0])
 			cell_img = cell['img'][:,:,self.input_ids]
-			cell_target = [cell['targets'][self.output_id]]
-			# Normalize cell image
 			cell_img = cell_img.astype(np.float32)
-			cell_img /= self.normalization_vals
+			cell_mask = cell['mask']
+			cell_target = [cell['targets'][self.output_id]]
+
+			# Apply preprocessing to each cell image before saving
+			cell_img = self._apply_preprocessing(cell_img, cell_mask)
 
 			# Remove top pixels accordingly to score map
 			if percent > 0:
-				# Load cell mask
-				cell_mask = cell['mask']
 
 				# Load cell score map
 				temp_path = os.path.join(self.tfds_param['score_maps_path'], str(cell_id)+'.npy')
@@ -207,18 +223,18 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 				mask_tops = (score_map > boun_val)
 
 				# Replace top pixels with channel mean
-				#temp_img = np.zeros(cell_img.shape)
 				for c in range(0, n_channels):
-					#mask_slice = mask_tops[:,:,c]
-					#img_slice = copy.deepcopy(cell_img[:,:,c])
-					#img_slice[mask_slice] = channel_mean[c]
-					#temp_img[:,:,c] = copy.deepcopy(temp_slice)
 					cell_img[:,:,c][mask_tops[:,:,c]] = channel_mean[c]
+
+			# Save mask in the last channel of the image, this is needed for some data augmentation techniques.
+			cell_mask = np.expand_dims(cell_mask, axis=-1)
+			cell_mask = cell_mask.astype(np.float32)
+			# add mask as last channel of the cell image
+			cell_img = np.concatenate((cell_img, cell_mask), axis=-1)
 
 			yield cell_id, {
 				'mapobject_id_cell': str(cell_id),
 				'image': cell_img,
-				#'image': temp_img,
 				'target': cell_target,
 				}
 
@@ -232,7 +248,7 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 			self.pp_param = json.load(file)
 
 		# Path where the preprocessed data to be transformed into tf dataset is
-		self.data_source_path = self.pp_param['output_data_dir']
+		self.data_source_path = self.pp_param['output_pp_data_path']
 
 		# Load metadata file:
 		with open(os.path.join(self.data_source_path, 'metadata.csv'), 'r') as file:
@@ -261,6 +277,9 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 		set_df = pd.DataFrame(columns=['mapobject_id_cell', 'set'])
 
 		cell_ids = filtered_metadata.mapobject_id_cell.unique()
+
+		# for testing
+		#cell_ids = cell_ids[0:10]
 
 		# Create split sizes (same for all the cell cycles)
 		n_train = int(len(cell_ids) * self.tfds_param['train_frac'])
@@ -298,61 +317,135 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 
 		return filtered_metadata
 
-	def _get_normalization_values(self):
+	def _apply_clipping(self, img, clipping_values):
 		"""
-		Get the normalization rescale values for each selected input channel from the train partition and the given percentile.
-	    Input:
-	        input_channel_ids: list indicating for which channels we must calculate the normalization parameters.
-	        percentile: integer in [0,100].
-	    Output:
-	        norm_vals: numpy array of lenght number_of_channels, containing the normalization values of each channel
+		Apply cliping to all partitions using the percentile_vec
 		"""
-		def apply_mask_to_channel(channel):
-			return channel[cell_mask]
+		for c in range(clipping_values.shape[0]):
+			temp_mask = (img[:,:,c] > clipping_values[c])
+			img[:,:,c][temp_mask] = clipping_values[c]
 
-		cell_path = os.path.join(self.data_source_path, 'data')
-		# Get file names
-		file_names = os.listdir(cell_path)
-		file_names = [name for name in file_names if name[-4:] == '.npz']
+		return img
 
-		# take imaes that are in the file system, the filtered_metadata df and
-		# correspond to the train subset
-		mask = (self.filtered_metadata.set == 'train')
-		filtered_cells = self.filtered_metadata.mapobject_id_cell[mask].values.astype(str)
-		file_names = [cell_id+'.npz' for cell_id in filtered_cells if cell_id+'.npz' in file_names]
-		file_names = np.array(file_names)
+	def _apply_z_score(self, img, cell_mask, mean_vals, stddev_vals):
+		"""
+		Apply z-scoring to all partitions using the masked per-channel train mean and stddev.
+		"""
+		for c in range(mean_vals.shape[0]):
 
-	    # The percentile per channel need to be taken accordingly to the mask. Since there is no way to concatenate np arrays in place (without creating a copy), we first create an array that will be filled with the values necessary to calculate the percentile per channel. Note that the size of this array is the same for every channel.
+			img[:,:,c][cell_mask] -= mean_vals[c]
+			img[:,:,c][cell_mask] /= stddev_vals[c]
+
+		return img
+
+	def _apply_preprocessing(self, img, cell_mask):
+		"""
+		Apply data preprocessing specified in the tfds parameters file
+		"""
+
+		# Apply clipping if selected
+		if self.tfds_param['apply_clipping']:
+			img = self._apply_clipping(img, self.train_params['percentile'])
+
+		# Apply rescaling if selected
+		if self.tfds_param['apply_linear_scaling']:
+			img /= self.train_params['percentile']
+
+		# Apply mean extraction if selected
+		if self.tfds_param['apply_mean_extraction']:
+			img[cell_mask] -= self.train_params['mean']
+
+		# Apply z_score
+		if self.tfds_param['apply_z_score']:
+			img = self._apply_z_score(img, cell_mask, self.train_params['mean'], self.train_params['stddev'])
+
+		return img
+
+	def _get_partitions_ids(self, partitions=['train'], data_dir=None, file_type='npz'):
+		"""
+		Get train ids given the metadata and the available files on disk
+		"""
+
+		# Get ids on the metadata and in the given partitions
+		mask = self.filtered_metadata.set.isin(partitions)
+		metadata_ids = set(self.filtered_metadata.mapobject_id_cell[mask].values.astype(str))
+
+		# Get ids of available cell on the file system
+		file_ids = set([id.split(".")[0] for id in os.listdir(data_dir) if id.split(".")[1] == file_type])
+
+		# Oly return ids that are in the metadata (and belong to given partitions) and are available in the FS
+		return list(file_ids.intersection(metadata_ids))
+
+	def _load_imgs_pixels(self, train_ids):
+		"""
+		Return a np array containing the masked pixels for all the cells in train_ids and channels in self.input_ids
+		"""
+
+		# get image data type
+		dtype = getattr(np, self.pp_param['images_dtype'])
+
+		# get total number of pixels to allocate np array
+		# The percentile per channel need to be taken accordingly to the mask. Since there is no way to concatenate np arrays in place (without creating a copy), we first create an array that will be filled with the values necessary to calculate the percentile per channel. Note that the size of this array is the same for every channel.
 	    #https://stackoverflow.com/questions/7869095/concatenate-numpy-arrays-without-copying
-		n_pixels = 0
-		for fn in file_names:
-			cell = np.load(os.path.join(cell_path, fn))
-			n_pixels += cell['mask'].sum()
-		print('Number of pixels for each channel and for all the training cells images:{}'.format(n_pixels))
+		data_dir = os.path.join(self.data_source_path, self.pp_param['output_pp_data_dir_name'])
+		n_pixels_per_channel = 0
+		for cell_id in train_ids:
+			temp_path = os.path.join(data_dir, cell_id+'.npz')
+			temp_cell = np.load(temp_path)
+			n_pixels_per_channel += temp_cell['mask'].sum()
+		print('Number of pixels for each channel and for all the training cells images:{}'.format(n_pixels_per_channel))
 
-		# Create the array that will hold the train dataset filtered by the mask
-		n_channels = self.input_ids.shape[0]
-		img_dtype = getattr(np, self.pp_param['images_dtype'])
-		train_pixels = np.zeros((n_pixels, n_channels), dtype=img_dtype)
-		print('Size of the array that holds the training pixels (GB): {}'.format(sys.getsizeof(train_pixels)/1e9))
+		# load pixel from all cells in train_ids and channels in self.input_ids
+		imgs_pixels = np.zeros((n_pixels_per_channel, len(self.input_ids))).astype(dtype)
+		print('Size of the array that holds the training pixels (GB): {}'.format(sys.getsizeof(imgs_pixels)/1e9))
+		low_idx = 0
+		up_idx = 0
+		for i, cell_id in enumerate(train_ids):
 
-		# Fill train_pixels with the train data
-		idx_l = 0
-		idx_h = 0
-		for fn in file_names:
-			cell = np.load(os.path.join(cell_path, fn))
-			cell_mask = cell['mask'].reshape(-1)
-			cell_img = cell['img'][:,:,self.input_ids]
-			cell_img = cell_img.reshape((-1, n_channels))
-			idx_l = idx_h
-			idx_h += cell_mask.sum()
+			if (i % 100) == 0:
+				print('Loading cell {}/{}'.format(i+1, len(train_ids)))
 
-			train_pixels[idx_l:idx_h,:] = np.apply_along_axis(apply_mask_to_channel, 0, cell_img)
+			temp_path = os.path.join(data_dir, cell_id+'.npz')
+			temp_cell = np.load(temp_path)
+			temp_img = temp_cell['img'][:,:,self.input_ids].astype(dtype)
+			temp_mask = temp_cell['mask']
 
-		norm_vals = np.percentile(train_pixels, self.tfds_param['percentile'], axis=0)
+			low_idx = up_idx
+			up_idx += temp_mask.sum()
+			imgs_pixels[low_idx:up_idx, :] = temp_img[temp_mask]
 
-		return norm_vals.astype(np.float32)
+		return imgs_pixels
 
+
+	def _get_train_per_channel_parameters(self, percentile):
+		"""
+		Get the train per-channnel parameters.
+		"""
+		train_params = {}
+
+		# Get cell ids in metadata, train set and that are available in the FS
+		data_dir = os.path.join(self.data_source_path, self.pp_param['output_pp_data_dir_name'])
+		train_ids = self._get_partitions_ids(partitions=['train'], data_dir=data_dir)
+
+		# Get all train pixels accordingly to train_ids, input_ids (input channels) and cell masks
+		train_pixels = self._load_imgs_pixels(train_ids)
+
+		train_params['percentile'] = np.percentile(train_pixels, percentile, axis=0).astype(np.float32)
+
+        # if clipping was selected, apply it to the train_pixels before getting the parameters
+		if self.tfds_param['apply_clipping']:
+			for c in range(train_params['percentile'].shape[0]):
+				temp_mask = (train_pixels[:,c] > train_params['percentile'][c])
+				train_pixels[:,c][temp_mask] = train_params['percentile'][c]
+
+		# if lin scaling was selected, then apply it before
+		if self.tfds_param['apply_linear_scaling']:
+			train_pixels /= train_params['percentile']
+
+		train_params['mean'] = train_pixels.mean(axis=0)
+		train_params['stddev'] = train_pixels.std(axis=0)
+
+		return train_params
 
 	def _get_IO_channel_ids(self):
 
@@ -366,51 +459,53 @@ class MPP_DS_Normal_DMSO_ROAR_BL(tfds.core.GeneratorBasedBuilder):
 
 		return input_ids, output_id
 
-	def _save_tfds_metadata(self):
+	def _create_metadata(self):
+		"""
+		This function create an instances of the class tfds.core.Metadata ment to save extra information into the created TFDS dir. To load the info saved here, load library tfds_utils.py lib and instantiate the class Costum_TFDS_metadata and execut the method load_metadata(TFDS_data_dir).
+        """
+		info = '\nTo load more info about this TDFS (cell metadata df, channels df containing preprocessing parameters, the used TFDS and preprocessing arameters) after loading this TFDS run:'
+		info += '\nimport tfds_utils'
+		info += '\n# Load TFDS and TFDS info'
+		info += '\ndataset, ds_info = tfds.load(...'
+		info += '\n\nmetadata = tfds_utils.Add_extra_info_to_TFDS()'
+		info += '\nmetadata.load_metadata(ds_info.data_dir)'
+		info += '\n-'
+		info += '\n-'
 
-		# Get the path where the script is executed
-		script_dir = os.path.realpath(__file__)
-		script_dir = os.path.dirname(script_dir)
-		# Path to save output of this script (params, full_metadata, etc. NO tfds!)
-		script_output_path = os.path.join(script_dir, 'Output')
-
-		# Add info to the description
-		global _DESCRIPTION
-		_DESCRIPTION += '\ninput_channels:\n{}'.format(self.tfds_param['input_channels'])
-		_DESCRIPTION += '\n\noutput_channel:\n{}'.format(self.tfds_param['output_channels'])
-		_DESCRIPTION += '\n\nNormalization values:\n{}'.format(self.normalization_vals)
-		_DESCRIPTION += '\n\nMore information about this TFDS (metadata, metadata after filtering, dataset creation parameters and channel info including normalization values) can be found on:\n{}\n\n'.format(script_output_path)
-
-		# save original metadata:
-		with open(os.path.join(script_output_path, 'metadata.csv'), 'w') as file:
-			self.full_metadata.to_csv(file, index=False, sep=',')
-
-		# Save filtered metadata
-		with open(os.path.join(script_output_path, 'filtered_metadata.csv'), 'w') as file:
-			self.filtered_metadata.to_csv(file, index=False, sep=',')
-
-		# save tfds creation parameters
-		with open(os.path.join(script_output_path, 'tfds_parameters.json'), 'w') as file:
-			json.dump(self.tfds_param, file, indent=4)
-
-		# save data preprocessing parameters
-		with open(os.path.join(script_output_path, 'data_pp_parameters.json'), 'w') as file:
-			json.dump(self.pp_param, file, indent=4)
-
-		# Save channel file:
-		# First add the normalization values to the output channel file
-		norm_vals_df = pd.DataFrame(self.input_ids, columns=['channel_id'])
-		norm_vals_df['normalization_vals'] = self.normalization_vals
-		norm_vals_df['type'] = 'input'
+		# create channel file containing channels name id and preprocessing parameters
+		# First add the per-channel percentile values and per channel train mean to the output channel file
+		temp_df = pd.DataFrame(self.input_ids, columns=['channel_id'])
+		percentil_col_name = 'train_'+str(self.tfds_param['percentile'])+'_percentile'
+		temp_df[percentil_col_name] = self.train_params['percentile']
+		mean_col_name = 'train_mean_after_clipping'
+		temp_df[mean_col_name] = self.train_params['mean']
+		stddev_col_name = 'train_stddev_after_clipping'
+		temp_df[stddev_col_name] = self.train_params['stddev']
+		temp_df['type'] = 'input'
 
 		mask = self.channels.channel_id.isin(self.input_ids)
 		self.channels = self.channels[mask]
-		self.channels = self.channels.merge(norm_vals_df,
+		self.channels = self.channels.merge(temp_df,
 											left_on='channel_id',
 											right_on='channel_id',
 											how='left')
-		temp_dict = {'channel_id':self.output_id, 'name':(self.tfds_param['output_channels'])[0], 'normalization_vals':1, 'type':'output'}
+		self.channels = self.channels.rename(columns={'channel_id': 'original_channel_id'})
+		self.channels['TFDS_channel_id'] = range(len(self.input_ids))
+
+		# save info about the cell mask
+		temp_dict = {'original_channel_id': 'NaN', 'TFDS_channel_id': len(self.input_ids), 'name':'cell_mask', percentil_col_name:'NaN', mean_col_name:'NaN', stddev_col_name:'NaN', 'type':'NaN'}
 		self.channels = self.channels.append(temp_dict, ignore_index=True)
 
-		with open(os.path.join(script_output_path, 'channels.csv'), 'w') as file:
-			self.channels.to_csv(file, index=False, sep=',')
+		# save info about output channel
+		temp_dict = {'original_channel_id': self.output_id, 'TFDS_channel_id': 'NaN', 'name':(self.tfds_param['output_channels'])[0], percentil_col_name:'NaN', mean_col_name:'NaN', stddev_col_name:'NaN', 'type':'output'}
+		self.channels = self.channels.append(temp_dict, ignore_index=True)
+
+		# intance of tfds.core.Metadata to store more info about this TFDS
+        # If you want to save more info, finish the dict key with 'parameters' to save it as json or with 'df' to save it as csv.
+		temp_dict = {}
+		temp_dict['tfds_creation_parameters'] = self.tfds_param
+		temp_dict['data_pp_parameters'] = self.pp_param
+		temp_dict['metadata_df'] = self.filtered_metadata
+		temp_dict['channels_df'] = self.channels
+
+		return tfds_utils.Costum_TFDS_metadata(temp_dict), info
