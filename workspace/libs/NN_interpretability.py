@@ -351,8 +351,8 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=1, i
 
         # get min and max values for plot
         if score_map_same_sacale:
-            vmin = temp_map[mask].min()
-            vmax = temp_map[mask].max()
+            vmin = temp_map[img_mask].min()
+            vmax = temp_map[img_mask].max()
         else:
             vmin = None
             vmax = None
@@ -366,7 +366,7 @@ def plot_VarGrad_IG_2(img=None, img_mask=None, score_maps=None, top_percent=1, i
             #title=channel_name+', '+key+', ' + str(channel_stddev_percen) + '%'
             #title=key+', ' + str(round(channel_stddev_percen, 2)) + '%'
             title=str(round(channel_stddev_percen, 2)) + '%'
-            #title=''
+            title=''
             # plot
             plt.subplot(n_plot_rows, n_plot_columns, row_count*n_plot_columns + i)
             plot_cell(img=temp_map[:,:,c],
