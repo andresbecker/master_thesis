@@ -106,47 +106,65 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
 
 This implementation is divided in 4 main steps
 
-0. First activate the environment and open jupyter-lab
+0. Activate the environment and open jupyter-lab
 ```sh
 conda activate mpm_inter_env
 jupyter-lab
 ```
 
-1. The Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus). <br>
+1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus). <br>
 Open the notebook `workspace/notebooks/MPPData_into_images_no_split.ipynb` using the Jupyter navigator and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameter file used for this work [here](workspace/scripts/Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json).<br>
 Also, you can look at a dummy example (and parameters) of the raw data preprocessing in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split_dummy.ipynb). <br>
 You can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
 
 2. TensorFlow dataset (TFDS) creation. <br>
-  a. Go to the directory where the TFDS is
+  a. Go to the directory where the python scripts to create the TFDSs are <br>
     ```sh
     cd workspace/tf_datasets_scripts
     ```
-  b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc)
+  b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc) <br>
     ```sh
     vi ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json
     ```
-  c. Build the TFDS using the script `Create_tf_dataset.sh`
+  c. Build the TFDS using the script `Create_tf_dataset.sh` <br>
     ```sh
     ./Create_tf_dataset.sh -o /path_to_store_the_TFDS/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score -p ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json -e mpm_inter_env
     ```
 
 You can find the parameter file used for this work [here](workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).<br>
-Also, you can build a dummy TFDS (and parameters) by executing the following
+Also, you can build a dummy TFDS (and parameters) by executing the following <br>
 ```sh
 cd /path_to_this_repo/workspace/tf_datasets_scripts
 ./Create_tf_dataset.sh -o /data/Master_Thesis_data/datasets/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score_dummy -p ./MPP_DS_normal_DMSO_z_score_dummy/Parameters/tf_dataset_parameters_dummy.json -e mpm_inter_env
 ```
 You can find an explanation of the input parameters to build a TFDS on appendix `A.2` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
-3. Model training
+3. Model training <br>
 Open the notebook `workspace/notebooks/Model_training_class.ipynb` using the Jupyter navigator and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameters files used in this work [here](workspace/scripts/Model_training/Thesis_final_results/Parameters).<br>
 Also, you can look at a dummy model training example (and parameters) in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/Model_training_class_dummy.ipynb). <br>
 You can find an explanation of the model training input parameters on appendix `A.3` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
-4. Model interpretation
+4. Model interpretation. <br>
+a. Go to the directory where the python scripts for interpretability methods are <br>
+  ```sh
+  cd workspace/Interpretability/Python_scripts
+  ```
+b. Specify the parameters for the interpretability methods (IG number of steps, output dir, etc.) <br>
+  ```sh
+  vi ./Parameters/my_parameters_file.json
+  ```
+c. Create the score maps using the python script [`get_VarGradIG_from_TFDS_V2.py`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/get_VarGradIG_from_TFDS_V2.py) <br>
+  ```sh
+  python get_VarGradIG_from_TFDS_V2.py -i ./Parameters/my_parameters_file.json
+  ```
 
+You can find the parameter file used for this work [here](workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).
+Also, you can create dummy score maps using the Bash script [`Run_pyhton_script.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Run_pyhton_script.sh) <br>
+```sh
+./Run_pyhton_script.sh -e mpm_inter_env -s ./get_VarGradIG_from_TFDS_V2.py -p ./Parameters/Simple_CNN_dummy.json
+```
+You can find an explanation of the input parameters for the interpretability methods on appendix `A.4` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
 <!-- CONTACT -->
 ## Contact
