@@ -106,13 +106,8 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
 
 This implementation is divided in 4 main steps
 
-0. Activate the environment and open jupyter-lab
-```sh
-conda activate mpm_inter_env
-jupyter-lab
-```
-
 1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus).
+    Activate the environment and open jupyter-lab
     ```sh
     conda activate mpm_inter_env
     jupyter-lab
