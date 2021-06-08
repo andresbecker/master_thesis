@@ -60,6 +60,9 @@ You can find the complete explanation and development of this work in <a href="h
 * [Python 3.8](https://www.python.org/downloads/release/python-380/)
 * [TensorFlow 2.5](https://www.tensorflow.org/tutorials/quickstart/beginner)
 
+**Important**
+There is a bug in the TensorFlow function `tf.image.central_crop` that does not allow to take a tensor as input for the argument `central_fraction`, which is needed for this work. This bug was fixed since the TensorFlow version 2.5. Therefore, you can either use TF 2.5 or replace manually the library image_ops_impl.py in your local machine by [this](https://raw.githubusercontent.com/tensorflow/tensorflow/b7a7f8d178254d1361d34dfc40a58b8dce48b9d7/tensorflow/python/ops/image_ops_impl.py).
+
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -84,10 +87,16 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
    or step by step
 
    a. Create and activate the environment
-    ```sh
-    conda create -n mpm_inter_env python=3.8
-    conda activate mpm_inter_env
-    ```
+      ```sh
+      conda create -n mpm_inter_env python=3.8
+      conda activate mpm_inter_env
+      ```
+   b. Install the needed packages
+      ```sh
+      conda install tensorflow=2.5 tensorboard tensorflow-datasets numpy
+      conda install matplotlib seaborn
+      conda install jupyterlab
+      ```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
