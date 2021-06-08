@@ -16,12 +16,6 @@
       <img src="workspace/Interpretability/IG_plots/VG.gif" width="600">
     </p>
   </a>
-
-  <p align="center">
-    Implementation of an Advantage Actor-Critic using Artificial Neural Networks
-    <br />
-    <a href="https://github.com/andresbecker/Deep_RL_Actor_Critic/blob/main/References/A2C_Summary/A2C_Summary.pdf"><strong>Explore the docs »</strong></a>
-  </p>
 </p>
 
 
@@ -46,12 +40,11 @@
 </details>
 
 
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
 <p align="center">
-  <img src="Thesis_defense_presentation/work_flow.JPG" width="500">
+  <img src="Thesis_defense_presentation/work_flow.JPG" width="800">
 </p>
 
 By means of fluorescent antibodies it is possible to observe the amount of nascent RNA within the nucleus of a cell, and thus estimate its `Transcription Rate (TR)`. But what about the other molecules, proteins, organelles, etc. within the nucleus of the cell? Is it possible to estimate the  using only the shape and distribution of these subnuclear components? By means of multichannel images of single cell nucleus (obtained through the `Multiplexed Protein Maps (MPM)` protocol (cite Guteaar7042)) and `Convolutional Neural Networks (CNNs)`, we show that this is possible.
@@ -63,10 +56,9 @@ You can find the complete explanation and development of this work in <a href="h
 
 ### Built With
 
-* [Anaconda 4.9](https://www.anaconda.com/)
-* [TensorFlow 2.2](https://www.tensorflow.org/tutorials/quickstart/beginner)
-* [OpenAI Gym](https://gym.openai.com/)
-
+* [Anaconda 4.10.1](https://www.anaconda.com/)
+* [Python 3.8](https://www.python.org/downloads/release/python-380/)
+* [TensorFlow 2.5](https://www.tensorflow.org/tutorials/quickstart/beginner)
 
 
 <!-- GETTING STARTED -->
@@ -83,19 +75,28 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/andresbecker/Deep_RL_Actor_Critic.git
+   git clone https://github.com/andresbecker/master_thesis.git
    ```
-2. Install the environment
+2. You can install the environment either by loading the `YML` file
    ```sh
    conda env create -f conda_environment.yml
    ```
+   or step by step
+
+   a. Create and activate the environment
+    ```sh
+    conda create -n mpm_inter_env python=3.8
+    conda activate mpm_inter_env
+    ```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+This implementation is divided in 4 main steps
+
 To train and test this implementation, simply activate the environment
 ```sh
-conda activate A2C_env
+conda activate mpm_inter_env
 ```
 open jupyter-lab
 ```sh
