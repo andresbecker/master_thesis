@@ -7,12 +7,13 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
+
+<h3 align="center">Predicting transcription rate from multiplexed protein maps using deep learning</h3>
+
   <a href="https://github.com/andresbecker/master_thesis">
     <img src="workspace/Interpretability/Gradient/Gradient.gif" width="600">
     <img src="workspace/Interpretability/IG_plots/VG.gif" width="600">
   </a>
-
-  <h3 align="center">Predicting transcription rate from multiplexed protein maps using deep learning</h3>
 
   <p align="center">
     Implementation of an Advantage Actor-Critic using Artificial Neural Networks
