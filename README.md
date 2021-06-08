@@ -118,16 +118,16 @@ jupyter-lab
   You can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
 
-2. TensorFlow dataset (TFDS) creation. <br>
-  a. Go to the directory where the python scripts to create the TFDSs are <br>
+2. TensorFlow dataset (TFDS) creation.
+  a. Go to the directory where the python scripts to create the TFDSs are
       ```sh
       cd workspace/tf_datasets_scripts
       ```
-  b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc) <br>
+  b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc)
       ```sh
       vi ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json
       ```
-  c. Build the TFDS using the script `Create_tf_dataset.sh` <br>
+  c. Build the TFDS using the script `Create_tf_dataset.sh`
       ```sh
       ./Create_tf_dataset.sh -o /path_to_store_the_TFDS/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score -p ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json -e mpm_inter_env
       ```
