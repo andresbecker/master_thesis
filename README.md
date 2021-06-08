@@ -112,22 +112,25 @@ conda activate mpm_inter_env
 jupyter-lab
 ```
 
-1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus). <br>
-  Open the notebook `workspace/notebooks/MPPData_into_images_no_split.ipynb` using the Jupyter navigator and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameter file used for this work [here](workspace/scripts/Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json).<br>
-  Also, you can look at a dummy example (and parameters) of the raw data preprocessing in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split_dummy.ipynb). <br>
-  You can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
-
+1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus).
+    ```sh
+    conda activate mpm_inter_env
+    jupyter-lab
+    ```
+    Open the notebook [`workspace/notebooks/MPPData_into_images_no_split.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split.ipynb)  using the Jupyter navigator and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameter file used for this work [here](workspace/scripts/Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json).<br>
+    Also, you can look at a dummy example (and parameters) of the raw data preprocessing in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split_dummy.ipynb). <br>
+    You can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
 2. TensorFlow dataset (TFDS) creation.
-  a. Go to the directory where the python scripts to create the TFDSs are
+    a. Go to the directory where the python scripts to create the TFDSs are
       ```sh
       cd workspace/tf_datasets_scripts
       ```
-  b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc)
+    b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc)
       ```sh
       vi ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json
       ```
-  c. Build the TFDS using the script `Create_tf_dataset.sh`
+    c. Build the TFDS using the script [`Create_tf_dataset.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/tf_datasets_scripts/Create_tf_dataset.sh)
       ```sh
       ./Create_tf_dataset.sh -o /path_to_store_the_TFDS/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score -p ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json -e mpm_inter_env
       ```
