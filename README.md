@@ -60,8 +60,9 @@ You can find the complete explanation and development of this work in <a href="h
 * [Python 3.8](https://www.python.org/downloads/release/python-380/)
 * [TensorFlow 2.5](https://www.tensorflow.org/tutorials/quickstart/beginner)
 
-**Important**
-There is a bug in the TensorFlow function `tf.image.central_crop` that does not allow to take a tensor as input for the argument `central_fraction`, which is needed for this work. This bug was fixed since the TensorFlow version 2.5. Therefore, you can either use TF 2.5 or replace manually the library image_ops_impl.py in your local machine by [this](https://raw.githubusercontent.com/tensorflow/tensorflow/b7a7f8d178254d1361d34dfc40a58b8dce48b9d7/tensorflow/python/ops/image_ops_impl.py).
+**Important** <br>
+There is a bug in the TensorFlow function `tf.image.central_crop` that does not allow to take a tensor as input for the argument `central_fraction`, which is needed for this work. This bug was fixed since the TensorFlow version 2.5. Therefore, you can either use TF 2.5 or replace manually the library `image_ops_impl.py` in your local machine by [this](https://raw.githubusercontent.com/tensorflow/tensorflow/b7a7f8d178254d1361d34dfc40a58b8dce48b9d7/tensorflow/python/ops/image_ops_impl.py).
+Reference: https://github.com/tensorflow/tensorflow/pull/45613/files.
 
 
 <!-- GETTING STARTED -->
