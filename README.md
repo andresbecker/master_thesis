@@ -49,12 +49,15 @@
 ## About The Project
 
 <p align="center">
-  <img src="Resources/Imp_diagram.png" width="500">
+  <img src="Thesis_defense_presentation/work_flow.JPG" width="500">
 </p>
 
-This is a very simple implementation of a Deep Reinforcement Learning Advantage Actor-Critic. It uses 2 independent Artificial Neural Networks to approximate the Policy function (Actor) and the State-value function (Critic). To test the implementation, I use the Moon Lander environment provided by OpenAI-Gym.
+By means of fluorescent antibodies it is possible to observe the amount of nascent RNA within the nucleus of a cell, and thus estimate its `Transcription Rate (TR)`. But what about the other molecules, proteins, organelles, etc. within the nucleus of the cell? Is it possible to estimate the  using only the shape and distribution of these subnuclear components? By means of multichannel images of single cell nucleus (obtained through the `Multiplexed Protein Maps (MPM)` protocol (cite Guteaar7042)) and `Convolutional Neural Networks (CNNs)`, we show that this is possible.
+Applying pre-processing and data augmentation techniques, we reduce the information contained in the intensity of the pixels and the correlation of these between the different channels. This allowed the CNN to focus mainly on the information provided by the location, size and distribution of elements within the cell nucleus.
+For this task different architectures were tried, from a simple CNN (with only 160k parameters), to more complex architectures such as the ResNet50V2 or the Xception (with more than 20m parameters).
+Furthermore, through the interpretability methods `Integrated Gradients (IG)` (cite here) and `VarGrad (VG)` (cite here), we could obtain score maps that allowed us to observe the pixels that the CNN considered as relevant to predict the TR for each cell nucleus input image. The analysis of these score maps reveals how as the TR changes, the CNN focuses on different proteins and areas of the nucleus. This shows that interpretability methods can help us to understand how a CNN make its predictions and learn from it, which has the potential to provide guidance for new discoveries in the field of biology.
 
-If you want to have a deeper understanding of the Actor-Critic algorithm, I strongly recommend you to take a look into the document `References/A2C_Summary/A2C_Summary.pdf` and `References/A2C_Presentation.pdf`. In `References/A2C_Summary/` you can also find the original $\\LaTeX$ document used to create the summary.
+You can find the complete explanation and development of this work in <a href="https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf"><strong>`Manuscript/Thesis_Andres_Becker.pdf`»</strong></a> 
 
 ### Built With
 
