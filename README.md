@@ -61,7 +61,7 @@ You can find the complete explanation and development of this work in <a href="h
 * [TensorFlow 2.5](https://www.tensorflow.org/tutorials/quickstart/beginner)
 
 **Important** <br>
-There is a bug in the TensorFlow function `tf.image.central_crop` that does not allow to take a tensor as input for the argument `central_fraction`, which is needed for this work. This bug was fixed since the TensorFlow version 2.5. Therefore, you can either use TF 2.5 or replace manually the library `image_ops_impl.py` in your local machine by [this](https://raw.githubusercontent.com/tensorflow/tensorflow/b7a7f8d178254d1361d34dfc40a58b8dce48b9d7/tensorflow/python/ops/image_ops_impl.py).
+There is a bug in the TensorFlow function `tf.image.central_crop` that does not allow to take a tensor as input for the argument `central_fraction`, which is needed for this work. This bug was fixed since the TensorFlow version 2.5. Therefore, you can either use TF 2.5 or replace manually the library `image_ops_impl.py` in your local machine by [this](https://raw.githubusercontent.com/tensorflow/tensorflow/b7a7f8d178254d1361d34dfc40a58b8dce48b9d7/tensorflow/python/ops/image_ops_impl.py). <br>
 Reference: https://github.com/tensorflow/tensorflow/pull/45613/files.
 
 
@@ -97,6 +97,8 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
       conda install tensorflow=2.5 tensorboard tensorflow-datasets numpy
       conda install matplotlib seaborn
       conda install jupyterlab
+      # To build TensorFlow Datasets
+      pip install -q tfds-nightly
       ```
 
 <!-- USAGE EXAMPLES -->
@@ -104,25 +106,54 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
 
 This implementation is divided in 4 main steps
 
-To train and test this implementation, simply activate the environment
+0. First activate the environment and open jupyter-lab
 ```sh
 conda activate mpm_inter_env
-```
-open jupyter-lab
-```sh
 jupyter-lab
 ```
-and navigate to open the notebook `A2C.ipynb`.
-Then, just follow the steps inside the notebook.
 
-Have fun!
+1. The Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus). <br>
+Open the notebook `workspace/notebooks/MPPData_into_images_no_split.ipynb` using the Jupyter navigator and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameter file used for this work [here](workspace/scripts/Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json).<br>
+Also, you can look at a dummy example (and parameters) of the raw data preprocessing in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split_dummy.ipynb). <br>
+You can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
+
+
+2. TensorFlow dataset (TFDS) creation. <br>
+  a. Go to the directory where the TFDS is
+    ```sh
+    cd workspace/tf_datasets_scripts
+    ```
+  b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc)
+    ```sh
+    vi ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json
+    ```
+  c. Build the TFDS using the script `Create_tf_dataset.sh`
+    ```sh
+    ./Create_tf_dataset.sh -o /path_to_store_the_TFDS/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score -p ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json -e mpm_inter_env
+    ```
+
+You can find the parameter file used for this work [here](workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).<br>
+Also, you can build a dummy TFDS (and parameters) by executing the following
+```sh
+cd /path_to_this_repo/workspace/tf_datasets_scripts
+./Create_tf_dataset.sh -o /data/Master_Thesis_data/datasets/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score_dummy -p ./MPP_DS_normal_DMSO_z_score_dummy/Parameters/tf_dataset_parameters_dummy.json -e mpm_inter_env
+```
+You can find an explanation of the input parameters to build a TFDS on appendix `A.2` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
+
+3. Model training
+Open the notebook `workspace/notebooks/Model_training_class.ipynb` using the Jupyter navigator and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameters files used in this work [here](workspace/scripts/Model_training/Thesis_final_results/Parameters).<br>
+Also, you can look at a dummy model training example (and parameters) in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/Model_training_class_dummy.ipynb). <br>
+You can find an explanation of the model training input parameters on appendix `A.3` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
+
+4. Model interpretation
+
 
 <!-- CONTACT -->
 ## Contact
 
 Andres Becker - [LinkedIn](https://www.linkedin.com/in/andres-becker) - andres.becker@tum.de
 
-Project Link: [https://github.com/andresbecker/Deep_RL_Actor_Critic](https://github.com/andresbecker/Deep_RL_Actor_Critic)
+Project Link: [https://github.com/andresbecker/master_thesis](https://github.com/andresbecker/master_thesis)
 
 
 
