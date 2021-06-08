@@ -11,8 +11,10 @@
 <h3 align="center">Predicting transcription rate from multiplexed protein maps using deep learning</h3>
 
   <a href="https://github.com/andresbecker/master_thesis">
-    <img src="workspace/Interpretability/Gradient/Gradient.gif" width="600">
-    <img src="workspace/Interpretability/IG_plots/VG.gif" width="600">
+    <p align="center">
+      <img src="workspace/Interpretability/Gradient/Gradient.gif" width="600">
+      <img src="workspace/Interpretability/IG_plots/VG.gif" width="600">
+    </p>
   </a>
 
   <p align="center">
@@ -57,7 +59,7 @@ Applying pre-processing and data augmentation techniques, we reduce the informat
 For this task different architectures were tried, from a simple CNN (with only 160k parameters), to more complex architectures such as the ResNet50V2 or the Xception (with more than 20m parameters).
 Furthermore, through the interpretability methods `Integrated Gradients (IG)` (cite here) and `VarGrad (VG)` (cite here), we could obtain score maps that allowed us to observe the pixels that the CNN considered as relevant to predict the TR for each cell nucleus input image. The analysis of these score maps reveals how as the TR changes, the CNN focuses on different proteins and areas of the nucleus. This shows that interpretability methods can help us to understand how a CNN make its predictions and learn from it, which has the potential to provide guidance for new discoveries in the field of biology.
 
-You can find the complete explanation and development of this work in <a href="https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf"><strong>`Manuscript/Thesis_Andres_Becker.pdf`»</strong></a> 
+You can find the complete explanation and development of this work in <a href="https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf"><strong>`Manuscript/Thesis_Andres_Becker.pdf`»</strong></a>
 
 ### Built With
 
