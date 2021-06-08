@@ -120,17 +120,17 @@ jupyter-lab
 
 2. TensorFlow dataset (TFDS) creation. <br>
   a. Go to the directory where the python scripts to create the TFDSs are <br>
-    ```sh
-    cd workspace/tf_datasets_scripts
-    ```
+      ```sh
+      cd workspace/tf_datasets_scripts
+      ```
   b. Specify the parameters for the dataset (like perturbations, wells, output channel, etc) <br>
-    ```sh
-    vi ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json
-    ```
+      ```sh
+      vi ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json
+      ```
   c. Build the TFDS using the script `Create_tf_dataset.sh` <br>
-    ```sh
-    ./Create_tf_dataset.sh -o /path_to_store_the_TFDS/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score -p ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json -e mpm_inter_env
-    ```
+      ```sh
+      ./Create_tf_dataset.sh -o /path_to_store_the_TFDS/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score -p ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json -e mpm_inter_env
+      ```
 
   You can find the parameter file used for this work [here](workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).<br>
   Also, you can build a dummy TFDS (and parameters) by executing the following <br>
