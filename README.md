@@ -81,26 +81,25 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
    ```sh
    git clone https://github.com/andresbecker/master_thesis.git
    ```
-2. Install the environment. <br>
+2. Install the environment <br>
     You can do it either by loading the [`YML`](https://raw.githubusercontent.com/andresbecker/master_thesis/main/conda_environment.yml) file
     ```sh
     conda env create -f conda_environment.yml
     ```
-   or step by step
-
-  1. Create and activate the environment
-      ```sh
-      conda create -n mpm_inter_env python=3.8
-      conda activate mpm_inter_env
-      ```
-  2. Install the needed packages
-      ```sh
-      conda install tensorflow=2.5 tensorboard tensorflow-datasets numpy
-      conda install matplotlib seaborn
-      conda install jupyterlab
-      # To build TensorFlow Datasets
-      pip install -q tfds-nightly
-      ```
+    or step by step
+    1. Create and activate the environment
+        ```sh
+        conda create -n mpm_inter_env python=3.8
+        conda activate mpm_inter_env
+        ```
+    2. Install the needed packages
+        ```sh
+        conda install tensorflow=2.5 tensorboard tensorflow-datasets numpy
+        conda install matplotlib seaborn
+        conda install jupyterlab
+        # To build TensorFlow Datasets
+        pip install -q tfds-nightly
+        ```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
