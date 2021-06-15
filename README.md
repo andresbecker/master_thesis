@@ -189,7 +189,7 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
             conda activate mpm_inter_env
             python get_VarGradIG_from_TFDS_V2.py -i ./Parameters/my_parameters_file.json
             ```
-        2. Execute the Python script through the bash script [`workspace/Interpretability/Python_scripts/Run_pyhton_script.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Run_pyhton_script.sh)
+        2. Through the bash script [`workspace/Interpretability/Python_scripts/Run_pyhton_script.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Run_pyhton_script.sh)
             ```sh
             ./Run_pyhton_script.sh -e mpm_inter_env -s ./get_VarGradIG_from_TFDS_V2.py -p ./Parameters/my_parameters_file.json
             ```
