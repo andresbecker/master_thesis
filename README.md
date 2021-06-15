@@ -107,26 +107,27 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
 This implementation is divided in 4 main steps
 
 1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus).<br>
-   1. Execute notebook manually (interactively) <br>
-       1. Activate the environment and open jupyter-lab
-           ```sh
-           conda activate mpm_inter_env
-           jupyter-lab
-           ```
-       2. Run the raw data preprocessing notebook <br>
-       Using the Jupyter navigator, open the notebook [`workspace/notebooks/MPPData_into_images_no_split.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split.ipynb) and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameter file used for this work [here](workspace/scripts/Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json).<br>
-       Also, you can look at a dummy example (and parameters) of the raw data preprocessing in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split_dummy.ipynb). <br>
-       You can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
+This can be done in two different ways; 1) interactively and 2) non interactively.
+    1. Interactively (execute notebook manually) <br>
+        1. Activate the environment and open jupyter-lab
+            ```sh
+            conda activate mpm_inter_env
+            jupyter-lab
+            ```
+        2. Run the raw data preprocessing notebook <br>
+            Using the Jupyter navigator, open the notebook [`workspace/notebooks/MPPData_into_images_no_split.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split.ipynb) and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameter file used for this work [here](workspace/scripts/Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json).<br>
+            You can look at a dummy example (and parameters) of the raw data preprocessing in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split_dummy.ipynb). <br>
+            Also, you can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
-   2. Execute notebook in the background (non-interactively) <br>
-       In case you would like to execute the raw data preprocessing not interactively (in the background), you can use the script [`workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh) for this
+  2. Non-interactively (execute notebook in the background) <br>
+      For this you most use the script [`workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh)
        ```sh
        cd /workspace/scripts
        ./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/MPPData_into_images_no_split.ipynb -p ./Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json -e mpm_inter_env
        ```
        This script will create a copy of the specified notebook, load the specified conda environment, use the specified parameters file, run the copy of the notebook in the background and save it as another Jupyter notebook. After the execution is done, the script rename and save the executed notebook using the name of the input parameters file, as well as the date and time when the execution started, in a directory called `NB_output` located in the same directory as the input notebook (e.g. workspace/notebooks/NB_output/MppData_to_imgs_no_split_040121_1002.ipynb).<br>
        This approach is very useful when you need to run your notebooks on a server and you don't have access to the graphical interface, or when the job need to be executed by a workload manager like [`SLURM`](https://slurm.schedmd.com/).<br>
-       To use this approach is `very important` that the notebook [`workspace/notebooks/MPPData_into_images_no_split.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split.ipynb) is not modified (keep it as template). Specially the line where the input parameter file is specified (PARAMETERS_FILE = 'dont_touch_me-input_parameters_file').
+       To use this approach is `very important` that the notebook [`workspace/notebooks/MPPData_into_images_no_split.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split.ipynb) remains unchanged (keep it as template), specially the line where the input parameter file is specified (PARAMETERS_FILE = 'dont_touch_me-input_parameters_file').
 
 2. TensorFlow dataset (TFDS) creation.
     a. Go to the directory where the python scripts to create the TFDSs are
