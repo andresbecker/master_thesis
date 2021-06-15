@@ -15,7 +15,7 @@
     "_comment": "available: random_uniform (cell size randomly selected from uniform dist), equal (all cells with same size)---------------------------",
     "CenterZoom_mode": "random_normal",
     "_comment": "Scale each channel intencity uniformly-----------------------",
-    "Random_channel_intencity": 1,
+    "Random_channel_intencity": 0,
     "RCI_dist": "uniform",
     "RCI_mean": 0,
     "RCI_stddev": 1,
