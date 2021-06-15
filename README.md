@@ -174,7 +174,7 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
         This approach is very useful when you need to run your notebooks on a server and you don't have access to the graphical interface, or when the job need to be executed by a workload manager like [`SLURM`](https://slurm.schedmd.com/).<br>
         To use this approach is `very important` that the notebook [`workspace/notebooks/Model_training_class.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/Model_training_class.ipynb) remains unchanged (keep it as template), specially the line where the input parameter file is specified (PARAMETERS_FILE = 'dont_touch_me-input_parameters_file').
 
-4. Model interpretation <br>
+4. Model interpretation. Score maps creation <br>
     1. Go to the directory where the python scripts for interpretability methods are <br>
         ```sh
         cd workspace/Interpretability/Python_scripts
@@ -183,17 +183,25 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
         ```sh
         vi ./Parameters/my_parameters_file.json
         ```
-    3. Create the score maps using the python script [`get_VarGradIG_from_TFDS_V2.py`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/get_VarGradIG_from_TFDS_V2.py) <br>
-        ```sh
-        python get_VarGradIG_from_TFDS_V2.py -i ./Parameters/my_parameters_file.json
-        ```
+    3. Create the score maps <br>
+        1. Using the python script [`get_VarGradIG_from_TFDS_V2.py`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/get_VarGradIG_from_TFDS_V2.py) directly <br>
+            ```sh
+            conda activate mpm_inter_env
+            python get_VarGradIG_from_TFDS_V2.py -i ./Parameters/my_parameters_file.json
+            ```
+        2. Execute the Python script through the bash script [`workspace/Interpretability/Python_scripts/Run_pyhton_script.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Run_pyhton_script.sh)
+            ```sh
+            ./Run_pyhton_script.sh -e mpm_inter_env -s ./get_VarGradIG_from_TFDS_V2.py -p ./Parameters/my_parameters_file.json
+            ```
+    You can find the parameter file used for this work [here](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Parameters/BL_RIV2_test4.json).
+    Also, you can create dummy score maps using the Bash script [`Run_pyhton_script.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Run_pyhton_script.sh) <br>
+    ```sh
+    ./Run_pyhton_script.sh -e mpm_inter_env -s ./get_VarGradIG_from_TFDS_V2.py -p ./Parameters/Simple_CNN_dummy.json
+    ```
+    You can find an explanation of the input parameters for the interpretability methods on appendix `A.4` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
-You can find the parameter file used for this work [here](https://github.com/andresbecker/master_thesis/blob/main/workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).
-Also, you can create dummy score maps using the Bash script [`Run_pyhton_script.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Run_pyhton_script.sh) <br>
-```sh
-./Run_pyhton_script.sh -e mpm_inter_env -s ./get_VarGradIG_from_TFDS_V2.py -p ./Parameters/Simple_CNN_dummy.json
-```
-You can find an explanation of the input parameters for the interpretability methods on appendix `A.4` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
+5. Model interpretation. Score maps analysis <br>
+    TODO
 
 <!-- CONTACT -->
 ## Contact
