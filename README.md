@@ -89,18 +89,18 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
    or step by step
 
    a. Create and activate the environment
-       ```sh
-       conda create -n mpm_inter_env python=3.8
-       conda activate mpm_inter_env
-       ```
+   ```sh
+   conda create -n mpm_inter_env python=3.8
+   conda activate mpm_inter_env
+   ```
    b. Install the needed packages
-       ```sh
-       conda install tensorflow=2.5 tensorboard tensorflow-datasets numpy
-       conda install matplotlib seaborn
-       conda install jupyterlab
-       # To build TensorFlow Datasets
-       pip install -q tfds-nightly
-       ```
+   ```sh
+   conda install tensorflow=2.5 tensorboard tensorflow-datasets numpy
+   conda install matplotlib seaborn
+   conda install jupyterlab
+   # To build TensorFlow Datasets
+   pip install -q tfds-nightly
+   ```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
