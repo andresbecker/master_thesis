@@ -151,25 +151,44 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
     Finally, you can find an explanation of the input parameters to build a TFDS on appendix `A.2` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
 3. Model training <br>
-    Open the notebook `workspace/notebooks/Model_training_class.ipynb` using the Jupyter navigator and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameters files used in this work [here](workspace/scripts/Model_training/Thesis_final_results/Parameters).<br>
-    Also, you can look at a dummy model training example (and parameters) in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/Model_training_class_dummy.ipynb). <br>
-    You can find an explanation of the model training input parameters on appendix `A.3` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
+This can be done in two different ways; 1) interactively and 2) non interactively.
+    1. Interactively (execute notebook manually) <br>
+        1. Activate the environment and open jupyter-lab
+            ```sh
+            conda activate mpm_inter_env
+            jupyter-lab
+            ```
+        2. Run the raw data preprocessing notebook <br>
+            Using the Jupyter navigator, open the notebook [`workspace/notebooks/Model_training_class.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/Model_training_class.ipynb) and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters.
+            You can find the parameters files used for this work [here](https://github.com/andresbecker/master_thesis/tree/main/workspace/scripts/Model_training/Thesis_final_results/Parameters).<br>
+            You can look at a dummy model training example (and parameters) in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/Model_training_class_dummy.ipynb). <br>
+            Also, you can find an explanation of the model training input parameters on appendix `A.3` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
-4. Model interpretation. <br>
-a. Go to the directory where the python scripts for interpretability methods are <br>
-  ```sh
-  cd workspace/Interpretability/Python_scripts
-  ```
-b. Specify the parameters for the interpretability methods (IG number of steps, output dir, etc.) <br>
-  ```sh
-  vi ./Parameters/my_parameters_file.json
-  ```
-c. Create the score maps using the python script [`get_VarGradIG_from_TFDS_V2.py`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/get_VarGradIG_from_TFDS_V2.py) <br>
-  ```sh
-  python get_VarGradIG_from_TFDS_V2.py -i ./Parameters/my_parameters_file.json
-  ```
+    2. Non-interactively (execute notebook in the background) <br>
+        For this you most use again the script [`workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh)
+        ```sh
+        cd /workspace/scripts
+        ./Run_Jupyter_Notebook_from_Terminal.sh -i ../notebooks/Model_training_class.ipynb -p ./Model_training/Thesis_final_results/Parameters/BL/Final_BL_1.json -e mpm_inter_env
+        ```
+        This script will create a copy of the specified notebook, load the specified conda environment, use the specified parameters file, run the copy of the notebook in the background and save it as another Jupyter notebook. After the execution is done, the script rename and save the executed notebook using the name of the input parameters file, as well as the date and time when the execution started, in a directory called `NB_output` located in the same directory as the input notebook (e.g. workspace/notebooks/NB_output/Final_BL_1_040121_1002.ipynb).<br>
+        This approach is very useful when you need to run your notebooks on a server and you don't have access to the graphical interface, or when the job need to be executed by a workload manager like [`SLURM`](https://slurm.schedmd.com/).<br>
+        To use this approach is `very important` that the notebook [`workspace/notebooks/Model_training_class.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/Model_training_class.ipynb) remains unchanged (keep it as template), specially the line where the input parameter file is specified (PARAMETERS_FILE = 'dont_touch_me-input_parameters_file').
 
-You can find the parameter file used for this work [here](workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).
+4. Model interpretation <br>
+    1. Go to the directory where the python scripts for interpretability methods are <br>
+        ```sh
+        cd workspace/Interpretability/Python_scripts
+        ```
+    2. Specify the parameters for the interpretability methods (IG number of steps, output dir, etc.) <br>
+        ```sh
+        vi ./Parameters/my_parameters_file.json
+        ```
+    3. Create the score maps using the python script [`get_VarGradIG_from_TFDS_V2.py`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/get_VarGradIG_from_TFDS_V2.py) <br>
+        ```sh
+        python get_VarGradIG_from_TFDS_V2.py -i ./Parameters/my_parameters_file.json
+        ```
+
+You can find the parameter file used for this work [here](https://github.com/andresbecker/master_thesis/blob/main/workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).
 Also, you can create dummy score maps using the Bash script [`Run_pyhton_script.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Python_scripts/Run_pyhton_script.sh) <br>
 ```sh
 ./Run_pyhton_script.sh -e mpm_inter_env -s ./get_VarGradIG_from_TFDS_V2.py -p ./Parameters/Simple_CNN_dummy.json
