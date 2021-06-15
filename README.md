@@ -143,8 +143,7 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
         ```sh
         ./Create_tf_dataset.sh -o /path_to_store_the_TFDS/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score -p ./MPP_DS_normal_DMSO_z_score/Parameters/my_tf_dataset_parameters.json -e mpm_inter_env
         ```
-    You can find the parameter file used for this work [here](https://github.com/andresbecker/master_thesis/blob/main/workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json).<br>
-    Also, you can build a dummy TFDS (and parameters) by executing the following
+    You can find the parameter file used for this work [here](https://github.com/andresbecker/master_thesis/blob/main/workspace/tf_datasets_scripts/MPP_DS_normal_DMSO_z_score/Parameters/tf_dataset_parameters_server.json). Also, you can build a dummy TFDS (and parameters) by executing the following <br>
         ```sh
         cd /path_to_this_repo/workspace/tf_datasets_scripts
         ./Create_tf_dataset.sh -o /data/Master_Thesis_data/datasets/tensorflow_datasets -n MPP_DS_normal_DMSO_z_score_dummy -p ./MPP_DS_normal_DMSO_z_score_dummy/Parameters/tf_dataset_parameters_dummy.json -e mpm_inter_env
