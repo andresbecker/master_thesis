@@ -81,7 +81,8 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
    ```sh
    git clone https://github.com/andresbecker/master_thesis.git
    ```
-2. You can install the environment either by loading the `YML` file
+2. Install the environment. <br>
+   You can do it either by loading the `YML` file
    ```sh
    conda env create -f conda_environment.yml
    ```
@@ -106,7 +107,7 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
 
 This implementation is divided in 4 main steps
 
-1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus).
+1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus).<br>
     Activate the environment and open jupyter-lab
     ```sh
     conda activate mpm_inter_env
