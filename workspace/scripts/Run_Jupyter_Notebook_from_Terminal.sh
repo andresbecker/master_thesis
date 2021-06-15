@@ -3,29 +3,35 @@
 #     This script executs Jupyter notebooks from terminal
 #     given an input jupyter notebook and its json file
 #     containing its parameters and vars.
+#     Optionally, the conda environment can also be specified.
 #     The output jupither notebook will be located in the
 #     same directory as the input notebook plus /NB_output/
 # Created by Andres Becker
 ################################################################################
 
+PARM_FILE=''
+INPUT_NOTEBOOK=''
+ENVI="icb_mt"
+
+ERROR_msg="\nPlease specify parameters file and input notebook. You can also specify the conda environment. If it is not specified, then the defaul one is loaded ("$ENVI").\nFor example:\n"$0" -p /absolute_path_to_file/parameters.json -i /absolute_path_to_file/notebook.ipynb -e my_conda_env_name\n"
+
 # Check if needed number of parameters were given
-if [ $# -ne 4 ]; then
-  echo -e "\nPlease specify parameters file and input notebook.\nFor example:"
-  echo -e $0" -p /absolute_path_to_file/parameters.json -i /absolute_path_to_file/notebook.ipynb\n"
+if [ $# -ne 4 ] && [ $# -ne 6 ]; then
+  echo -e $ERROR_msg
   exit 1
 fi
 
-PARM_FILE=''
-INPUT_NOTEBOOK=''
-
 # Read parameters and values
-while getopts 'p:i:' flag; do
+while getopts 'p:i:e:' flag; do
   case "${flag}" in
     p)
       PARM_FILE="${OPTARG}"
       ;;
     i)
       INPUT_NOTEBOOK="${OPTARG}"
+      ;;
+    e)
+      ENVI="${OPTARG}"
       ;;
     *)
       echo -e "\nPlease specify parameters file and input notebook.\nFor example:"
@@ -37,6 +43,11 @@ done
 
 echo -e "\nExecution started at:"
 date
+
+echo -e "\nBash script arguments:"
+echo -e "\tParameters file:\n\t"$PARM_FILE
+echo -e "\n\tInput notebook:\n\t"$INPUT_NOTEBOOK
+echo -e "\n\tConda environment:\n\t"$ENVI
 
 # Convert relative paths to absolute paths
 PARM_FILE=$(readlink -m $PARM_FILE)
