@@ -108,18 +108,18 @@ A running installation of Anaconda. If you haven't installed Anaconda yet, you c
 This implementation is divided in 4 main steps
 
 1. Raw data preprocessing (transformation from text files to multichannel images of single cell nucleus).<br>
-   1.1. Execute notebook manually (interactively) <br>
-       a. Activate the environment and open jupyter-lab
+   1. Execute notebook manually (interactively) <br>
+       1. Activate the environment and open jupyter-lab
            ```sh
            conda activate mpm_inter_env
            jupyter-lab
            ```
-       b. Run the raw data preprocessing notebook <br>
+       2. Run the raw data preprocessing notebook <br>
        Using the Jupyter navigator, open the notebook [`workspace/notebooks/MPPData_into_images_no_split.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split.ipynb) and replace the variable `PARAMETERS_FILE` with the absolute path and name of the file containing your input parameters. You can find the parameter file used for this work [here](workspace/scripts/Data_Preprocessing/Parameters/MppData_to_imgs_no_split.json).<br>
        Also, you can look at a dummy example (and parameters) of the raw data preprocessing in [this notebook](https://github.com/andresbecker/master_thesis/blob/main/workspace/notebooks/MPPData_into_images_no_split_dummy.ipynb). <br>
        You can find an explanation of the preprocessing input parameters on appendix `A.1` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
-   1.2. Execute notebook in the background (non-interactively) <br>
+   2. Execute notebook in the background (non-interactively) <br>
        In case you would like to execute the raw data preprocessing not interactively (in the background), you can use the script [`workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh`](https://github.com/andresbecker/master_thesis/blob/main/workspace/scripts/Run_Jupyter_Notebook_from_Terminal.sh) for this
        ```sh
        cd /workspace/scripts
