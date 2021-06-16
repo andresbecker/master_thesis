@@ -206,6 +206,7 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
     <p align="center">
       <img src="workspace/Interpretability/Channel_importance.JPG" width="600">
     </p>
+    
     2. The similarity between score maps channels analysis, which is done in the Jupyter notebook [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb)
     <p align="center">
       <img src="workspace/Interpretability/Channel_correlation/Similarity_SM_and_SM.JPG" width="600">
