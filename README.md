@@ -229,7 +229,4 @@ Methods for Deep Neural Networks Lack Sensitivity to Parameter Values. 2018. arX
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
 
-* [Hado Van Hasselt, Advanced Deep Learning and Reinforcement Learning. Lecture 12: Policy Gradients and Actor Critics](https://youtu.be/bRfUxQs6xIM)
-* [Abhishek Suran, Actor-Critic with tf-2-x](https://towardsdatascience.com/actor-critic-with-tensorflow-2-x-part-1-of-2-d1e26a54ce97)
-* [Lilian Weng, A (Long) Peek into Reinforcement Learning](https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html)
-* [Lilian Weng, Policy Gradient Algorithms](https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html)
+* We warmly thank [Scott Berry](https://pelkmanslab.org/pelkmanslab/team/) from [Pelkmans Lab](https://pelkmanslab.org/) (at the University of Zurich), for providing the data for this work.
