@@ -202,11 +202,14 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
 
 5. Model interpretation. Score maps analysis <br>
     The analysis of the score maps is done in 3 parts:
-    1. The channel importance analysis which is done in the Jupyter notebook [`workspace/Interpretability/VarGrad_channel_importance.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/VarGrad_channel_importance.ipynb)
+    1. The channel importance analysis, which is done in the Jupyter notebook [`workspace/Interpretability/VarGrad_channel_importance.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/VarGrad_channel_importance.ipynb)
     <p align="center">
       <img src="workspace/Interpretability/Channel_importance.JPG" width="600">
     </p>
-    2. The
+    2. The similarity between score maps channels analysis, which is done in the Jupyter notebook [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb)
+    <p align="center">
+      <img src="workspace/Interpretability/Channel_correlation/Similarity_SM_and_SM.JPG" width="600">
+    </p>
 
 
 <!-- CONTACT -->
