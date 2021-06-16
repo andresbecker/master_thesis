@@ -34,8 +34,9 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#references">References</a></li>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
+    <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
 
@@ -212,7 +213,7 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
       <img src="workspace/Interpretability/Channel_correlation/Similarity_SM_and_SM.JPG" width="600">
     </p>
 
-    3. The analysis and clustering to the similarity between score maps channels and score maps channels. This was not included in the final work, therefore there are lots of room for improvement here. However, you can still take a look at the Jupyter notebooks [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/Score_map_cluster_clip_gaus_std.ipynb) and [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_metrics_comparative.ipynb)
+    3. The analysis and clustering of score maps channels, based on the similarity between each one of them and the remaining score maps channels. This was not included in the final work, therefore there are lots of room for improvement here. However, you can still take a look at the Jupyter notebooks [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/Score_map_cluster_clip_gaus_std.ipynb) and [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_metrics_comparative.ipynb)
     <p align="center">
       <img src="workspace/Interpretability/Channel_correlation/SM_channels_clusters.PNG" width="600">
     </p>
@@ -230,7 +231,6 @@ Networks. 2017. arXiv: [1703.01365 [cs.LG]](https://arxiv.org/abs/1703.01365).
 <a id="3">[3]</a>
 J. Adebayo, J. Gilmer, I. Goodfellow, and B. Kim. Local Explanation
 Methods for Deep Neural Networks Lack Sensitivity to Parameter Values. 2018. arXiv: [1810.03307 [cs.CV]](https://arxiv.org/abs/1810.03307).
-
 
 
 <!-- ACKNOWLEDGEMENTS -->
