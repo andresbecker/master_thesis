@@ -206,21 +206,18 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
     <p align="center">
       <img src="workspace/Interpretability/Channel_importance.JPG" width="600">
     </p>
-    
-    2. The similarity between score maps channels analysis, which is done in the Jupyter notebook [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb)
+
+    2. The analysis to the similarity between score maps channels and cell image channels, which is done in the Jupyter notebook [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb)
     <p align="center">
       <img src="workspace/Interpretability/Channel_correlation/Similarity_SM_and_SM.JPG" width="600">
     </p>
 
+    3. The analysis and clustering to the similarity between score maps channels and score maps channels. This was not included in the final work, therefore there are lots of room for improvement here. However, you can still take a look at the Jupyter notebooks [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/Score_map_cluster_clip_gaus_std.ipynb) and [`workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_mae.ipynb`](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/Channel_correlation/VarGrad_channel_similarity_metrics_comparative.ipynb)
+    <p align="center">
+      <img src="workspace/Interpretability/Channel_correlation/SM_channels_clusters.PNG" width="600">
+    </p>
 
-<!-- CONTACT -->
-## Contact
-
-Andres Becker - [LinkedIn](https://www.linkedin.com/in/andres-becker) - andres.becker@tum.de
-
-Project Link: [https://github.com/andresbecker/master_thesis](https://github.com/andresbecker/master_thesis)
-
-
+<!-- References -->
 ## References
 <a id="1">[1]</a>
 G. Gut, M. D. Herrmann, and L. Pelkmans. “Multiplexed protein maps link subcellular organization to cellular states”. In: Science 361.6401 (2018).
@@ -240,3 +237,10 @@ Methods for Deep Neural Networks Lack Sensitivity to Parameter Values. 2018. arX
 ## Acknowledgements
 
 * We warmly thank [Scott Berry](https://www.mls.uzh.ch/en/research/pelkmans/groupmembers/scott-berry.html) from [Pelkmans Lab](https://pelkmanslab.org/) (at the University of Zurich), for providing the data for this work.
+
+<!-- CONTACT -->
+## Contact
+
+Andres Becker - [LinkedIn](https://www.linkedin.com/in/andres-becker) - andres.becker@tum.de
+
+Project Link: [https://github.com/andresbecker/master_thesis](https://github.com/andresbecker/master_thesis)
