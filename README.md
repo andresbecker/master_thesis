@@ -204,8 +204,10 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
     The analysis of the score maps is done in 3 parts:
     1. The channel importance analysis
         <p align="center">
-          <img src="workspace/Interpretability/Channel_importance.JPG" width="400">
+          <img src="workspace/Interpretability/Channel_importance.JPG" width="600">
         </p>
+        which is done in the Jupyter notebook [workspace/Interpretability/VarGrad_channel_importance.ipynb](https://github.com/andresbecker/master_thesis/blob/main/workspace/Interpretability/VarGrad_channel_importance.ipynb).
+    2. The 
 
 
 <!-- CONTACT -->
