@@ -201,7 +201,12 @@ This can be done in two different ways; 1) interactively and 2) non interactivel
     You can find an explanation of the input parameters for the interpretability methods on appendix `A.4` of [`Manuscript/Thesis_Andres_Becker.pdf`](https://github.com/andresbecker/master_thesis/blob/main/Manuscript/Thesis_Andres_Becker.pdf).
 
 5. Model interpretation. Score maps analysis <br>
-    TODO
+    The analysis of the score maps is done in 3 parts:
+    1. The channel importance analysis
+        <p align="center">
+          <img src="workspace/Interpretability/Channel_importance.JPG" width="400">
+        </p>
+
 
 <!-- CONTACT -->
 ## Contact
@@ -229,4 +234,4 @@ Methods for Deep Neural Networks Lack Sensitivity to Parameter Values. 2018. arX
 <!-- ACKNOWLEDGEMENTS -->
 ## Acknowledgements
 
-* We warmly thank [Scott Berry](https://pelkmanslab.org/pelkmanslab/team/) from [Pelkmans Lab](https://pelkmanslab.org/) (at the University of Zurich), for providing the data for this work.
+* We warmly thank [Scott Berry](https://www.mls.uzh.ch/en/research/pelkmans/groupmembers/scott-berry.html) from [Pelkmans Lab](https://pelkmanslab.org/) (at the University of Zurich), for providing the data for this work.
