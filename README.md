@@ -47,7 +47,7 @@
   <img src="Thesis_defense_presentation/work_flow.JPG" width="800">
 </p>
 
-By means of fluorescent antibodies it is possible to observe the amount of nascent RNA within the nucleus of a cell, and thus estimate its `Transcription Rate (TR)`. But what about the other molecules, proteins, organelles, etc. within the nucleus of the cell? Is it possible to estimate the  using only the shape and distribution of these subnuclear components? By means of multichannel images of single cell nucleus (obtained through the `Multiplexed Protein Maps (MPM)` protocol (cite Guteaar7042)) and `Convolutional Neural Networks (CNNs)`, we show that this is possible.
+By means of fluorescent antibodies it is possible to observe the amount of nascent RNA within the nucleus of a cell, and thus estimate its `Transcription Rate (TR)`. But what about the other molecules, proteins, organelles, etc. within the nucleus of the cell? Is it possible to estimate the  using only the shape and distribution of these subnuclear components? By means of multichannel images of single cell nucleus (obtained through the `Multiplexed Protein Maps (MPM)` protocol [[1]](#1) and `Convolutional Neural Networks (CNNs)`, we show that this is possible.
 Applying pre-processing and data augmentation techniques, we reduce the information contained in the intensity of the pixels and the correlation of these between the different channels. This allowed the CNN to focus mainly on the information provided by the location, size and distribution of elements within the cell nucleus.
 For this task different architectures were tried, from a simple CNN (with only 160k parameters), to more complex architectures such as the ResNet50V2 or the Xception (with more than 20m parameters).
 Furthermore, through the interpretability methods `Integrated Gradients (IG)` (cite here) and `VarGrad (VG)` (cite here), we could obtain score maps that allowed us to observe the pixels that the CNN considered as relevant to predict the TR for each cell nucleus input image. The analysis of these score maps reveals how as the TR changes, the CNN focuses on different proteins and areas of the nucleus. This shows that interpretability methods can help us to understand how a CNN make its predictions and learn from it, which has the potential to provide guidance for new discoveries in the field of biology.
@@ -210,6 +210,11 @@ Andres Becker - [LinkedIn](https://www.linkedin.com/in/andres-becker) - andres.b
 
 Project Link: [https://github.com/andresbecker/master_thesis](https://github.com/andresbecker/master_thesis)
 
+
+## References
+<a id="1">[1]</a>
+G. Gut, M. D. Herrmann, and L. Pelkmans. “Multiplexed protein maps link subcellular organization to cellular states”. In: Science 361.6401 (2018).
+issn: 0036-8075. eprint: [https://science.sciencemag.org/content/361/6401/eaar7042.full.pdf](https://science.sciencemag.org/content/361/6401/eaar7042.full.pdf)
 
 
 <!-- ACKNOWLEDGEMENTS -->
