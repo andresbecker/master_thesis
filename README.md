@@ -4,18 +4,12 @@
 *** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
 -->
 
-<!-- PROJECT LOGO -->
-<br />
+
+# Predicting transcription rate from multiplexed protein maps using deep learning
+
 <p align="center">
-
-<h3 align="center">Predicting transcription rate from multiplexed protein maps using deep learning</h3>
-
-  <a href="https://github.com/andresbecker/master_thesis">
-    <p align="center">
-      <img src="workspace/Interpretability/Gradient/Gradient.gif" width="600">
-      <img src="workspace/Interpretability/IG_plots/VG.gif" width="600">
-    </p>
-  </a>
+  <img src="workspace/Interpretability/Gradient/Gradient.gif" width="600">
+  <img src="workspace/Interpretability/IG_plots/VG.gif" width="600">
 </p>
 
 
@@ -48,7 +42,7 @@
   <img src="Thesis_defense_presentation/work_flow.JPG" width="800">
 </p>
 
-By means of fluorescent antibodies it is possible to observe the amount of nascent RNA within the nucleus of a cell, and thus estimate its `Transcription Rate (TR)`. But what about the other molecules, proteins, organelles, etc. within the nucleus of the cell? Is it possible to estimate the  using only the shape and distribution of these subnuclear components? By means of multichannel images of single cell nucleus (obtained through the `Multiplexed Protein Maps (MPM)` protocol [[1]](#1) and `Convolutional Neural Networks (CNNs)`, we show that this is possible.
+By means of fluorescent antibodies it is possible to observe the amount of nascent RNA within the nucleus of a cell, and thus estimate its `Transcription Rate (TR)`. But what about the other molecules, proteins and organelles inside the cell necleus? Is it possible to estimate the TR using only the shape and distribution of these subnuclear components? By means of multichannel images of single cell nucleus (obtained through the `Multiplexed Protein Maps (MPM)` protocol [[1]](#1)) and `Convolutional Neural Networks`, we show that this is possible.
 Applying pre-processing and data augmentation techniques, we reduce the information contained in the intensity of the pixels and the correlation of these between the different channels. This allowed the CNN to focus mainly on the information provided by the location, size and distribution of elements within the cell nucleus.
 For this task different architectures were tried, from a simple CNN (with only 160k parameters), to more complex architectures such as the ResNet50V2 or the Xception (with more than 20m parameters).
 Furthermore, through the interpretability methods `Integrated Gradients (IG)` [[2]](#2) and `VarGrad (VG)` [[3]](#3), we could obtain score maps that allowed us to observe the pixels that the CNN considered as relevant to predict the TR for each cell nucleus input image. The analysis of these score maps reveals how as the TR changes, the CNN focuses on different proteins and areas of the nucleus. This shows that interpretability methods can help us to understand how a CNN make its predictions and learn from it, which has the potential to provide guidance for new discoveries in the field of biology.
